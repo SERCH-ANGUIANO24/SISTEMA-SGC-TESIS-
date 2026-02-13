@@ -150,9 +150,191 @@ class AnexosController extends Controller
         $document = Document::findOrFail($id);
         $this->authorizeAccess($document);
 
-        return Storage::disk('public')->download($document->file_path, $document->original_name);
+        return Storage::disk('public')->download($document->file_path, $document->original_name,['Content-Disposition' => 'attachment; filename="' . $document->original_name . '"']);
     }
 
+    public function viewDocument($id)
+    {
+        $document = Document::findOrFail($id);
+        $this->authorizeAccess($document);
+        
+        $path = storage_path('app/public/' . $document->file_path);
+        
+        if (!file_exists($path)) {
+            abort(404, 'El archivo no existe en el servidor');
+        }
+        
+        $extension = strtolower(pathinfo($document->original_name, PATHINFO_EXTENSION));
+        
+        // Forzar visualización en el navegador para TODOS los tipos de archivo
+        $contentTypes = [
+            // Documentos
+            'pdf' => 'application/pdf',
+            'doc' => 'application/msword',
+            'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'xls' => 'application/vnd.ms-excel',
+            'xlsx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'ppt' => 'application/vnd.ms-powerpoint',
+            'pptx' => 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+            'txt' => 'text/plain',
+            'csv' => 'text/plain',
+            // Imágenes
+            'jpg' => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+            'png' => 'image/png',
+            'gif' => 'image/gif',
+            'bmp' => 'image/bmp',
+            'svg' => 'image/svg+xml',
+            'webp' => 'image/webp',
+        ];
+        
+        $contentType = $contentTypes[$extension] ?? 'application/octet-stream';
+        
+        // HEADER CRUCIAL: Forzar visualización en navegador
+        return response()->file($path, [
+            'Content-Type' => $contentType,
+            'Content-Disposition' => 'inline; filename="' . $document->original_name . '"'
+        ]);
+    }
+    //FUNCION PARA RENOMBRAR LAS CARPETAS
+
+    public function renameFolder(Request $request,$id){
+            $request->validate([
+        'name' => 'required|string|max:255'
+    ]);
+
+    $folder = Folder::findOrFail($id);
+    $this->authorizeAccess($folder);
+    
+    $folder->name = $request->name;
+    $folder->save();
+
+    return redirect()->route('anexos.index', ['folder' => $folder->parent_id])
+                     ->with('success', 'Carpeta renombrada correctamente.');
+
+    }
+
+    /**
+ * Mover carpeta a otra ubicación
+ */
+    public function moveFolder(Request $request, $id)
+    {
+        $request->validate([
+            'destination_id' => 'nullable|exists:folders,id'
+        ]);
+
+        $folder = Folder::findOrFail($id);
+        $this->authorizeAccess($folder);
+        
+        // Validar que no se mueva a sí misma o a una subcarpeta
+        if ($request->destination_id == $folder->id) {
+            return back()->with('error', 'No puedes mover una carpeta a sí misma.');
+        }
+        
+        // Validar que no se mueva a una subcarpeta
+        if ($request->destination_id) {
+            $destination = Folder::find($request->destination_id);
+            $isSubfolder = $this->isSubfolder($folder->id, $destination);
+            if ($isSubfolder) {
+                return back()->with('error', 'No puedes mover una carpeta a una subcarpeta.');
+            }
+        }
+        
+        $folder->parent_id = $request->destination_id;
+        $folder->save();
+
+        return redirect()->route('anexos.index', ['folder' => $request->destination_id])
+                        ->with('success', 'Carpeta movida correctamente.');
+    }
+
+    /**
+     * Verificar si una carpeta es subcarpeta de otra
+     */
+    private function isSubfolder($folderId, $destination)
+    {
+        if (!$destination) return false;
+        
+        $parent = $destination->parent;
+        while ($parent) {
+            if ($parent->id == $folderId) {
+                return true;
+            }
+            $parent = $parent->parent;
+        }
+        return false;
+    }
+
+/**
+ * Obtener lista de carpetas para el modal de mover
+ */
+    public function getFoldersTree(Request $request)
+    {
+        $currentFolderId = $request->get('current_folder');
+        $folders = Folder::where('user_id', Auth::id())
+                        ->where('id', '!=', $currentFolderId)
+                        ->orderBy('name')
+                        ->get()
+                        ->map(function($folder) {
+                            return [
+                                'id' => $folder->id,
+                                'name' => $folder->name,
+                                'parent_id' => $folder->parent_id,
+                                'full_path' => $this->getFolderPath($folder)
+                            ];
+                        });
+        
+        return response()->json($folders);
+    }
+
+    private function getFolderPath($folder)
+    {
+        $path = [];
+        $current = $folder;
+        while ($current) {
+            array_unshift($path, $current->name);
+            $current = $current->parent;
+        }
+        return implode(' / ', $path);
+    }
+
+        /**
+     * Renombrar documento
+     */
+    public function renameDocument(Request $request, $id)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255'
+        ]);
+
+        $document = Document::findOrFail($id);
+        $this->authorizeAccess($document);
+        
+        // Mantener la extensión original
+        $extension = pathinfo($document->original_name, PATHINFO_EXTENSION);
+        $document->name = $request->name;
+        $document->original_name = $request->name . '.' . $extension;
+        $document->save();
+
+        return redirect()->back()->with('success', 'Documento renombrado correctamente.');
+    }
+
+    /**
+     * Mover documento a otra carpeta
+     */
+    public function moveDocument(Request $request, $id)
+    {
+        $request->validate([
+            'destination_id' => 'nullable|exists:folders,id'
+        ]);
+
+        $document = Document::findOrFail($id);
+        $this->authorizeAccess($document);
+        
+        $document->folder_id = $request->destination_id;
+        $document->save();
+
+        return redirect()->back()->with('success', 'Documento movido correctamente.');
+    }
     // ---------- Métodos privados de ayuda ----------
 
     private function authorizeAccess($model)

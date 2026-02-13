@@ -294,12 +294,16 @@
             case 'Anexos':
                 window.location.href = '{{ route("anexos.index") }}';
                 break;
+            case 'Gestión Documental':
+                window.location.href = '{{ route("documental.index") }}';
+                break;
             default:
                 // Para los demás módulos, mostrar toast de "en desarrollo"
                 showToast(module);
         }
     }
 
+                
     // Inicializar cuando el DOM esté listo
     document.addEventListener('DOMContentLoaded', function() {
         // Agregar event listeners a todas las tarjetas del dashboard
