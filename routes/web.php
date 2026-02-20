@@ -9,7 +9,8 @@ use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\AnexosController;
 use App\Http\Controllers\DocumentalController;
 use App\Http\Controllers\MatrizController;
-use App\Http\Controllers\FormatosController; 
+use App\Http\Controllers\FormatoController;  // 👈 AGREGADO
+
 
 Route::get('/', function () {
     return view('welcome');
@@ -53,7 +54,7 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/folder/{id}', [DocumentalController::class, 'updateFolder'])->name('folder.update');
         Route::delete('/folder/{id}', [DocumentalController::class, 'destroyFolder'])->name('folder.destroy');
 
-        //RUTAS PARA RENOMBRAR, MOVER Y  CARPETAS DEL MODULO DE GESTION DOCUMENTAL
+        //RUTAS PARA RENOMBRAR, MOVER Y CARPETAS DEL MODULO DE GESTION DOCUMENTAL
         Route::put('/folder/{id}/rename', [DocumentalController::class, 'renameFolder'])->name('folder.rename');
         Route::put('/folder/{id}/move', [DocumentalController::class, 'moveFolder'])->name('folder.move'); 
         
@@ -79,8 +80,8 @@ Route::middleware(['auth'])->group(function () {
         
         // Carpetas
         Route::post('/folder', [MatrizController::class, 'storeFolder'])->name('folder.store');
-        Route::put('/folder/{id}/rename', [MatrizController::class, 'renameFolder'])->name('folder.rename'); // 👈 AGREGADO
-        Route::put('/folder/{id}/move', [MatrizController::class, 'moveFolder'])->name('folder.move');       // 👈 AGREGADO
+        Route::put('/folder/{id}/rename', [MatrizController::class, 'renameFolder'])->name('folder.rename');
+        Route::put('/folder/{id}/move', [MatrizController::class, 'moveFolder'])->name('folder.move');
         Route::delete('/folder/{id}', [MatrizController::class, 'destroyFolder'])->name('folder.destroy');
         
         // Documentos (matrices)
@@ -100,31 +101,31 @@ Route::middleware(['auth'])->group(function () {
 /* ===== MÓDULO FORMATOS ===== */
 Route::middleware(['auth'])->group(function () {
     Route::prefix('formatos')->name('formatos.')->group(function () {
-        // Vista principal
-        Route::get('/', [FormatosController::class, 'index'])->name('index');
-        
-        // Volver a la raíz
-        Route::get('/volver', [FormatosController::class, 'volver'])->name('volver');
-        
-        // Carpetas
-        Route::post('/folder', [FormatosController::class, 'storeFolder'])->name('folder.store');
-        Route::put('/folder/{id}/rename', [FormatosController::class, 'renameFolder'])->name('folder.rename');
-        Route::put('/folder/{id}/move', [FormatosController::class, 'moveFolder'])->name('folder.move');   
-        Route::delete('/folder/{id}', [FormatosController::class, 'destroyFolder'])->name('folder.destroy');
-        
-        // Documentos
-        Route::post('/upload', [FormatosController::class, 'upload'])->name('upload');
-        Route::get('/document/{id}/data', [FormatosController::class, 'getDocumentData'])->name('document.data');
-        Route::put('/document/{id}', [FormatosController::class, 'updateDocument'])->name('document.update');
-        Route::put('/document/{id}/move', [FormatosController::class, 'moveDocument'])->name('document.move');
-        Route::get('/document/{id}/download', [FormatosController::class, 'downloadDocument'])->name('document.download');
-        Route::get('/document/{id}/view', [FormatosController::class, 'viewDocument'])->name('document.view');
-        Route::delete('/document/{id}', [FormatosController::class, 'destroyDocument'])->name('document.destroy');
-        
-        // Utilidades
-        Route::get('/folders/tree', [FormatosController::class, 'getFoldersTree'])->name('folders.tree');
+        // Dashboard principal
+        Route::get('/', [FormatoController::class, 'index'])->name('index');
+
+        // AJAX: obtener departamentos según proceso (debe ir ANTES de las rutas con {formato})
+        Route::get('/api/departamentos', [FormatoController::class, 'departamentos'])->name('departamentos');
+
+        // Subir nuevo formato
+        Route::post('/', [FormatoController::class, 'store'])->name('store');
+
+        // Ver / previsualizar archivo
+        Route::get('/{formato}/ver', [FormatoController::class, 'show'])->name('show');
+
+        // Descargar archivo
+        Route::get('/{formato}/descargar', [FormatoController::class, 'download'])->name('download');
+
+        // Actualizar información del formato
+        Route::put('/{formato}', [FormatoController::class, 'update'])->name('update');
+
+        // Eliminar formato y su archivo
+        Route::delete('/{formato}', [FormatoController::class, 'destroy'])->name('destroy');
     });
 });
+
+
+
 
 // ===== RUTAS PARA VISUALIZAR ARCHIVOS =====
 Route::get('/ver-imagen/{id}', function($id) {
