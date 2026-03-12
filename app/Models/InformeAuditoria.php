@@ -21,16 +21,18 @@ class InformeAuditoria extends Model
         'procesos_auditados',
         'no_conformidades',
         'oportunidades_mejora',
+        'nc_om_por_proceso',      // ← NUEVO
         'documento_path',
         'documento_nombre',
     ];
 
     protected $casts = [
-        'fecha_informe'   => 'date',
-        'fecha_auditoria' => 'date',
-        'procesos_auditados' => 'array',
-        'no_conformidades'   => 'integer',
+        'fecha_informe'        => 'date',
+        'fecha_auditoria'      => 'date',
+        'procesos_auditados'   => 'array',
+        'no_conformidades'     => 'integer',
         'oportunidades_mejora' => 'integer',
+        'nc_om_por_proceso'    => 'array', // ← NUEVO
     ];
 
     /**
@@ -72,9 +74,9 @@ class InformeAuditoria extends Model
     {
         $informes = self::whereYear('fecha_auditoria', $anio)->get();
 
-        $totalAuditorias      = $informes->count();
-        $totalNoConformidades  = $informes->sum('no_conformidades');
-        $totalOportunidades   = $informes->sum('oportunidades_mejora');
+        $totalAuditorias     = $informes->count();
+        $totalNoConformidades = $informes->sum('no_conformidades');
+        $totalOportunidades  = $informes->sum('oportunidades_mejora');
 
         // Procesos únicos auditados en el año
         $procesosSet = [];

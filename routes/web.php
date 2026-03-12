@@ -10,7 +10,6 @@ use App\Http\Controllers\AnexosController;
 use App\Http\Controllers\DocumentalController;
 use App\Http\Controllers\MatrizController;
 use App\Http\Controllers\FormatoController;
-use App\Http\Controllers\ProcesosDepartamentosController;
 use App\Http\Controllers\Admin\UsuariosController;
 use App\Http\Controllers\Admin\ProcesoController;   // ← NUEVO
 
@@ -91,57 +90,36 @@ Route::middleware(['auth'])->group(function () {
 });
 
 /* ===== MÓDULO FORMATOS ===== */
-/*
-|--------------------------------------------------------------------------
-| Rutas del Módulo de Formatos - SGC
-|--------------------------------------------------------------------------
-| IMPORTANTE: Las rutas estáticas (sin wildcard) deben declararse ANTES
-| de las rutas con {formato} para evitar que Laravel capture strings como
-| "procesos-departamentos" como si fueran IDs de formato.
-|--------------------------------------------------------------------------
-*/
-
 Route::middleware(['auth'])->group(function () {
     Route::prefix('formatos')->name('formatos.')->group(function () {
-
-        // ── Rutas estáticas (sin parámetro) — SIEMPRE PRIMERO ──────────────
         Route::get('/',  [FormatoController::class, 'index'])->name('index');
         Route::post('/', [FormatoController::class, 'store'])->name('store');
-
-        // AJAX: obtener departamentos de un proceso
         Route::get('/api/departamentos', [FormatoController::class, 'departamentos'])->name('departamentos');
-
-        // Procesos y departamentos dinámicos — antes del wildcard {formato}
         Route::get('/procesos-departamentos',          [ProcesosDepartamentosController::class, 'index'])->name('procesos-departamentos.index');
         Route::post('/procesos-departamentos',         [ProcesosDepartamentosController::class, 'store'])->name('procesos-departamentos.store');
         Route::delete('/procesos-departamentos',       [ProcesosDepartamentosController::class, 'destroy'])->name('procesos-departamentos.destroy');
         Route::delete('/procesos-departamentos/depto', [ProcesosDepartamentosController::class, 'destroyDepartamento'])->name('procesos-departamentos.destroyDepto');
-
-        // ── Rutas con wildcard {formato} — SIEMPRE AL FINAL ────────────────
         Route::get('/{formato}/ver',        [FormatoController::class, 'show'])->name('show');
         Route::get('/{formato}/descargar',  [FormatoController::class, 'download'])->name('download');
         Route::put('/{formato}',            [FormatoController::class, 'update'])->name('update');
         Route::delete('/{formato}',         [FormatoController::class, 'destroy'])->name('destroy');
-
     });
 });
 
 /* ===== MÓDULO ADMINISTRACIÓN DE USUARIOS ===== */
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
-
     Route::prefix('usuarios')->name('usuarios.')->group(function () {
         Route::get('/',                   [UsuariosController::class, 'index'])->name('index');
         Route::patch('/{usuario}/estado', [UsuariosController::class, 'estado'])->name('estado');
         Route::delete('/{usuario}',       [UsuariosController::class, 'destroy'])->name('destroy');
         Route::patch('/{usuario}/admin',  [UsuariosController::class, 'updateAdmin'])->name('updateAdmin');
     });
-
-    // ── Procesos personalizados ──────────────────────────────────────
     Route::prefix('procesos')->name('procesos.')->group(function () {
-        Route::post('/',            [ProcesoController::class, 'store'])->name('store');
-        Route::delete('/{proceso}', [ProcesoController::class, 'destroy'])->name('destroy');
+        Route::post('/',                     [ProcesoController::class, 'store'])->name('store');
+        Route::post('/add-departamento',     [ProcesoController::class, 'addDepartamento'])->name('addDepartamento');
+        Route::delete('/destroy-proceso',    [ProcesoController::class, 'destroyProceso'])->name('destroyProceso');
+        Route::delete('/{proceso}',          [ProcesoController::class, 'destroy'])->name('destroy');
     });
-
 });
 
 /* ===== MÓDULO AUDITORÍAS ===== */
@@ -168,6 +146,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/auditoria/{auditoria}/fecha', [InformeAuditoriaController::class, 'fechaAuditoriaRelacionada'])->name('fecha-auditoria');
         Route::get('/', [InformeAuditoriaController::class, 'index'])->name('index');
         Route::post('/', [InformeAuditoriaController::class, 'store'])->name('store');
+        Route::get('/procesos-custom', [InformeAuditoriaController::class, 'getProcesosCustom'])->name('procesos-custom');
         Route::get('/{informeAuditoria}', [InformeAuditoriaController::class, 'show'])->name('show');
         Route::post('/{informeAuditoria}', [InformeAuditoriaController::class, 'update'])->name('update');
         Route::put('/{informeAuditoria}', [InformeAuditoriaController::class, 'update'])->name('update-put');
@@ -177,14 +156,15 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{informeAuditoria}/descargar', [InformeAuditoriaController::class, 'descargar'])->name('descargar');
     });
 
+    // ===== RUTAS DE SOLICITUD DE MEJORA =====
     Route::prefix('auditoria/solicitudes')->name('auditoria.solicitudes.')->group(function () {
         Route::get('/', [SolicitudMejoraController::class, 'index'])->name('index');
-        Route::get('/data', [SolicitudMejoraController::class, 'getData'])->name('data');
+        Route::get('/data', [SolicitudMejoraController::class, 'data'])->name('data');
         Route::post('/', [SolicitudMejoraController::class, 'store'])->name('store');
         Route::put('/{id}', [SolicitudMejoraController::class, 'update'])->name('update');
         Route::delete('/{id}', [SolicitudMejoraController::class, 'destroy'])->name('destroy');
+        Route::get('/ver/{id}', [SolicitudMejoraController::class, 'view'])->name('view');
         Route::get('/download/{id}', [SolicitudMejoraController::class, 'download'])->name('download');
-        Route::get('/ver/{id}', [SolicitudMejoraController::class, 'verArchivo'])->name('ver');
     });
 
     /* ===== MÓDULO COMPETENCIAS ===== */
@@ -216,13 +196,11 @@ Route::middleware('guest')->group(function () {
     Route::post('password/reset', [ResetPasswordController::class, 'reset'])->name('password.update');
 });
 
-// Registro — solo superadmin autenticado puede registrar usuarios
 Route::middleware('auth')->group(function () {
     Route::get('register', [RegisterController::class, 'showRegistrationForm'])->name('register');
     Route::post('register', [RegisterController::class, 'register']);
 });
 
-// Logout
 Route::post('logout', [LoginController::class, 'logout'])->name('logout');
 
 require __DIR__.'/settings.php';

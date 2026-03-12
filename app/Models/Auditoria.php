@@ -14,7 +14,8 @@ class Auditoria extends Model
         'nombre_auditoria',
         'tipo_auditoria',
         'auditor_lider',
-        'fecha_auditoria',
+        'fecha_inicio',
+        'fecha_fin',
         'anio',
         'auditores',
         'archivo_path',
@@ -22,7 +23,8 @@ class Auditoria extends Model
     ];
 
     protected $casts = [
-        'fecha_auditoria' => 'date',
+        'fecha_inicio' => 'date',
+        'fecha_fin' => 'date',
         'anio' => 'integer',
         'created_at' => 'datetime',
         'updated_at' => 'datetime'

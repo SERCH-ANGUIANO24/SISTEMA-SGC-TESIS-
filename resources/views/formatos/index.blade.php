@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Formatos - Sistema de Gestión de la Calidad')
+@section('title', 'Lista Maestra - Sistema de Gestión de la Calidad')
 
 @section('content')
 <div class="container-fluid py-4">
@@ -13,27 +13,9 @@
                     <a href="{{ route('dashboard') }}" class="text-decoration-none" title="Regresar al Dashboard">
                         <h1 class="h3 mb-0" style="color:#800000; cursor:pointer;">
                             <i class="bi bi-file-earmark-text me-2" style="font-size: 3rem; vertical-align:middle;"></i>
-                            Formatos
+                            Lista Maestra
                         </h1>
                     </a>
-                </div>
-
-                <div class="mt-2 d-flex gap-2">
-                    @if(in_array(Auth::user()->role, ['superadmin', 'admin']))
-                    <button type="button" class="btn text-white"
-                            style="background-color:#800000;"
-                            onclick="abrirModalNuevo()">
-                        <i class="bi bi-upload me-1"></i> Subir Formato
-                    </button>
-                    <button type="button" class="btn"
-                            style="border:1.5px solid #800000; color:#800000; background:#fff;"
-                            onmouseover="this.style.background='#fff5f5'"
-                            onmouseout="this.style.background='#fff'"
-                            onclick="abrirModalNuevoProceso('gestionar')"
-                            title="Gestionar procesos y departamentos creados">
-                        <i class="bi bi-gear me-1"></i> Gestionar procesos
-                    </button>
-                    @endif
                 </div>
             </div>
         </div>
@@ -71,6 +53,7 @@
                         @if(request('version'))<input type="hidden" name="version" value="{{ request('version') }}">@endif
                         @if(request('codigo'))<input type="hidden"  name="codigo"  value="{{ request('codigo') }}">@endif
                         @if(request('clave'))<input type="hidden"   name="clave"   value="{{ request('clave') }}">@endif
+                        @if(request('departamento'))<input type="hidden" name="departamento" value="{{ request('departamento') }}">@endif
                         <div class="input-group">
                             <input type="text" name="nombre" id="searchInput"
                                    class="form-control"
@@ -105,12 +88,13 @@
                                 <option value="version" {{ request('version') ? 'selected':'' }}>📋 Versión</option>
                                 <option value="codigo"  {{ request('codigo')  ? 'selected':'' }}>🔢 Código de procedimiento</option>
                                 <option value="clave"   {{ request('clave')   ? 'selected':'' }}>🔑 Clave de formato</option>
+                                <option value="departamento" {{ request('departamento') ? 'selected':'' }}>🏢 Departamento</option>
                             </select>
 
                             <select id="select-valor-campo"
                                     name="filtro_valor"
                                     class="form-select"
-                                    {{ !(request('version')||request('codigo')||request('clave')) ? 'disabled':'' }}
+                                    {{ !(request('version')||request('codigo')||request('clave')||request('departamento')) ? 'disabled':'' }}
                                     style="border:1px solid #dee2e6;">
                                 <option value="">— Primero elige un campo —</option>
                                 @foreach($versionesUnicas as $v)
@@ -128,16 +112,22 @@
                                             {{ request('clave')==$cl ? 'selected':'' }}
                                             style="{{ request('clave') ? '':'display:none' }}">{{ $cl }}</option>
                                 @endforeach
+                                @foreach($departamentosUnicos as $d)
+                                    <option value="departamento:{{ $d }}" data-tipo="departamento"
+                                            {{ request('departamento')==$d ? 'selected':'' }}
+                                            style="{{ request('departamento') ? '':'display:none' }}">{{ $d }}</option>
+                                @endforeach
                             </select>
 
                             <input type="hidden" name="version" id="hidden-version" value="{{ request('version') }}">
                             <input type="hidden" name="codigo"  id="hidden-codigo"  value="{{ request('codigo') }}">
                             <input type="hidden" name="clave"   id="hidden-clave"   value="{{ request('clave') }}">
+                            <input type="hidden" name="departamento" id="hidden-departamento" value="{{ request('departamento') }}">
 
-                            <button type="submit" class="btn px-3" style="background:#800000; color:white; white-space:nowrap; border:none;">
+                            <button type="submit" class="btn px-3" style="background:#737373; color:white; white-space:nowrap; border:none;">
                                 Aplicar
                             </button>
-                            @if(request('version')||request('codigo')||request('clave'))
+                            @if(request('version')||request('codigo')||request('clave')||request('departamento'))
                                 <a href="{{ route('formatos.index', array_filter(['nombre'=>request('nombre')])) }}"
                                    class="btn btn-outline-secondary px-3" title="Limpiar filtro">
                                     <i class="bi bi-x-lg"></i>
@@ -145,7 +135,7 @@
                             @endif
                         </div>
 
-                        @if(request('version')||request('codigo')||request('clave'))
+                        @if(request('version')||request('codigo')||request('clave')||request('departamento'))
                         <div class="d-flex flex-wrap gap-2 mt-2">
                             @if(request('version'))
                                 <span class="badge rounded-pill" style="background:#e8f7ee; color:#1a6b3a; border:1px solid #b8e6c9; font-size:0.78rem;">
@@ -164,6 +154,13 @@
                             @if(request('clave'))
                                 <span class="badge rounded-pill" style="background:#e8f7ee; color:#1a6b3a; border:1px solid #b8e6c9; font-size:0.78rem;">
                                     Clave: {{ request('clave') }}
+                                    <a href="{{ route('formatos.index', array_filter(['nombre'=>request('nombre')])) }}"
+                                       class="ms-1 text-decoration-none" style="color:#1a6b3a;">✕</a>
+                                </span>
+                            @endif
+                            @if(request('departamento'))
+                                <span class="badge rounded-pill" style="background:#e8f7ee; color:#1a6b3a; border:1px solid #b8e6c9; font-size:0.78rem;">
+                                    Departamento: {{ request('departamento') }}
                                     <a href="{{ route('formatos.index', array_filter(['nombre'=>request('nombre')])) }}"
                                        class="ms-1 text-decoration-none" style="color:#1a6b3a;">✕</a>
                                 </span>
@@ -190,7 +187,7 @@
                                     id="btn-orden-desc"
                                     class="btn btn-sm orden-fecha-btn activo-orden"
                                     onclick="ordenarPorFecha('desc')"
-                                    style="border:1px solid #800000; background:#fff5f5; color:#800000; font-size:0.8rem; padding:4px 14px; border-radius:6px;">
+                                    style="border:1px solid #800000; background:#400080; font-size:0.8rem; padding:4px 14px; border-radius:6px;">
                                 <i class="bi bi-sort-down me-1"></i> Más reciente primero
                             </button>
                             <button type="button"
@@ -254,31 +251,23 @@
                             </td>
 
                             <td style="font-size:0.8rem; color:#495057;">
-                                <span style="background:#f0f0f0; padding:4px 8px; border-radius:4px; white-space:nowrap;">
-                                    {{ $formato->proceso }}
-                                </span>
+                                {{ $formato->proceso }}
                             </td>
 
                             <td style="font-size:0.8rem; color:#495057;">
                                 {{ $formato->departamento }}
                             </td>
 
-                            <td>
-                                <span style="font-size:0.75rem; color:#800000; background:#fff5f5; padding:3px 6px; border-radius:4px; font-family:monospace;">
-                                    {{ $formato->clave_formato }}
-                                </span>
+                            <td style="font-size:0.8rem; color:#495057;">
+                                {{ $formato->clave_formato }}
                             </td>
 
-                            <td>
-                                <span style="font-size:0.75rem; color:#1a6b3a; background:#f0fff4; padding:3px 6px; border-radius:4px; font-family:monospace;">
-                                    {{ $formato->codigo_procedimiento }}
-                                </span>
+                            <td style="font-size:0.8rem; color:#495057;">
+                                {{ $formato->codigo_procedimiento }}
                             </td>
 
-                            <td>
-                                <span style="font-size:0.75rem; background:#f0f0f0; padding:3px 8px; border-radius:4px;">
-                                    {{ $formato->version_procedimiento }}
-                                </span>
+                            <td style="font-size:0.8rem; color:#495057;">
+                                {{ $formato->version_procedimiento }}
                             </td>
 
                             <td>
@@ -322,32 +311,8 @@
                                         <i class="bi bi-download" style="font-size:0.85rem;"></i>
                                     </a>
 
-                                    {{-- EDITAR / MOVER / ELIMINAR — SOLO SUPERADMIN/ADMIN --}}
+                                    {{-- ELIMINAR — SOLO SUPERADMIN/ADMIN --}}
                                     @if(in_array(Auth::user()->role, ['superadmin', 'admin']))
-                                    {{-- EDITAR --}}
-                                    <button class="btn btn-sm btn-outline-secondary editar-formato"
-                                            style="width:30px; height:30px; padding:0; border-radius:5px;"
-                                            title="Editar información"
-                                            data-id="{{ $formato->id }}"
-                                            data-proceso="{{ $formato->proceso }}"
-                                            data-departamento="{{ $formato->departamento }}"
-                                            data-clave="{{ $formato->clave_formato }}"
-                                            data-codigo="{{ $formato->codigo_procedimiento }}"
-                                            data-version="{{ $formato->version_procedimiento }}"
-                                            data-nombre="{{ $formato->nombre_archivo }}"
-                                            data-extension="{{ $formato->extension_archivo }}">
-                                        <i class="bi bi-pencil" style="font-size:0.85rem;"></i>
-                                    </button>
-
-                                    {{-- MOVER/RENOMBRAR --}}
-                                    <button class="btn btn-sm btn-outline-secondary"
-                                            style="width:30px; height:30px; padding:0; border-radius:5px;"
-                                            title="Mover / Renombrar"
-                                            data-id="{{ $formato->id }}"
-                                            onclick="alert('Función no implementada')">
-                                        <i class="bi bi-arrow-right-circle me-1" style="font-size:0.85rem;"></i>
-                                    </button>
-
                                     {{-- ELIMINAR --}}
                                     <button class="btn btn-sm btn-outline-danger eliminar-formato"
                                             style="width:30px; height:30px; padding:0; border-radius:5px;"
@@ -404,329 +369,6 @@
 
 </div>{{-- /container-fluid --}}
 
-{{-- ══════ MODAL SUBIR / EDITAR ══════ --}}
-<div class="modal fade" id="modalFormato" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content" style="border-radius:14px; border:none;">
-
-            <div class="modal-header border-bottom" style="border-radius:14px 14px 0 0; padding:1.1rem 1.4rem;">
-                <h5 class="modal-title fw-bold" id="modal-titulo" style="color:#1a1a1a; font-size:1.05rem;">Subir Archivo</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-
-            <div class="modal-body p-4">
-                <form id="form-formato" method="POST" enctype="multipart/form-data" action="{{ route('formatos.store') }}">
-                    @csrf
-                    <input type="hidden" name="_method"    id="form-method"  value="POST">
-                    <input type="hidden" name="formato_id" id="formato-id"   value="">
-
-                    <div class="row g-3">
-
-                        {{-- Proceso --}}
-                        {{--
-                            CAMBIO 1: El select-proceso en el formulario "Subir Formato" solo permite
-                            agregar nuevos procesos (opción ➕). Se eliminó la opción ⚙️ Gestionar.
-                            Para gestionar procesos, el usuario debe usar el botón "Gestionar procesos"
-                            del encabezado de la página.
-                        --}}
-                        <div class="col-12">
-                            <label class="form-label fw-bold small text-uppercase" style="color:#800000; letter-spacing:0.4px;">
-                                Proceso <span class="text-danger">*</span>
-                            </label>
-                            <select name="proceso" id="select-proceso" class="form-select" required
-                                    onchange="cargarDepartamentos(this.value)">
-                                <option value="">— Selecciona un proceso —</option>
-                                @foreach($procesosYDepartamentos as $proc => $deps)
-                                    <option value="{{ $proc }}"
-                                        {{ isset($procesosDinamicos) && in_array($proc, $procesosDinamicos) ? 'data-dinamico=1' : '' }}>
-                                        {{ $proc }}{{ isset($procesosDinamicos) && in_array($proc, $procesosDinamicos) ? ' ✎' : '' }}
-                                    </option>
-                                @endforeach
-                                <option value="__nuevo__" style="color:#800000; font-weight:700;">➕ Agregar nuevo proceso...</option>
-                            </select>
-                            <div class="invalid-feedback" id="error-proceso">Por favor selecciona un proceso</div>
-                        </div>
-
-                        {{-- Departamento --}}
-                        <div class="col-12">
-                            <label class="form-label fw-bold small text-uppercase" style="color:#800000; letter-spacing:0.4px;">
-                                Departamento <span class="text-danger">*</span>
-                            </label>
-                            <select name="departamento" id="select-departamento" class="form-select" required>
-                                <option value="">— Primero selecciona un proceso —</option>
-                            </select>
-                            <div class="invalid-feedback" id="error-departamento">Por favor selecciona un departamento</div>
-                        </div>
-
-                        {{-- Clave de formato --}}
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold small text-uppercase" style="color:#800000; letter-spacing:0.4px;">
-                                Clave de formato <span class="text-danger">*</span>
-                            </label>
-                            <input type="text" name="clave_formato" id="input-clave"
-                                   class="form-control" placeholder="Ej: FO-SGC-001"
-                                   required maxlength="100">
-                            <div class="invalid-feedback" id="error-clave">Por favor ingresa la clave del formato</div>
-                            <div id="clave-warning" class="alert alert-warning py-1 px-2 mt-1 mb-0 small fw-bold" style="display:none;">
-                                <i class="bi bi-exclamation-triangle me-1"></i> LA CLAVE DE FORMATO ESTÁ REPETIDA, MODIFÍCALA
-                            </div>
-                        </div>
-
-                        {{-- Código de procedimiento --}}
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold small text-uppercase" style="color:#800000; letter-spacing:0.4px;">
-                                Código de procedimiento <span class="text-danger">*</span>
-                            </label>
-                            <input type="text" name="codigo_procedimiento" id="input-codigo"
-                                   class="form-control" placeholder="Ej: PR-001"
-                                   required maxlength="100">
-                            <div class="invalid-feedback" id="error-codigo">Por favor ingresa el código del procedimiento</div>
-                        </div>
-
-                        {{-- Versión --}}
-                        <div class="col-12">
-                            <label class="form-label fw-bold small text-uppercase" style="color:#800000; letter-spacing:0.4px;">
-                                Versión del procedimiento <span class="text-danger">*</span>
-                            </label>
-                            <input type="text" name="version_procedimiento" id="input-version"
-                                   class="form-control" placeholder="Ej: 1.0 / v2 / Rev. A"
-                                   required maxlength="50">
-                            <div class="invalid-feedback" id="error-version">Por favor ingresa la versión del procedimiento</div>
-                        </div>
-
-                        {{-- NUEVO CAMPO: NOMBRE DEL ARCHIVO PARA EDITAR --}}
-                        <div class="col-12" id="campo-nombre-archivo" style="display: none;">
-                            <label class="form-label fw-bold small text-uppercase" style="color:#800000; letter-spacing:0.4px;">
-                                Nombre del archivo <span class="text-danger">*</span>
-                                <i class="bi bi-info-circle ms-1" data-bs-toggle="tooltip" title="Puedes cambiar el nombre con el que se guarda el archivo. No es necesario incluir la extensión."></i>
-                            </label>
-                            <div class="input-group">
-                                <input type="text" name="nombre_archivo" id="input-nombre-archivo-edit"
-                                       class="form-control" placeholder="Ej: Formato de inscripción 2024"
-                                       maxlength="255">
-                                <span class="input-group-text" id="extension-edit-preview"></span>
-                            </div>
-                            <small class="text-muted">El nombre será sanitizado automáticamente (sin caracteres especiales). La extensión se mantendrá automáticamente.</small>
-                            <div id="nombre-edit-preview" class="mt-2 p-2 bg-light rounded d-none">
-                                <small class="fw-bold">Vista previa:</small>
-                                <span id="preview-edit-text" class="ms-2"></span>
-                            </div>
-                        </div>
-
-                        {{-- Zona de carga --}}
-                        <div class="col-12">
-                            <label class="form-label fw-bold small text-uppercase" style="color:#800000; letter-spacing:0.4px;">
-                                Archivo <span class="text-danger" id="req-archivo">*</span>
-                                <span id="lbl-archivo-opt" class="text-muted fw-normal" style="display:none; text-transform:none; letter-spacing:0;">
-                                    (opcional — deja vacío para conservar el actual)
-                                </span>
-                            </label>
-                            <div id="upload-zona" class="upload-zona-bs rounded-3 p-4 text-center position-relative"
-                                 style="border:2px dashed #b8e6c9; background:#f0fff4; cursor:pointer; transition:all 0.2s;">
-                                <input type="file" name="archivo" id="input-archivo"
-                                       class="position-absolute top-0 start-0 w-100 h-100 opacity-0"
-                                       style="cursor:pointer; z-index:2;"
-                                       onchange="mostrarArchivoSeleccionado(this)">
-                                <i class="bi bi-cloud-upload" style="font-size:2.2rem; color:#2d9e59;"></i>
-                                <p class="mb-0 mt-2 fw-500" style="color:#1a6b3a; font-size:0.9rem;">
-                                    Arrastra tu archivo aquí o <strong>haz clic para seleccionar</strong>
-                                </p>
-                                <small class="text-muted">Imágenes, PDF, Word, Excel, CSV y más · Máx. 20 MB</small>
-                            </div>
-                            <div id="archivo-seleccionado" class="d-none align-items-center gap-2 mt-2 p-2 rounded-2"
-                                 style="background:#fff; border:1.5px solid #b8e6c9;">
-                                <i class="bi bi-file-earmark-check text-success"></i>
-                                <span id="nombre-archivo-seleccionado" class="small fw-500 text-truncate"></span>
-                                <button type="button" class="btn btn-sm btn-link ms-auto" onclick="limpiarArchivo()">
-                                    <i class="bi bi-x"></i>
-                                </button>
-                            </div>
-                            <div class="invalid-feedback" id="error-archivo">Por favor selecciona un archivo</div>
-                        </div>
-
-                        {{-- Información del archivo actual (solo visible en edición) --}}
-                        <div id="info-archivo-actual" class="col-12" style="display: none;">
-                            <div class="alert alert-info py-2 mb-0">
-                                <i class="bi bi-info-circle me-2"></i>
-                                <strong>Archivo actual:</strong> <span id="nombre-archivo-actual"></span>
-                                <small class="d-block mt-1">Si seleccionas un archivo nuevo, se reemplazará el actual.</small>
-                            </div>
-                        </div>
-
-                    </div>{{-- /row --}}
-                </form>
-            </div>
-
-            <div class="modal-footer border-top" style="padding:0.9rem 1.4rem; border-radius:0 0 14px 14px;">
-                <button type="button" class="btn px-4 fw-500"
-                        style="background:#6c757d; color:#fff; border:none; border-radius:6px;"
-                        onmouseover="this.style.background='#5a6268'" onmouseout="this.style.background='#6c757d'"
-                        data-bs-dismiss="modal">
-                    Cancelar
-                </button>
-                <button type="button" class="btn px-4 fw-bold text-white"
-                        style="background:#800000; border:none; border-radius:6px;"
-                        onmouseover="this.style.background='#9b2226'" onmouseout="this.style.background='#800000'"
-                        onclick="submitFormato()">
-                    <span id="btn-guardar-texto">Subir Archivo</span>
-                </button>
-            </div>
-
-        </div>
-    </div>
-</div>
-
-
-{{-- ══════ MODAL GESTIONAR PROCESOS (solo gestión y departamentos, sin crear proceso nuevo) ══════ --}}
-{{--
-    CAMBIO 2: Este modal ahora solo sirve para gestionar procesos existentes y
-    agregar/eliminar departamentos. La creación de nuevos procesos se hace
-    exclusivamente desde el select del formulario "Subir Formato" (opción ➕).
-    Se eliminaron: el selector de modos, el panel-nuevo-proceso y el botón
-    "Nuevo proceso". El modal abre directamente en modo gestionar.
---}}
-<div class="modal fade" id="modalNuevoProceso" tabindex="-1" aria-hidden="true" data-bs-backdrop="true">
-    <div class="modal-dialog modal-dialog-centered" style="max-width:520px;">
-        <div class="modal-content" style="border-radius:14px; border:none;">
-
-            <div class="modal-header border-bottom" style="padding:1.1rem 1.4rem;">
-                <h5 class="modal-title fw-bold" id="tituloModalProceso" style="color:#800000; font-size:1rem;">
-                    <i class="bi bi-gear me-2"></i> Gestionar procesos
-                </h5>
-                <button type="button" class="btn-close" id="btnCerrarModalProceso"></button>
-            </div>
-
-            <div class="modal-body p-4">
-
-                {{-- ── PANEL: GESTIONAR PROCESOS (único panel disponible) ── --}}
-                <div id="panel-gestionar-procesos">
-                    {{-- Vista lista de procesos --}}
-                    <div id="vista-lista-procesos">
-                        <div id="lista-procesos-dinamicos">
-                            <p class="text-muted small text-center py-3">Cargando procesos...</p>
-                        </div>
-                    </div>
-
-                    {{-- Vista departamentos de un proceso (inline, sin segundo modal) --}}
-                    <div id="vista-deptos-proceso" style="display:none;">
-                        <div class="d-flex align-items-center gap-2 mb-3">
-                            <button type="button" class="btn btn-sm btn-outline-secondary"
-                                    style="padding:2px 10px; border-radius:5px; font-size:0.8rem;"
-                                    onclick="volverAListaProcesos()">
-                                <i class="bi bi-arrow-left me-1"></i> Volver
-                            </button>
-                            <span class="fw-bold" style="color:#800000; font-size:0.9rem;">
-                                <i class="bi bi-building me-1"></i>
-                                <span id="titulo-proceso-deptos"></span>
-                            </span>
-                        </div>
-
-                        {{-- Lista departamentos actuales --}}
-                        <div class="mb-3">
-                            <label class="form-label fw-bold small text-uppercase mb-2" style="color:#555; letter-spacing:0.4px; font-size:0.75rem;">
-                                Departamentos actuales
-                            </label>
-                            <div id="lista-deptos-existentes"></div>
-                        </div>
-
-                        {{-- Agregar nuevo departamento --}}
-                        <div class="border-top pt-3">
-                            <label class="form-label fw-bold small text-uppercase mb-2" style="color:#1a6b3a; letter-spacing:0.4px; font-size:0.75rem;">
-                                <i class="bi bi-plus-circle me-1"></i> Agregar departamento
-                            </label>
-                            <div class="d-flex gap-2">
-                                <input type="text" id="nuevo-depto-input" class="form-control form-control-sm"
-                                       placeholder="Ej: DIRECCIÓN GENERAL" maxlength="200">
-                                <button type="button" class="btn btn-sm fw-bold text-white px-3"
-                                        style="background:#1a6b3a; border:none; border-radius:6px; white-space:nowrap;"
-                                        onclick="agregarDepartamentoAProceso()">
-                                    <i class="bi bi-plus"></i> Agregar
-                                </button>
-                            </div>
-                            <div id="err-nuevo-depto" class="text-danger small mt-1" style="display:none;">
-                                Escribe el nombre del departamento.
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-
-            <div class="modal-footer border-top" style="padding:0.9rem 1.4rem;">
-                <button type="button" class="btn px-4"
-                        style="background:#6c757d; color:#fff; border:none; border-radius:6px;"
-                        id="btnCancelarProceso">
-                    Cerrar
-                </button>
-            </div>
-
-        </div>
-    </div>
-</div>
-
-{{-- ══════ MODAL NUEVO PROCESO (abierto desde select del formulario Subir Formato) ══════ --}}
-{{--
-    Este modal solo crea nuevos procesos con sus departamentos.
-    Se abre únicamente cuando el usuario elige "➕ Agregar nuevo proceso..."
-    en el select del formulario de Subir Formato.
---}}
-<div class="modal fade" id="modalCrearProceso" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
-    <div class="modal-dialog modal-dialog-centered" style="max-width:520px;">
-        <div class="modal-content" style="border-radius:14px; border:none;">
-
-            <div class="modal-header border-bottom" style="padding:1.1rem 1.4rem;">
-                <h5 class="modal-title fw-bold" style="color:#800000; font-size:1rem;">
-                    <i class="bi bi-plus-circle me-2"></i> Agregar nuevo proceso
-                </h5>
-                <button type="button" class="btn-close" id="btnCerrarModalCrearProceso"></button>
-            </div>
-
-            <div class="modal-body p-4">
-                <div class="mb-3">
-                    <label class="form-label fw-bold small text-uppercase" style="color:#800000; letter-spacing:0.4px;">
-                        Nombre del proceso <span class="text-danger">*</span>
-                    </label>
-                    <input type="text" id="nuevo-proceso-nombre" class="form-control"
-                           placeholder="Ej: GESTIÓN DE CALIDAD" maxlength="200">
-                    <div id="err-proceso-nombre" class="text-danger small mt-1" style="display:none;">
-                        El nombre del proceso es requerido.
-                    </div>
-                </div>
-
-                <div class="mb-2">
-                    <label class="form-label fw-bold small text-uppercase" style="color:#800000; letter-spacing:0.4px;">
-                        Departamentos <span class="text-danger">*</span>
-                    </label>
-                    <div id="lista-departamentos-nuevos"></div>
-                    <button type="button" class="btn btn-sm mt-1"
-                            style="background:#f0fff4; color:#1a6b3a; border:1px dashed #2d9e59; font-size:0.82rem;"
-                            onclick="agregarFilaDepto()">
-                        <i class="bi bi-plus me-1"></i> Agregar otro departamento
-                    </button>
-                    <div id="err-deptos" class="text-danger small mt-1" style="display:none;">
-                        Agrega al menos un departamento.
-                    </div>
-                </div>
-            </div>
-
-            <div class="modal-footer border-top" style="padding:0.9rem 1.4rem;">
-                <button type="button" class="btn px-4"
-                        style="background:#6c757d; color:#fff; border:none; border-radius:6px;"
-                        id="btnCancelarCrearProceso">
-                    Cancelar
-                </button>
-                <button type="button" class="btn px-4 fw-bold text-white"
-                        style="background:#800000; border:none; border-radius:6px;"
-                        onclick="guardarNuevoProceso()">
-                    <i class="bi bi-check-circle me-1"></i>
-                    <span id="btn-guardar-proceso-texto">Guardar proceso</span>
-                </button>
-            </div>
-
-        </div>
-    </div>
-</div>
-
 
 {{-- Form oculto DELETE --}}
 <form id="form-eliminar" method="POST" style="display:none;">
@@ -740,12 +382,21 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 <style>
     /* Badges de extensión */
-    .ext-badge { font-size:0.7rem; font-weight:700; padding:3px 8px; border-radius:4px; font-family:'Courier New',monospace; }
-    .ext-imagen { background:#e8f4fd; color:#1a70b8; border:1px solid #bee3f8; }
-    .ext-pdf    { background:#fdedec; color:#c0392b; border:1px solid #fab3ad; }
-    .ext-txt    { background:#1e1e1e; color:#d4d4d4; border:1px solid #333; }
-    .ext-office { background:#eafaf1; color:#1d7a40; border:1px solid #a9dfbf; }
-    .ext-otro   { background:#f5f0ff; color:#6b46c1; border:1px solid #d6bcfa; }
+/* Badges de extensión */
+    .ext-badge { 
+        font-size:0.7rem; 
+        font-weight:700; 
+        padding:3px 8px; 
+        border-radius:4px; 
+        font-family:'Courier New',monospace;
+        background: transparent !important;
+        border: none !important;
+    }
+    .ext-imagen { color:#000000; }
+    .ext-pdf    { color:#000000; }
+    .ext-txt    { color:#000000; }
+    .ext-office { color:#000000; }
+    .ext-otro   { color:#000000; }
 
     /* Tabla hover */
     .table tbody tr:hover { background:#f8f9fa; }
@@ -802,11 +453,6 @@
         display: block !important;
     }
 
-    .table td span[style*="background:#f0f0f0"] {
-        display: inline-block;
-        white-space: nowrap;
-    }
-
     @media (max-width: 768px) {
         .table td, .table th {
             font-size: 0.8rem;
@@ -814,12 +460,12 @@
     }
 
     /* Botones de ordenamiento de fecha */
-    .orden-fecha-btn.activo-orden {
+    /*.orden-fecha-btn.activo-orden {
         border-color: #800000 !important;
         background: #fff5f5 !important;
         color: #800000 !important;
         font-weight: 600;
-    }
+    }*/
 </style>
 @endpush
 
@@ -867,13 +513,6 @@
             direccion === 'asc'    ? 'btn-orden-asc'  :
                                      'btn-orden-ninguno'
         );
-        if (btnActivo) {
-            btnActivo.classList.add('activo-orden');
-            btnActivo.style.borderColor = '#800000';
-            btnActivo.style.background  = '#fff5f5';
-            btnActivo.style.color       = '#800000';
-            btnActivo.style.fontWeight  = '600';
-        }
 
         const tbody = document.querySelector('#formatosTable tbody');
         if (!tbody) return;
@@ -918,7 +557,6 @@
         const input = document.getElementById('searchInput');
         input.value = '';
         input.focus();
-        // También limpia el filtro en vivo de la tabla
         document.querySelectorAll('.formato-row').forEach(row => row.style.display = '');
     }
 
@@ -975,8 +613,8 @@
         }
 
         (function() {
-            const tipoActivo = @json(request('version') ? 'version' : (request('codigo') ? 'codigo' : (request('clave') ? 'clave' : '')));
-            const valorActivo = @json(request('version') ?: (request('codigo') ?: (request('clave') ?: '')));
+            const tipoActivo = @json(request('version') ? 'version' : (request('codigo') ? 'codigo' : (request('clave') ? 'clave' : (request('departamento') ? 'departamento' : ''))));
+            const valorActivo = @json(request('version') ?: (request('codigo') ?: (request('clave') ?: (request('departamento') ?: ''))));
             if (tipoActivo && valorActivo) {
                 const selectTipo = document.getElementById('select-tipo-campo');
                 if (selectTipo) {
@@ -1106,7 +744,6 @@
         });
 
         // ── Interceptar cambio en select-proceso ──
-        // Solo maneja __nuevo__ (crear proceso). Para gestionar usar botón del header.
         const selectProceso = document.getElementById('select-proceso');
         if (selectProceso) {
             selectProceso.addEventListener('change', function () {
@@ -1553,12 +1190,14 @@
         version: @json($versionesUnicas),
         codigo: @json($codigosUnicos),
         clave: @json($clavesUnicas),
+        departamento: @json($departamentosUnicos),
     };
     
     const labelsFiltro = {
         version: 'Versión del procedimiento',
         codigo: 'Código de procedimiento',
         clave: 'Clave de formato',
+        departamento: 'Departamento',
     };
 
     function cambiarTipoCampo(tipo) {
@@ -1567,7 +1206,7 @@
 
         if (!selValor || !selTipo) return;
 
-        ['version', 'codigo', 'clave'].forEach(k => {
+        ['version', 'codigo', 'clave', 'departamento'].forEach(k => {
             const hidden = document.getElementById('hidden-' + k);
             if (hidden) hidden.value = '';
         });
@@ -1594,7 +1233,7 @@
                 if (!selValor) return;
 
                 const raw = selValor.value;
-                ['version', 'codigo', 'clave'].forEach(k => {
+                ['version', 'codigo', 'clave', 'departamento'].forEach(k => {
                     const hidden = document.getElementById('hidden-' + k);
                     if (hidden) hidden.value = '';
                 });
@@ -1612,7 +1251,6 @@
 
     // ════════════════════════════════════════
     // MODAL GESTIONAR PROCESOS
-    // Solo sirve para gestionar procesos existentes y sus departamentos.
     // ════════════════════════════════════════
 
     let procesoGestionandoNombre = null;
@@ -1623,7 +1261,6 @@
     }
 
     function abrirModalNuevoProceso(modo) {
-        // Siempre abre en modo gestionar, independientemente del parámetro
         document.getElementById('vista-lista-procesos').style.display = '';
         document.getElementById('vista-deptos-proceso').style.display = 'none';
         procesoGestionandoNombre = null;
@@ -1637,7 +1274,6 @@
         getModalGestionar().hide();
     }
 
-    // ── Cargar lista de procesos dinámicos ──
     function cargarListaProcesosDinamicos() {
         const contenedor = document.getElementById('lista-procesos-dinamicos');
         contenedor.innerHTML = '<p class="text-muted small text-center py-3"><i class="bi bi-hourglass-split me-1"></i> Cargando...</p>';
@@ -1708,7 +1344,6 @@
         });
     }
 
-    // ── Eliminar proceso completo ──
     function eliminarProceso(proceso) {
         Swal.fire({
             title: '¿Eliminar proceso?',
@@ -1741,27 +1376,23 @@
         .then(data => {
             if (!data.success) { alert('Error: ' + (data.message || 'No se pudo eliminar.')); return; }
 
-            // Quitar del select del formulario
             const selectProceso = document.getElementById('select-proceso');
             if (selectProceso) {
                 const opt = selectProceso.querySelector(`option[value="${proceso}"]`);
                 if (opt) opt.remove();
             }
 
-            // Quitar del mapa JS
             delete procesosYDepartamentos[proceso];
 
-            // Refrescar lista del modal
             cargarListaProcesosDinamicos();
         })
         .catch(err => {
             console.error('eliminarProceso error:', err);
             alert('Error de conexión al eliminar el proceso.');
         });
-        }); // fin Swal.fire
+        });
     }
 
-    // ── Mostrar panel inline de departamentos ──
     function abrirGestionDeptos(proceso, departamentos) {
         procesoGestionandoNombre = proceso;
         document.getElementById('titulo-proceso-deptos').textContent = proceso;
@@ -1776,7 +1407,6 @@
         document.getElementById('btnCancelarProceso').style.display = 'none';
     }
 
-    // ── Volver a la lista de procesos ──
     function volverAListaProcesos() {
         document.getElementById('vista-lista-procesos').style.display = '';
         document.getElementById('vista-deptos-proceso').style.display = 'none';
@@ -1810,7 +1440,6 @@
         contenedor.innerHTML = html;
     }
 
-    // ── Agregar departamento a proceso existente ──
     function agregarDepartamentoAProceso() {
         const input = document.getElementById('nuevo-depto-input');
         const depto = input.value.trim().toUpperCase();
@@ -1846,7 +1475,6 @@
         .catch(() => alert('Error de conexión.'));
     }
 
-    // ── Eliminar departamento de proceso existente ──
     function eliminarDepartamento(departamento) {
         if (!confirm(`¿Eliminar el departamento "${departamento}" del proceso "${procesoGestionandoNombre}"?`)) return;
 
@@ -1880,7 +1508,6 @@
 
     // ════════════════════════════════════════
     // MODAL CREAR PROCESO
-    // Solo crea nuevos procesos. Se abre desde el select del formulario Subir Formato.
     // ════════════════════════════════════════
 
     function getModalCrearProceso() {
@@ -1889,7 +1516,6 @@
     }
 
     function abrirModalCrearProceso() {
-        // Limpiar formulario
         document.getElementById('nuevo-proceso-nombre').value = '';
         document.getElementById('err-proceso-nombre').style.display = 'none';
         document.getElementById('err-deptos').style.display = 'none';
@@ -1901,12 +1527,10 @@
 
     function cerrarModalCrearProceso() {
         getModalCrearProceso().hide();
-        // Resetear el select-proceso al valor vacío
         const selectProceso = document.getElementById('select-proceso');
         if (selectProceso) selectProceso.value = '';
     }
 
-    // ── Agregar fila de depto en modal Crear Proceso ──
     function agregarFilaDepto() {
         const lista = document.getElementById('lista-departamentos-nuevos');
         const row = document.createElement('div');
@@ -1937,7 +1561,6 @@
         });
     }
 
-    // ── Guardar nuevo proceso ──
     function guardarNuevoProceso() {
         const nombreInput = document.getElementById('nuevo-proceso-nombre');
         const nombre      = nombreInput.value.trim().toUpperCase();
@@ -1970,7 +1593,6 @@
             btnTexto.textContent = 'Guardar proceso';
             if (!data.success) { alert('Error: ' + (data.message || 'No se pudo guardar.')); return; }
 
-            // Agregar al select del formulario
             const selectProceso = document.getElementById('select-proceso');
             const optNuevo      = selectProceso.querySelector('option[value="__nuevo__"]');
 
@@ -1981,10 +1603,8 @@
             newOpt.selected     = true;
             selectProceso.insertBefore(newOpt, optNuevo);
 
-            // Actualizar mapa JS
             procesosYDepartamentos[data.proceso] = data.departamentos;
 
-            // Cargar departamentos del nuevo proceso en el select
             cargarDepartamentos(data.proceso);
 
             getModalCrearProceso().hide();

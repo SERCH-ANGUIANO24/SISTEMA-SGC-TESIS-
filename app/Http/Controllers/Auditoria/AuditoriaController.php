@@ -11,7 +11,6 @@ class AuditoriaController extends Controller
     public function index()
     {
         try {
-            // Obtener los años para el filtro
             $anios = Auditoria::select('anio')
                 ->distinct()
                 ->orderBy('anio', 'desc')
@@ -37,7 +36,7 @@ class AuditoriaController extends Controller
                 $query->where('tipo_auditoria', $request->tipo);
             }
 
-            $auditorias = $query->orderBy('fecha_auditoria', 'desc')->get();
+            $auditorias = $query->orderBy('fecha_inicio', 'desc')->get();
 
             return response()->json($auditorias);
         } catch (\Exception $e) {
@@ -55,32 +54,27 @@ class AuditoriaController extends Controller
                 'nombre_auditoria' => 'required|string|max:255',
                 'tipo_auditoria' => 'required|in:Interna,Externa',
                 'auditor_lider' => 'required|string|max:255',
-                'fecha_auditoria' => 'required|date',
+                'fecha_inicio' => 'required|date',
+                'fecha_fin' => 'required|date|after_or_equal:fecha_inicio',
                 'anio' => 'required|integer|min:2000|max:2100',
                 'auditores' => 'nullable|string'
             ]);
 
-            // Manejar la subida del archivo
             if ($request->hasFile('archivo_plan')) {
                 $file = $request->file('archivo_plan');
                 
-                // Validar el archivo
                 $request->validate([
                     'archivo_plan' => 'file|max:20480|mimes:pdf,doc,docx,xls,xlsx,csv,jpg,jpeg,png,txt'
                 ]);
 
                 $nombreOriginal = $file->getClientOriginalName();
-                
-                // Crear nombre único
                 $nombreArchivo = time() . '_' . preg_replace('/[^a-zA-Z0-9._-]/', '', $nombreOriginal);
                 
-                // Crear directorio si no existe
                 $uploadPath = public_path('auditorias');
                 if (!file_exists($uploadPath)) {
                     mkdir($uploadPath, 0777, true);
                 }
                 
-                // Mover el archivo a public/auditorias
                 $file->move($uploadPath, $nombreArchivo);
                 
                 $validated['archivo_path'] = 'auditorias/' . $nombreArchivo;
@@ -88,8 +82,6 @@ class AuditoriaController extends Controller
             }
 
             $auditoria = Auditoria::create($validated);
-
-            Log::info('Auditoría creada:', $auditoria->toArray());
 
             return response()->json([
                 'success' => true, 
@@ -114,19 +106,17 @@ class AuditoriaController extends Controller
                 'nombre_auditoria' => 'required|string|max:255',
                 'tipo_auditoria' => 'required|in:Interna,Externa',
                 'auditor_lider' => 'required|string|max:255',
-                'fecha_auditoria' => 'required|date',
+                'fecha_inicio' => 'required|date',
+                'fecha_fin' => 'required|date|after_or_equal:fecha_inicio',
                 'anio' => 'required|integer|min:2000|max:2100',
                 'auditores' => 'nullable|string'
             ]);
 
-            // Manejar la subida del nuevo archivo
             if ($request->hasFile('archivo_plan')) {
-                // Validar el archivo
                 $request->validate([
                     'archivo_plan' => 'file|max:20480|mimes:pdf,doc,docx,xls,xlsx,csv,jpg,jpeg,png,txt'
                 ]);
 
-                // Eliminar archivo anterior si existe
                 if ($auditoria->archivo_path) {
                     $rutaAnterior = public_path($auditoria->archivo_path);
                     if (file_exists($rutaAnterior)) {
@@ -165,7 +155,6 @@ class AuditoriaController extends Controller
         try {
             $auditoria = Auditoria::findOrFail($id);
             
-            // Eliminar archivo si existe
             if ($auditoria->archivo_path) {
                 $rutaArchivo = public_path($auditoria->archivo_path);
                 if (file_exists($rutaArchivo)) {

@@ -1,4 +1,5 @@
 <?php
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -10,17 +11,18 @@ return new class extends Migration
         Schema::create('solicitudes_mejora', function (Blueprint $table) {
             $table->id();
             $table->string('nombre_solicitud');
-            $table->enum('tipo_auditoria', ['Interna', 'Externa']);
-            $table->string('folio_solicitud')->unique();
-            $table->string('responsable_accion');
             $table->date('fecha_solicitud');
+            $table->string('folio_solicitud')->nullable();
+            $table->string('responsable_accion');
             $table->date('fecha_aplicacion');
-            $table->text('actividades_verificacion');
-            $table->date('fecha_verificacion');
-            $table->enum('estatus', ['Cerrado', 'En Proceso']);
-            $table->string('archivo_path');
-            $table->string('archivo_nombre');
-            $table->foreignId('auditoria_id')->nullable()->constrained()->nullOnDelete();
+            $table->text('actividades_verificacion')->nullable();
+            $table->date('fecha_verificacion')->nullable();
+            $table->enum('estatus', ['Abierto', 'En Proceso', 'Cerrado'])->default('Abierto');
+            
+            // ✅ ESTAS DOS COLUMNAS SON LAS QUE FALTABAN
+            $table->string('archivo_nombre')->nullable();
+            $table->string('archivo_ruta')->nullable();
+            
             $table->timestamps();
         });
     }

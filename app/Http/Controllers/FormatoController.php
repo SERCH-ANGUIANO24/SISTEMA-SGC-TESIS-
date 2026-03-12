@@ -38,6 +38,16 @@ class FormatoController extends Controller
             $query->where('clave_formato', $request->clave);
         }
 
+        // Filtro por proceso (coincidencia exacta desde select)
+        if ($request->filled('proceso')) {
+            $query->where('proceso', $request->proceso);
+        }
+        
+        // Filtro por departamento (coincidencia exacta desde select)
+        if ($request->filled('departamento')) {
+            $query->where('departamento', $request->departamento);
+        }
+
         $formatos = $query->orderBy('created_at', 'desc')->get();
 
         // Combina estáticos del modelo + dinámicos de la BD
@@ -68,16 +78,30 @@ class FormatoController extends Controller
             ->filter()
             ->values();
 
+        $procesosUnicos = Formato::orderBy('proceso')
+            ->distinct()
+            ->pluck('proceso')
+            ->filter()
+            ->values();
+            
+        $departamentosUnicos = Formato::orderBy('departamento')
+            ->distinct()
+            ->pluck('departamento')
+            ->filter()
+            ->values();
+
         return view('formatos.index', compact(
             'formatos',
             'procesosYDepartamentos',
             'procesosDinamicos',
             'versionesUnicas',
             'codigosUnicos',
-            'clavesUnicas'
+            'clavesUnicas',
+            'procesosUnicos',
+            'departamentosUnicos'
         ));
     }
-
+    
     /**
      * Almacena un nuevo formato. — SOLO SUPERADMIN/ADMIN
      */

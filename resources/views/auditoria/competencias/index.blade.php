@@ -24,10 +24,15 @@
                         </button>
                     @endif
                     
-                    {{-- BOTÓN SUBIR ARCHIVO - Solo usuarios normales --}}
-                    @if(!in_array($userRole, ['superadmin', 'admin']) && isset($currentFolder) && $currentFolder)
+                    {{-- BOTÓN SUBIR ARCHIVO - TODOS los usuarios pueden subir archivos --}}
+                    @if(isset($currentFolder) && $currentFolder)
                         <button type="button" class="btn text-white" style="background-color: #737373;" data-bs-toggle="modal" data-bs-target="#uploadFileModal">
                             <i class="bi bi-upload me-1"></i> Subir Archivo
+                        </button>
+                    @else
+                        {{-- Si no hay carpeta seleccionada, mostrar mensaje o botón deshabilitado --}}
+                        <button type="button" class="btn text-white" style="background-color: #a9a9a9;" disabled>
+                            <i class="bi bi-upload me-1"></i> Selecciona una carpeta
                         </button>
                     @endif
                 </div>
@@ -165,6 +170,37 @@
     @endif
 @endforeach
 
+{{-- MODAL RENOMBRAR CARPETA --}}
+<div class="modal fade" id="renameFolderModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <form action="" method="POST" id="renameFolderForm">
+            @csrf
+            @method('PUT')
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-pencil me-2" style="color: #800000;"></i>
+                        Renombrar Carpeta
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="newFolderName" class="form-label fw-bold">Nuevo nombre</label>
+                        <input type="text" class="form-control" id="newFolderName" name="nombre" required autofocus>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn text-white" style="background-color: #800000;">
+                        <i class="bi bi-check-circle me-1"></i> Renombrar
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
 {{-- MODAL RENOMBRAR DOCUMENTO --}}
 <div class="modal fade" id="renameDocumentModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
@@ -190,6 +226,47 @@
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                     <button type="submit" class="btn text-white" style="background-color: #800000;">
                         <i class="bi bi-check-circle me-1"></i> Renombrar
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+{{-- MODAL MOVER CARPETA --}}
+<div class="modal fade" id="moveFolderModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <form action="" method="POST" id="moveFolderForm">
+            @csrf
+            @method('PUT')
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-arrow-right-circle me-2" style="color: #800000;"></i>
+                        Mover Carpeta
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-3">
+                        <span class="fw-bold">Carpeta a mover:</span><br>
+                        <span id="moveFolderName" style="color: #800000; font-size: 1.1rem;"></span>
+                    </p>
+                    <div class="mb-3">
+                        <label for="folderDestination" class="form-label fw-bold">Seleccionar destino</label>
+                        <select class="form-select" id="folderDestination" name="destination_id">
+                            <option value="">📁 Raíz principal</option>
+                        </select>
+                        <div class="form-text mt-2">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Selecciona la carpeta donde deseas mover la carpeta.
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn text-white" style="background-color: #800000;">
+                        <i class="bi bi-arrow-right me-1"></i> Mover aquí
                     </button>
                 </div>
             </div>
@@ -283,9 +360,6 @@
                     <div class="mb-3">
                         <label class="form-label">Seleccionar archivo</label>
                         <input class="form-control" type="file" name="archivo" required>
-                        <div class="form-text small text-muted mt-1">
-                            Formatos permitidos: PDF, Word, Excel, CSV, Imágenes, TXT (Max. 20MB)
-                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -358,245 +432,22 @@
         @endif
     });
 
-    // FUNCIONES PARA MODALES DE DOCUMENTOS
-    function openRenameDocumentModal(docId, docName) {
-        event.stopPropagation();
-        const form = document.getElementById('renameDocumentForm');
-        form.action = '/auditoria/competencias/document/' + docId + '/rename';
-        document.getElementById('newDocumentName').value = docName;
-        
-        form.onsubmit = function(e) {
-            e.preventDefault();
-            submitRenameDocumentForm(docId);
-        };
-        
-        new bootstrap.Modal(document.getElementById('renameDocumentModal')).show();
-    }
+    // FUNCIONES PARA MODALES DE RENOMBRAR Y MOVER (ahora con envío tradicional)
 
-    function submitRenameDocumentForm(docId) {
-        const form = document.getElementById('renameDocumentForm');
-        const formData = new FormData(form);
-        
-        Swal.fire({
-            title: 'Renombrando...',
-            text: 'Por favor espere',
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
-        });
-
-        fetch(form.action, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Accept': 'application/json'
-            },
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                Swal.fire({
-                    icon: 'success',
-                    title: '¡Éxito!',
-                    text: data.message,
-                    confirmButtonColor: '#800000',
-                    timer: 2000
-                }).then(() => {
-                    location.reload();
-                });
-            } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: data.message || 'Error al renombrar',
-                    confirmButtonColor: '#800000'
-                });
-            }
-        })
-        .catch(error => {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Error de conexión',
-                confirmButtonColor: '#800000'
-            });
-        });
-        
-        return false;
-    }
-
-    function openMoveDocumentModal(docId, docName) {
-        event.stopPropagation();
-        const form = document.getElementById('moveDocumentForm');
-        form.action = '/auditoria/competencias/document/' + docId + '/move';
-        document.getElementById('moveDocumentName').innerHTML = docName;
-        
-        form.onsubmit = function(e) {
-            e.preventDefault();
-            submitMoveDocumentForm(docId);
-        };
-        
-        const select = document.getElementById('documentDestination');
-        select.innerHTML = '<option value="">📁 Cargando carpetas...</option>';
-        select.disabled = true;
-        
-        fetch('/auditoria/competencias/folders/tree?current_folder={{ $currentFolder->id ?? 'null' }}')
-            .then(response => response.json())
-            .then(folders => {
-                select.innerHTML = '<option value="">📁 Raíz principal</option>';
-                select.disabled = false;
-                folders.forEach(folder => {
-                    const option = document.createElement('option');
-                    option.value = folder.id;
-                    
-                    let prefix = '';
-                    const depth = folder.full_path.split(' / ').length - 1;
-                    for (let i = 0; i < depth; i++) {
-                        prefix += '  ';
-                    }
-                    
-                    option.textContent = prefix + '📁 ' + folder.full_path;
-                    select.appendChild(option);
-                });
-            })
-            .catch(() => {
-                select.innerHTML = '<option value="">❌ Error al cargar carpetas</option>';
-                select.disabled = false;
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'No se pudo cargar la lista de carpetas',
-                    confirmButtonColor: '#800000'
-                });
-            });
-        
-        new bootstrap.Modal(document.getElementById('moveDocumentModal')).show();
-    }
-
-    function submitMoveDocumentForm(docId) {
-        const form = document.getElementById('moveDocumentForm');
-        const formData = new FormData(form);
-        
-        Swal.fire({
-            title: 'Moviendo...',
-            text: 'Por favor espere',
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
-        });
-
-        fetch(form.action, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Accept': 'application/json'
-            },
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                Swal.fire({
-                    icon: 'success',
-                    title: '¡Éxito!',
-                    text: data.message,
-                    confirmButtonColor: '#800000',
-                    timer: 2000
-                }).then(() => {
-                    location.reload();
-                });
-            } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: data.message || 'Error al mover',
-                    confirmButtonColor: '#800000'
-                });
-            }
-        })
-        .catch(error => {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Error de conexión',
-                confirmButtonColor: '#800000'
-            });
-        });
-        
-        return false;
-    }
-
-    // FUNCIONES PARA MODALES DE CARPETAS
     function openRenameModal(folderId, folderName) {
         event.stopPropagation();
         const form = document.getElementById('renameFolderForm');
         form.action = '/auditoria/competencias/folder/' + folderId + '/rename';
         document.getElementById('newFolderName').value = folderName;
-        
-        form.onsubmit = function(e) {
-            e.preventDefault();
-            submitRenameFolderForm(folderId);
-        };
-        
-        const modal = new bootstrap.Modal(document.getElementById('renameFolderModal'));
-        modal.show();
+        new bootstrap.Modal(document.getElementById('renameFolderModal')).show();
     }
 
-    function submitRenameFolderForm(folderId) {
-        const form = document.getElementById('renameFolderForm');
-        const formData = new FormData(form);
-        
-        Swal.fire({
-            title: 'Renombrando...',
-            text: 'Por favor espere',
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
-        });
-
-        fetch(form.action, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Accept': 'application/json'
-            },
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                Swal.fire({
-                    icon: 'success',
-                    title: '¡Éxito!',
-                    text: data.message,
-                    confirmButtonColor: '#800000',
-                    timer: 2000
-                }).then(() => {
-                    location.reload();
-                });
-            } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: data.message || 'Error al renombrar',
-                    confirmButtonColor: '#800000'
-                });
-            }
-        })
-        .catch(error => {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Error de conexión',
-                confirmButtonColor: '#800000'
-            });
-        });
-        
-        return false;
+    function openRenameDocumentModal(docId, docName) {
+        event.stopPropagation();
+        const form = document.getElementById('renameDocumentForm');
+        form.action = '/auditoria/competencias/document/' + docId + '/rename';
+        document.getElementById('newDocumentName').value = docName;
+        new bootstrap.Modal(document.getElementById('renameDocumentModal')).show();
     }
 
     function openMoveModal(folderId, folderName) {
@@ -604,11 +455,6 @@
         const form = document.getElementById('moveFolderForm');
         form.action = '/auditoria/competencias/folder/' + folderId + '/move';
         document.getElementById('moveFolderName').innerHTML = folderName;
-        
-        form.onsubmit = function(e) {
-            e.preventDefault();
-            submitMoveFolderForm(folderId);
-        };
         
         const select = document.getElementById('folderDestination');
         select.innerHTML = '<option value="">📁 Cargando carpetas...</option>';
@@ -620,19 +466,20 @@
                 select.innerHTML = '<option value="">📁 Raíz principal</option>';
                 select.disabled = false;
                 
-                folders.forEach(folder => {
+                if (folders.length === 0) {
                     const option = document.createElement('option');
-                    option.value = folder.id;
-                    
-                    let prefix = '';
-                    const depth = folder.full_path.split(' / ').length - 1;
-                    for (let i = 0; i < depth; i++) {
-                        prefix += '  ';
-                    }
-                    
-                    option.textContent = prefix + '📁 ' + folder.full_path;
+                    option.value = '';
+                    option.textContent = '📁 No hay otras carpetas disponibles';
+                    option.disabled = true;
                     select.appendChild(option);
-                });
+                } else {
+                    folders.forEach(folder => {
+                        const option = document.createElement('option');
+                        option.value = folder.id;
+                        option.textContent = '📁 ' + folder.full_path;
+                        select.appendChild(option);
+                    });
+                }
             })
             .catch(error => {
                 console.error('Error al cargar carpetas:', error);
@@ -646,71 +493,62 @@
                 });
             });
         
-        const modal = new bootstrap.Modal(document.getElementById('moveFolderModal'));
-        modal.show();
+        new bootstrap.Modal(document.getElementById('moveFolderModal')).show();
     }
 
-    function submitMoveFolderForm(folderId) {
-        const form = document.getElementById('moveFolderForm');
-        const formData = new FormData(form);
+    function openMoveDocumentModal(docId, docName) {
+        event.stopPropagation();
+        const form = document.getElementById('moveDocumentForm');
+        form.action = '/auditoria/competencias/document/' + docId + '/move';
+        document.getElementById('moveDocumentName').innerHTML = docName;
         
-        Swal.fire({
-            title: 'Moviendo...',
-            text: 'Por favor espere',
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
-        });
-
-        fetch(form.action, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Accept': 'application/json'
-            },
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                Swal.fire({
-                    icon: 'success',
-                    title: '¡Éxito!',
-                    text: data.message,
-                    confirmButtonColor: '#800000',
-                    timer: 2000
-                }).then(() => {
-                    location.reload();
-                });
-            } else {
+        const select = document.getElementById('documentDestination');
+        select.innerHTML = '<option value="">📁 Cargando carpetas...</option>';
+        select.disabled = true;
+        
+        fetch('/auditoria/competencias/folders/tree?current_folder=null')
+            .then(response => response.json())
+            .then(folders => {
+                select.innerHTML = '<option value="">📁 Raíz principal</option>';
+                select.disabled = false;
+                
+                if (folders.length === 0) {
+                    const option = document.createElement('option');
+                    option.value = '';
+                    option.textContent = '📁 No hay otras carpetas disponibles';
+                    option.disabled = true;
+                    select.appendChild(option);
+                } else {
+                    folders.forEach(folder => {
+                        const option = document.createElement('option');
+                        option.value = folder.id;
+                        option.textContent = '📁 ' + folder.full_path;
+                        select.appendChild(option);
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                select.innerHTML = '<option value="">❌ Error al cargar carpetas</option>';
+                select.disabled = false;
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
-                    text: data.message || 'Error al mover',
+                    text: 'No se pudo cargar la lista de carpetas',
                     confirmButtonColor: '#800000'
                 });
-            }
-        })
-        .catch(error => {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Error de conexión',
-                confirmButtonColor: '#800000'
             });
-        });
         
-        return false;
+        new bootstrap.Modal(document.getElementById('moveDocumentModal')).show();
     }
 
-    // FUNCIÓN PARA ELIMINAR (MODIFICADA: archivos y carpetas con diferentes diseños)
+    // FUNCIÓN PARA ELIMINAR (SweetAlert, AJAX)
     function deleteElement(id, name, type) {
         event.stopPropagation();
         event.preventDefault();
         
         if (type === 'Documento') {
-            // Diseño simple para archivos (según solicitud)
+            // Diseño simple para archivos
             Swal.fire({
                 title: '¿Eliminar archivo?',
                 text: `¿Estás seguro de eliminar "${name}"?`,
@@ -720,14 +558,13 @@
                 cancelButtonColor: '#6c757d',
                 confirmButtonText: 'Sí, eliminar',
                 cancelButtonText: 'Cancelar'
-                // Sin reverseButtons para que el orden sea: Sí a la izquierda, Cancelar a la derecha
             }).then((result) => {
                 if (result.isConfirmed) {
                     proceedWithDeletion(id, type, name);
                 }
             });
         } else {
-            // Diseño detallado para carpetas (como estaba originalmente)
+            // Diseño detallado para carpetas
             Swal.fire({
                 title: '¿Eliminar ' + type.toLowerCase() + '?',
                 html: `
@@ -755,7 +592,7 @@
                 cancelButtonColor: '#6c757d',
                 confirmButtonText: 'Sí, eliminar',
                 cancelButtonText: 'Cancelar',
-                reverseButtons: true  // Mantiene el orden original: Sí a la izquierda, Cancelar a la derecha
+                reverseButtons: true
             }).then((result) => {
                 if (result.isConfirmed) {
                     proceedWithDeletion(id, type, name);
@@ -766,7 +603,7 @@
         return false;
     }
 
-    // Función auxiliar para realizar la eliminación (evita duplicar código)
+    // Función auxiliar para realizar la eliminación (AJAX)
     function proceedWithDeletion(id, type, name) {
         Swal.fire({
             title: 'Eliminando...',

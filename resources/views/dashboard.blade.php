@@ -53,9 +53,9 @@
                     'visible' => true // Todos pueden ver
                 ],
                 [
-                    'title' => 'Formatos',
+                    'title' => 'Lista Maestra',
                     'icon' => 'bi-file-earmark-text',
-                    'description' => 'Formatos del sistema',
+                    'description' => 'Formatos validados del sistema',
                     'color' => '#16a34a',
                     'route' => route('formatos.index'),
                     'visible' => true // Todos pueden ver
@@ -69,9 +69,9 @@
                     'visible' => in_array($userRole, ['superadmin', 'admin'])
                 ],
                 [
-                    'title' => 'Papelera',
+                    'title' => 'Historial de versiones',
                     'icon' => 'bi-trash',
-                    'description' => 'Archivos Eliminados',
+                    'description' => 'Cambios realizados en documentos',
                     'color' => '#0891b2',
                     'route' => '#', // Módulo en desarrollo
                     'visible' => $userRole === 'superadmin' // SOLO SUPERADMIN

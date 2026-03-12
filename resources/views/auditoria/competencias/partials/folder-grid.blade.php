@@ -15,6 +15,7 @@
                     </div>
                     <h6 class="card-title fw-bold text-truncate">{{ $folder->nombre }}</h6>
                     
+                    
                     {{-- BOTONES DE ACCIÓN - Solo superadmin y admin --}}
                     @if(in_array($userRole, ['superadmin', 'admin']))
                     <div class="mt-2 d-flex justify-content-center gap-1" onclick="event.stopPropagation();">
