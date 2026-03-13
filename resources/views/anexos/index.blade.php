@@ -16,6 +16,8 @@
                     </a>
                 </div>
 
+                {{-- SUPERADMIN Y ADMIN PUEDEN CREAR CARPETAS Y SUBIR ARCHIVOS --}}
+                @if(in_array(Auth::user()->role, ['superadmin', 'admin']))
                 <div class="mt-2">
                     <button type="button" class="btn text-white me-2" style="background-color: #737373;" data-bs-toggle="modal" data-bs-target="#createFolderModal">
                         <i class="bi bi-folder-plus me-1"></i> Nueva Carpeta
@@ -28,6 +30,7 @@
                         </button>
                     @endif
                 </div>
+                @endif
             </div>
         </div>
     </div>
@@ -43,7 +46,14 @@
         </div>
     @endif
 
-    {{-- SI HAY UNA CARPETA SELECCIONADA, MOSTRAR BUSCADOR Y ORDENAR --}}
+    @if(session('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i> {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+
+    {{-- BUSCADOR Y ORDENAR - VISIBLE PARA TODOS DENTRO DE UNA CARPETA --}}
     @if(isset($currentFolder) && $currentFolder)
     <div class="row mb-4 align-items-end">
         <div class="col-md-6">
@@ -104,22 +114,28 @@
 
     {{-- CONTENEDOR DE CARPETAS --}}
     <div id="folderContainer">
-        @include('anexos.partials.folder-grid', ['folders' => $folders])
+        @include('anexos.partials.folder-grid', [
+            'folders' => $folders
+        ])
     </div>
 
     {{-- CONTENEDOR DE ARCHIVOS --}}
     <div id="fileContainer">
-        @include('anexos.partials.file-list', ['documents' => $documents,'currentFolder'=> $currentFolder ?? null])
+        @include('anexos.partials.file-list', [
+            'documents' => $documents,
+            'currentFolder' => $currentFolder ?? null
+        ])
     </div>
 </div>
 
-{{-- MODALES DE VISUALIZACIÓN DE DOCUMENTOS --}}
+{{-- MODALES DE VISUALIZACIÓN DE DOCUMENTOS (SOLO PARA EXTENSIONES VISIBLES) --}}
 @foreach($documents as $doc)
     @php
         $extension = strtolower(pathinfo($doc->original_name, PATHINFO_EXTENSION));
+        $viewableExtensions = ['pdf', 'jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg', 'webp', 'txt'];
     @endphp
     
-    @if(!in_array($extension, ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx']))
+    @if(in_array($extension, $viewableExtensions))
     <div class="modal fade" id="viewDocumentModal{{ $doc->id }}" tabindex="-1" aria-labelledby="viewDocumentModalLabel{{ $doc->id }}" aria-hidden="true">
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
@@ -131,23 +147,10 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-0" style="height: 80vh;">
-                    @if(in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg']))
-                        <div class="d-flex justify-content-center align-items-center h-100">
-                            <img src="{{ route('anexos.ver.archivo', $doc->id) }}" class="img-fluid" alt="{{ $doc->name }}" style="max-height: 100%; object-fit: contain;">
-                        </div>
-                    @elseif(in_array($extension, ['pdf']))
-                        <iframe src="{{ route('anexos.ver.archivo', $doc->id) }}" style="width: 100%; height: 100%; border: none;"></iframe>
-                    @elseif(in_array($extension, ['txt']))
-                        <iframe src="{{ route('anexos.ver.archivo', $doc->id) }}" style="width: 100%; height: 100%; border: none;"></iframe>
-                    @else
-                        <div class="d-flex flex-column justify-content-center align-items-center h-100">
-                            <i class="bi bi-file-earmark" style="font-size: 4rem; color: #800000;"></i>
-                            <p class="mt-3">Vista previa no disponible para este tipo de archivo</p>
-                            <a href="{{ route('anexos.document.download', $doc->id) }}" class="btn text-white mt-2" style="background-color: #800000;">
-                                <i class="bi bi-download me-1"></i> Descargar para ver
-                            </a>
-                        </div>
-                    @endif
+                    @include('anexos.partials.document-viewer', [
+                        'extension' => $extension,
+                        'fileUrl' => route('anexos.ver.archivo', $doc->id)
+                    ])
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
@@ -160,6 +163,9 @@
     </div>
     @endif
 @endforeach
+
+{{-- MODALES PARA SUPERADMIN Y ADMIN (CREAR, RENOMBRAR, MOVER, ELIMINAR) --}}
+@if(in_array(Auth::user()->role, ['superadmin', 'admin']))
 {{-- MODAL RENOMBRAR DOCUMENTO --}}
 <div class="modal fade" id="renameDocumentModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
@@ -288,6 +294,79 @@
         </form>
     </div>
 </div>
+
+{{-- MODAL RENOMBRAR CARPETA --}}
+<div class="modal fade" id="renameFolderModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <form action="" method="POST" id="renameFolderForm">
+            @csrf
+            @method('PUT')
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-pencil me-2" style="color: #800000;"></i>
+                        Renombrar Carpeta
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="newFolderName" class="form-label fw-bold">Nuevo nombre</label>
+                        <input type="text" class="form-control" id="newFolderName" name="name" required autofocus>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn text-white" style="background-color: #800000;">
+                        <i class="bi bi-check-circle me-1"></i> Renombrar
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+{{-- MODAL MOVER CARPETA --}}
+<div class="modal fade" id="moveFolderModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <form action="" method="POST" id="moveFolderForm">
+            @csrf
+            @method('PUT')
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-arrow-right-circle me-2" style="color: #800000;"></i>
+                        Mover Carpeta
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-3">
+                        <span class="fw-bold">Carpeta a mover:</span><br>
+                        <span id="moveFolderName" style="color: #800000; font-size: 1.1rem;"></span>
+                    </p>
+                    <div class="mb-3">
+                        <label for="folderDestination" class="form-label fw-bold">Seleccionar destino</label>
+                        <select class="form-select" id="folderDestination" name="destination_id">
+                            <option value="">📁 Raíz principal</option>
+                        </select>
+                        <div class="form-text mt-2">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Selecciona la carpeta donde deseas mover.
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn text-white" style="background-color: #800000;">
+                        <i class="bi bi-arrow-right me-1"></i> Mover aquí
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+@endif
 @endsection
 
 @push('styles')
@@ -314,22 +393,45 @@
         color: #800000;
         font-weight: 500;
     }
-    /* ESTILOS PARA IGUALAR EL TAMAÑO DE ICONOS CON GESTIÓN DOCUMENTAL */
     .folder-icon i {
         font-size: 4rem;
     }
-    /* ESTILO ADICIONAL PARA QUE LAS CARPETAS TENGAN LA MISMA ALTURA */
     .folder-card .card-body {
         min-height: 160px;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
     }
+    .btn-outline-secondary {
+        border-color: #dee2e6;
+    }
+    .btn-outline-secondary:hover {
+        background-color: #f8f9fa;
+        border-color: #800000;
+    }
+    .btn-outline-danger:hover {
+        background-color: #dc3545;
+        color: white;
+    }
+    
+    /* SweetAlert2 custom styles */
+    .swal2-popup {
+        font-size: 1.2rem !important;
+    }
+    .swal2-title {
+        color: #800000 !important;
+    }
+    .swal2-confirm {
+        background-color: #dc3545 !important;
+    }
+    .swal2-cancel {
+        background-color: #6c757d !important;
+    }
 </style>
 @endpush
 
-{{-- CAMBIO CLAVE: usar @prepend en lugar de @push --}}
 @prepend('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Inicializar SOLO si estamos dentro de una carpeta
@@ -340,8 +442,9 @@
     });
 
     // ============================================
-    // 1. FUNCIONES PARA MODALES DE DOCUMENTOS
+    // FUNCIONES PARA DOCUMENTOS (SOLO SUPERADMIN/ADMIN)
     // ============================================
+    @if(in_array(Auth::user()->role, ['superadmin', 'admin']))
     function openRenameDocumentModal(docId, docName) {
         event.stopPropagation();
         const form = document.getElementById('renameDocumentForm');
@@ -380,8 +483,103 @@
         new bootstrap.Modal(document.getElementById('moveDocumentModal')).show();
     }
 
+    function openRenameModal(folderId, folderName) {
+        event.stopPropagation();
+        const form = document.getElementById('renameFolderForm');
+        form.action = '/anexos/folder/' + folderId + '/rename';
+        document.getElementById('newFolderName').value = folderName;
+        new bootstrap.Modal(document.getElementById('renameFolderModal')).show();
+    }
+
+    function openMoveModal(folderId, folderName) {
+        event.stopPropagation();
+        const form = document.getElementById('moveFolderForm');
+        form.action = '/anexos/folder/' + folderId + '/move';
+        document.getElementById('moveFolderName').innerHTML = folderName;
+        
+        const select = document.getElementById('folderDestination');
+        select.innerHTML = '<option value="">📁 Cargando carpetas...</option>';
+        select.disabled = true;
+        
+        fetch('/anexos/folders/tree?current_folder=' + folderId)
+            .then(response => response.json())
+            .then(folders => {
+                select.innerHTML = '<option value="">📁 Raíz principal</option>';
+                select.disabled = false;
+                folders.forEach(folder => {
+                    const option = document.createElement('option');
+                    option.value = folder.id;
+                    option.textContent = '📁 ' + folder.full_path;
+                    select.appendChild(option);
+                });
+            })
+            .catch(() => {
+                select.innerHTML = '<option value="">❌ Error al cargar carpetas</option>';
+                select.disabled = false;
+            });
+        
+        new bootstrap.Modal(document.getElementById('moveFolderModal')).show();
+    }
+
+    function deleteElement(id, name, type) {
+        event.stopPropagation();
+        Swal.fire({
+            title: '¿Eliminar ' + type.toLowerCase() + '?',
+            text: `¿Estás seguro de eliminar "${name}"?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const url = '/anexos/' + (type === 'Documento' ? 'document/' : 'folder/') + id;
+                
+                fetch(url, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: '¡Eliminado!',
+                            text: data.message,
+                            confirmButtonColor: '#800000',
+                            timer: 2000
+                        }).then(() => {
+                            location.reload();
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: data.message || 'Error al eliminar',
+                            confirmButtonColor: '#800000'
+                        });
+                    }
+                })
+                .catch(error => {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Error de conexión',
+                        confirmButtonColor: '#800000'
+                    });
+                });
+            }
+        });
+    }
+    @endif
+
     // ============================================
-    // 2. BUSCADOR EN TIEMPO REAL
+    // BUSCADOR EN TIEMPO REAL (TODOS)
     // ============================================
     function initSearch() {
         const searchInput = document.getElementById('searchInput');
@@ -452,7 +650,7 @@
     }
 
     // ============================================
-    // 3. ORDENAMIENTO
+    // ORDENAMIENTO (TODOS)
     // ============================================
     function initSorting() {
         const sortSelect = document.getElementById('sortSelect');

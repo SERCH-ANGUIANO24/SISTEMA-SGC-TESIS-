@@ -1,0 +1,124 @@
+ TAREA 1: Desarrollo del Módulo de Detección Emocional (IA)
+
+Historia de Usuario
+
+Como usuario que busca apoyo emocional dentro de la plataforma, quiero que el sistema sea capaz de analizar lo que escribo o digo en el chat, para detectar con precisión mi estado emocional (ya sea tristeza, ansiedad, frustración, alegría, etc.), para que las respuestas del sistema se adapten a cómo me siento en ese momento, y así tener una experiencia personalizada y más humana.
+
+Descripción:
+Esta funcionalidad implica implementar un análisis automatizado con inteligencia artificial que procese los mensajes de texto que el usuario escribe, identificando palabras, frases, estructura del lenguaje y hasta el ritmo de escritura para determinar el estado emocional. Además, se desarrollará una integración que permita interpretar el tono de voz en los audios (cuando el usuario no quiere escribir), analizando el tono, ritmo, pausas y volumen de la voz. El objetivo es que el sistema no solo entienda “lo que se dice”, sino también “cómo se dice”, ya sea en texto o audio, detectando emociones como tristeza, ira, miedo, calma o alegría. El modelo de IA debe estar entrenado con bases de datos enfocadas en salud mental y adaptadas al lenguaje cotidiano de los usuarios. Esto debe funcionar tanto en dispositivos móviles como en versión web, en tiempo real y sin comprometer la privacidad.
+
+Justificación:
+Esto es crucial porque la manera en que una persona se expresa emocionalmente puede variar mucho dependiendo de su contexto, su edad, su cultura, su estado mental y su forma de comunicarse. No todos los usuarios expresan su malestar de manera clara, y muchas veces lo hacen de forma indirecta. Si el sistema puede identificar emociones ocultas en frases simples, entonces puede actuar de manera más empática, responder mejor y activar mecanismos de ayuda si es necesario. Además, muchas personas prefieren hablar que escribir, por eso la parte del audio también es esencial. Esta capacidad de análisis emocional debe servir como base para otras funciones del sistema como los ejercicios de terapia, la activación de alertas o el seguimiento del progreso del usuario.
+
+
+
+Criterios de Aceptación – Tarea 1
+
+CRITERIO 1
+DADO que un usuario envía un mensaje de texto,
+CUANDO el contenido contiene expresiones emocionales,
+ENTONCES el sistema debe detectar y clasificar la emoción con una precisión mínima del 80% en tiempo real.
+
+CRITERIO 2
+DADO que un usuario envía un mensaje de voz,
+CUANDO el audio es procesado,
+ENTONCES el sistema debe mostrar una etiqueta emocional basada en el tono con una confianza superior al 85%.
+
+CRITERIO 3
+DADO que se tiene el modelo entrenado,
+CUANDO se hagan pruebas de validación con psicólogos,
+ENTONCES los resultados del sistema deben coincidir al menos en un 90% con la interpretación profesional.
+
+
+
+TAREA 2: Diseño del Módulo de Terapias Cognitivo-Conductuales (CBT)
+
+Historia de Usuario
+
+Como usuario que necesita orientación para manejar pensamientos negativos, quiero poder acceder a sesiones estructuradas con ejercicios basados en la terapia cognitivo-conductual (CBT), guiadas por preguntas interactivas en un formato tipo chatbot, para identificar mis distorsiones cognitivas, reflexionar sobre ellas y encontrar respuestas más saludables emocionalmente.
+
+Descripción:
+La actividad consiste en diseñar un módulo de sesiones de terapia basadas en la metodología CBT, con ejercicios interactivos que guíen al usuario paso a paso. Esto incluye plantillas prediseñadas con preguntas clave (como identificar la situación, pensamientos automáticos, emociones asociadas, distorsiones cognitivas y reformulación del pensamiento), todo presentado a través de un chatbot con lógica de ramificación. El diseño debe contemplar diferentes rutas según las respuestas del usuario, y debe dar retroalimentación en tiempo real. Estas sesiones deben ser lo suficientemente claras para alguien sin conocimiento en psicología, pero efectivas como para generar reflexión. Todo el contenido debe ser revisado y aprobado por profesionales en salud mental para asegurar su validez terapéutica. Este módulo será accesible en cualquier momento del día, desde el celular o la web, y debe registrar el progreso del usuario.
+
+Justificación:
+Muchos usuarios que buscan apoyo emocional no tienen acceso inmediato a un terapeuta o no saben cómo comenzar una reflexión personal. Las sesiones tipo CBT son una herramienta validada científicamente y estructurada que permite acompañar al usuario en ese proceso. El uso de un chatbot permite personalizar la experiencia y guiar de forma amigable. Además, tener estas sesiones disponibles las 24 horas mejora la continuidad en el uso de la plataforma y permite que cada usuario trabaje a su propio ritmo. La validación profesional garantiza que no se causará daño, y se respetarán los principios de intervención psicológica segura.
+
+
+Criterios de Aceptación – Tarea 2
+
+CRITERIO 1
+DADO que el usuario inicia una sesión CBT,
+CUANDO responde las preguntas guiadas,
+ENTONCES el sistema debe guardar sus respuestas y mostrarle una retroalimentación basada en el contenido.
+
+CRITERIO 2
+DADO que el usuario navega por el flujo del chatbot,
+CUANDO selecciona diferentes respuestas,
+ENTONCES el flujo debe adaptarse y continuar de forma coherente sin errores lógicos.
+
+CRITERIO 3
+DADO que los ejercicios CBT han sido diseñados,
+CUANDO los profesionales de salud mental los revisen,
+ENTONCES deben validarlos con su firma o aprobación antes de ser publicados.
+
+
+TAREA 3: Configuración del Sistema de Emergencias Automatizado
+
+Historia de Usuario
+
+Como usuario que atraviesa un momento emocional crítico, quiero que el sistema sea capaz de detectar automáticamente palabras o frases que indiquen riesgo (como pensamientos suicidas o desesperación), para que se notifique inmediatamente a un profesional y me conecten con ayuda real en ese mismo instante.
+
+Descripción:
+Esta tarea busca implementar un sistema de detección de emergencia dentro de la plataforma que funcione de manera automática y en tiempo real. Se trata de configurar una lista de palabras clave o frases relacionadas con crisis emocionales, autolesiones, desesperanza o pensamientos suicidas. Cuando el sistema detecta una de estas expresiones en los mensajes del usuario, debe lanzar una alerta y notificar a un psicólogo disponible, incluyendo el texto detectado y el perfil del usuario. Si el nivel de riesgo es alto, el sistema también debe ofrecer al usuario la opción de hacer una llamada inmediata a una línea nacional de atención psicológica. Esta funcionalidad debe activarse sin que el usuario tenga que hacer nada más, y debe funcionar en todo momento, especialmente fuera del horario laboral donde no hay supervisión humana constante.
+
+Justificación:
+Las crisis emocionales pueden aparecer en cualquier momento y, en muchos casos, el usuario no va a pedir ayuda de forma directa. Este tipo de intervención automatizada puede ser la diferencia entre salvar una vida o no actuar a tiempo. También reduce el riesgo de que un mensaje importante pase desapercibido. Esta función tiene que ser precisa, rápida y respetuosa, funcionando como una red de seguridad dentro de la experiencia emocional del usuario. Es una medida fundamental para plataformas de salud mental que buscan ser responsables y éticamente seguras.
+
+
+Criterios de Aceptación – Tarea 3
+
+CRITERIO 1
+DADO que el usuario escriba un mensaje con una frase crítica,
+CUANDO el sistema lo detecte,
+ENTONCES debe activar una alerta automática al profesional en menos de 5 segundos.
+
+CRITERIO 2
+DADO que haya un profesional disponible,
+CUANDO se active la alerta,
+ENTONCES debe recibir el mensaje del usuario, nivel de alerta y opción de contactar al instante.
+
+CRITERIO 3
+DADO que el usuario se encuentre en riesgo,
+CUANDO el sistema determine que es una situación de emergencia,
+ENTONCES debe mostrar un botón que lo conecte directamente con una línea de ayuda oficial.
+
+
+
+TAREA 4: Diseño de Experiencia de Usuario (UX) para ejercicios relajantes
+
+Historia de Usuario
+
+Como usuario que se siente estresado o saturado emocionalmente, quiero que la plataforma me ofrezca ejercicios visuales con música y respiración guiada, para poder relajarme de forma efectiva sin tener que pensar en cómo hacerlo o buscar recursos en otro lado.
+
+Descripción:
+La tarea consiste en diseñar experiencias visuales y auditivas centradas en la relajación, que incluyan animaciones suaves (como ondas, círculos que se expanden y contraen al ritmo de la respiración), música ambiental relajante con transición gradual, y un temporizador programado para técnicas de respiración (como 4-7-8, respiración cuadrada, etc.). Todo debe estar coordinado para que el usuario simplemente seleccione un ejercicio y siga las indicaciones, sin necesidad de configurar o leer instrucciones. Además, se realizarán pruebas con usuarios reales para recopilar retroalimentación emocional sobre su experiencia. La interfaz debe ser accesible, limpia y libre de estímulos agresivos.
+
+Justificación:
+Muchas personas no saben cómo relajarse de manera efectiva y necesitan una guía que no las abrume. Tener animaciones suaves, música adecuada y una respiración guiada sincronizada ayuda a activar el sistema nervioso parasimpático y reduce el estrés. Además, validar estas herramientas con usuarios reales permite saber si realmente están cumpliendo su propósito. No se trata solo de que se vea bonito, sino de que realmente ayude a mejorar el estado emocional de quienes usan la app.
+
+Criterios de Aceptación – Tarea 4
+
+CRITERIO 1
+DADO que el usuario inicia un ejercicio de respiración,
+CUANDO la animación y música se activen,
+ENTONCES todo debe comenzar en menos de 2 segundos y sincronizado.
+
+CRITERIO 2
+DADO que el usuario seleccione un tipo de técnica respiratoria,
+CUANDO se reproduzca la guía,
+ENTONCES debe respetar los tiempos de inhalación, retención y exhalación seleccionados.
+
+CRITERIO 3
+DADO que los ejercicios estén listos,
+CUANDO se realicen las pruebas con usuarios reales,
+ENTONCES al menos el 80% debe reportar una experiencia relajante o positiva.

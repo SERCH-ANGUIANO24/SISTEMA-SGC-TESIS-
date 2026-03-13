@@ -16,43 +16,46 @@ class AnexosController extends Controller
      */
     public function index(Request $request)
     {
+        $user = Auth::user();
         $folderId = $request->get('folder');
         $currentFolder = null;
 
         if ($folderId) {
             $currentFolder = Folder::with('parent')->findOrFail($folderId);
-            $this->authorizeAccess($currentFolder);
+            
+            // DENTRO DE UNA CARPETA: TODOS ven TODAS las carpetas y archivos
             $folders = Folder::where('parent_id', $folderId)
-                             ->where('user_id', Auth::id())
                              ->orderBy('name')
                              ->get();
             $documents = Document::where('folder_id', $folderId)
-                                 ->where('user_id', Auth::id())
                                  ->orderBy('name')
                                  ->get();
         } else {
-            // Raíz: carpetas sin padre y documentos sin carpeta
+            // RAÍZ: TODOS ven TODAS las carpetas raíz
             $folders = Folder::whereNull('parent_id')
-                             ->where('user_id', Auth::id())
                              ->orderBy('name')
                              ->get();
             $documents = Document::whereNull('folder_id')
-                                 ->where('user_id', Auth::id())
                                  ->orderBy('name')
                                  ->get();
         }
 
-        // Construir breadcrumbs
         $breadcrumbs = $this->buildBreadcrumbs($currentFolder);
 
         return view('anexos.index', compact('currentFolder', 'folders', 'documents', 'breadcrumbs'));
     }
 
     /**
-     * Guardar nueva carpeta
+     * Guardar nueva carpeta - SOLO SUPERADMIN/ADMIN
      */
     public function storeFolder(Request $request)
     {
+        $user = Auth::user();
+        
+        if (!in_array($user->role, ['superadmin', 'admin'])) {
+            abort(403, 'No tienes permiso para crear carpetas.');
+        }
+        
         $request->validate([
             'name' => 'required|string|max:255',
             'color' => 'nullable|string|regex:/^#[0-9A-Fa-f]{6}$/',
@@ -63,7 +66,7 @@ class AnexosController extends Controller
             'name' => $request->name,
             'color' => $request->color ?? '#808080',
             'parent_id' => $request->parent_id,
-            'user_id' => Auth::id()
+            'user_id' => $user->id
         ]);
 
         return redirect()->route('anexos.index', ['folder' => $request->parent_id])
@@ -71,12 +74,18 @@ class AnexosController extends Controller
     }
 
     /**
-     * Subir documento
+     * Subir documento - SOLO SUPERADMIN/ADMIN
      */
     public function uploadDocument(Request $request)
     {
+        $user = Auth::user();
+        
+        if (!in_array($user->role, ['superadmin', 'admin'])) {
+            abort(403, 'No tienes permiso para subir archivos.');
+        }
+        
         $request->validate([
-            'file' => 'required|file|max:10240', // 10MB máx
+            'file' => 'required|file|max:10240',
             'folder_id' => 'nullable|exists:folders,id'
         ]);
 
@@ -85,9 +94,8 @@ class AnexosController extends Controller
         $mime = $file->getMimeType();
         $size = $file->getSize();
 
-        // Generar nombre único
         $fileName = Str::uuid() . '.' . $file->getClientOriginalExtension();
-        $path = $file->storeAs('anexos/' . Auth::id(), $fileName, 'public');
+        $path = $file->storeAs('anexos/' . $user->id, $fileName, 'public');
 
         Document::create([
             'name' => pathinfo($originalName, PATHINFO_FILENAME),
@@ -96,7 +104,7 @@ class AnexosController extends Controller
             'mime_type' => $mime,
             'size' => $size,
             'folder_id' => $request->folder_id,
-            'user_id' => Auth::id()
+            'user_id' => $user->id
         ]);
 
         return redirect()->route('anexos.index', ['folder' => $request->folder_id])
@@ -104,21 +112,24 @@ class AnexosController extends Controller
     }
 
     /**
-     * Eliminar carpeta (y todo su contenido)
+     * Eliminar carpeta - SOLO SUPERADMIN/ADMIN
      */
     public function destroyFolder($id)
     {
+        $user = Auth::user();
+        
+        if (!in_array($user->role, ['superadmin', 'admin'])) {
+            return response()->json(['success' => false, 'message' => 'No tienes permiso para eliminar carpetas.'], 403);
+        }
+        
         $folder = Folder::findOrFail($id);
-        $this->authorizeAccess($folder);
         $parentId = $folder->parent_id;
 
-        // Eliminar archivos del storage
         foreach ($folder->documents as $doc) {
             Storage::disk('public')->delete($doc->file_path);
             $doc->delete();
         }
 
-        // Las subcarpetas se eliminarán por cascada en BD, pero también hay que borrar sus archivos físicos
         $this->recursiveDeleteFiles($folder);
         $folder->delete();
 
@@ -127,12 +138,17 @@ class AnexosController extends Controller
     }
 
     /**
-     * Eliminar documento
+     * Eliminar documento - SOLO SUPERADMIN/ADMIN
      */
     public function destroyDocument($id)
     {
+        $user = Auth::user();
+        
+        if (!in_array($user->role, ['superadmin', 'admin'])) {
+            return response()->json(['success' => false, 'message' => 'No tienes permiso para eliminar documentos.'], 403);
+        }
+        
         $document = Document::findOrFail($id);
-        $this->authorizeAccess($document);
         $folderId = $document->folder_id;
 
         Storage::disk('public')->delete($document->file_path);
@@ -143,20 +159,35 @@ class AnexosController extends Controller
     }
 
     /**
-     * Descargar documento
+     * Descargar documento - TODOS pueden descargar
      */
     public function downloadDocument($id)
     {
         $document = Document::findOrFail($id);
-        $this->authorizeAccess($document);
+        
+        if (!Storage::disk('public')->exists($document->file_path)) {
+            abort(404, 'El archivo no existe en el servidor.');
+        }
 
-        return Storage::disk('public')->download($document->file_path, $document->original_name,['Content-Disposition' => 'attachment; filename="' . $document->original_name . '"']);
+        return Storage::disk('public')->download($document->file_path, $document->original_name);
     }
 
+    /**
+     * Ver documento en el navegador - TODOS pueden ver (solo formatos permitidos)
+     */
     public function viewDocument($id)
     {
         $document = Document::findOrFail($id);
-        $this->authorizeAccess($document);
+        
+        $extension = strtolower(pathinfo($document->original_name, PATHINFO_EXTENSION));
+        
+        // Lista de extensiones que SÍ se pueden ver en el navegador
+        $viewableExtensions = ['pdf', 'jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg', 'webp', 'txt'];
+        
+        // Si la extensión NO está en la lista de visibles, forzar descarga
+        if (!in_array($extension, $viewableExtensions)) {
+            return $this->downloadDocument($id);
+        }
         
         $path = storage_path('app/public/' . $document->file_path);
         
@@ -164,21 +195,9 @@ class AnexosController extends Controller
             abort(404, 'El archivo no existe en el servidor');
         }
         
-        $extension = strtolower(pathinfo($document->original_name, PATHINFO_EXTENSION));
-        
-        // Forzar visualización en el navegador para TODOS los tipos de archivo
         $contentTypes = [
-            // Documentos
             'pdf' => 'application/pdf',
-            'doc' => 'application/msword',
-            'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            'xls' => 'application/vnd.ms-excel',
-            'xlsx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'ppt' => 'application/vnd.ms-powerpoint',
-            'pptx' => 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
             'txt' => 'text/plain',
-            'csv' => 'text/plain',
-            // Imágenes
             'jpg' => 'image/jpeg',
             'jpeg' => 'image/jpeg',
             'png' => 'image/png',
@@ -190,48 +209,56 @@ class AnexosController extends Controller
         
         $contentType = $contentTypes[$extension] ?? 'application/octet-stream';
         
-        // HEADER CRUCIAL: Forzar visualización en navegador
         return response()->file($path, [
             'Content-Type' => $contentType,
             'Content-Disposition' => 'inline; filename="' . $document->original_name . '"'
         ]);
     }
-    //FUNCION PARA RENOMBRAR LAS CARPETAS
-
-    public function renameFolder(Request $request,$id){
-            $request->validate([
-        'name' => 'required|string|max:255'
-    ]);
-
-    $folder = Folder::findOrFail($id);
-    $this->authorizeAccess($folder);
     
-    $folder->name = $request->name;
-    $folder->save();
+    /**
+     * Renombrar carpeta - SOLO SUPERADMIN/ADMIN
+     */
+    public function renameFolder(Request $request, $id)
+    {
+        $user = Auth::user();
+        
+        if (!in_array($user->role, ['superadmin', 'admin'])) {
+            return response()->json(['success' => false, 'message' => 'No tienes permiso para renombrar carpetas.'], 403);
+        }
+        
+        $request->validate([
+            'name' => 'required|string|max:255'
+        ]);
 
-    return redirect()->route('anexos.index', ['folder' => $folder->parent_id])
-                     ->with('success', 'Carpeta renombrada correctamente.');
+        $folder = Folder::findOrFail($id);
+        $folder->name = $request->name;
+        $folder->save();
 
+        return redirect()->route('anexos.index', ['folder' => $folder->parent_id])
+                         ->with('success', 'Carpeta renombrada correctamente.');
     }
 
     /**
- * Mover carpeta a otra ubicación
- */
+     * Mover carpeta - SOLO SUPERADMIN/ADMIN
+     */
     public function moveFolder(Request $request, $id)
     {
+        $user = Auth::user();
+        
+        if (!in_array($user->role, ['superadmin', 'admin'])) {
+            return response()->json(['success' => false, 'message' => 'No tienes permiso para mover carpetas.'], 403);
+        }
+        
         $request->validate([
             'destination_id' => 'nullable|exists:folders,id'
         ]);
 
         $folder = Folder::findOrFail($id);
-        $this->authorizeAccess($folder);
         
-        // Validar que no se mueva a sí misma o a una subcarpeta
         if ($request->destination_id == $folder->id) {
             return back()->with('error', 'No puedes mover una carpeta a sí misma.');
         }
         
-        // Validar que no se mueva a una subcarpeta
         if ($request->destination_id) {
             $destination = Folder::find($request->destination_id);
             $isSubfolder = $this->isSubfolder($folder->id, $destination);
@@ -248,7 +275,7 @@ class AnexosController extends Controller
     }
 
     /**
-     * Verificar si una carpeta es subcarpeta de otra
+     * Verificar subcarpeta
      */
     private function isSubfolder($folderId, $destination)
     {
@@ -264,24 +291,30 @@ class AnexosController extends Controller
         return false;
     }
 
-/**
- * Obtener lista de carpetas para el modal de mover
- */
+    /**
+     * Obtener árbol de carpetas
+     */
     public function getFoldersTree(Request $request)
     {
+        $user = Auth::user();
         $currentFolderId = $request->get('current_folder');
-        $folders = Folder::where('user_id', Auth::id())
-                        ->where('id', '!=', $currentFolderId)
-                        ->orderBy('name')
-                        ->get()
-                        ->map(function($folder) {
-                            return [
-                                'id' => $folder->id,
-                                'name' => $folder->name,
-                                'parent_id' => $folder->parent_id,
-                                'full_path' => $this->getFolderPath($folder)
-                            ];
-                        });
+        
+        if (in_array($user->role, ['superadmin', 'admin'])) {
+            $folders = Folder::where('id', '!=', $currentFolderId)
+                            ->orderBy('name')
+                            ->get();
+        } else {
+            return response()->json([]);
+        }
+        
+        $folders = $folders->map(function($folder) {
+            return [
+                'id' => $folder->id,
+                'name' => $folder->name,
+                'parent_id' => $folder->parent_id,
+                'full_path' => $this->getFolderPath($folder)
+            ];
+        });
         
         return response()->json($folders);
     }
@@ -297,19 +330,23 @@ class AnexosController extends Controller
         return implode(' / ', $path);
     }
 
-        /**
-     * Renombrar documento
+    /**
+     * Renombrar documento - SOLO SUPERADMIN/ADMIN
      */
     public function renameDocument(Request $request, $id)
     {
+        $user = Auth::user();
+        
+        if (!in_array($user->role, ['superadmin', 'admin'])) {
+            return response()->json(['success' => false, 'message' => 'No tienes permiso para renombrar documentos.'], 403);
+        }
+        
         $request->validate([
             'name' => 'required|string|max:255'
         ]);
 
         $document = Document::findOrFail($id);
-        $this->authorizeAccess($document);
         
-        // Mantener la extensión original
         $extension = pathinfo($document->original_name, PATHINFO_EXTENSION);
         $document->name = $request->name;
         $document->original_name = $request->name . '.' . $extension;
@@ -319,29 +356,25 @@ class AnexosController extends Controller
     }
 
     /**
-     * Mover documento a otra carpeta
+     * Mover documento - SOLO SUPERADMIN/ADMIN
      */
     public function moveDocument(Request $request, $id)
     {
+        $user = Auth::user();
+        
+        if (!in_array($user->role, ['superadmin', 'admin'])) {
+            return response()->json(['success' => false, 'message' => 'No tienes permiso para mover documentos.'], 403);
+        }
+        
         $request->validate([
             'destination_id' => 'nullable|exists:folders,id'
         ]);
 
         $document = Document::findOrFail($id);
-        $this->authorizeAccess($document);
-        
         $document->folder_id = $request->destination_id;
         $document->save();
 
         return redirect()->back()->with('success', 'Documento movido correctamente.');
-    }
-    // ---------- Métodos privados de ayuda ----------
-
-    private function authorizeAccess($model)
-    {
-        if ($model->user_id !== Auth::id()) {
-            abort(403);
-        }
     }
 
     private function buildBreadcrumbs($currentFolder = null)

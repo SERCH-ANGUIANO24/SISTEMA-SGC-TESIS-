@@ -51,6 +51,7 @@
     </div>
     @endif
 @endforeach
+
 <script>
 function viewDocument(id) {
     // El modal se abre automáticamente con data-bs-target

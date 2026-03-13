@@ -16,10 +16,13 @@
                     </a>
                 </div>
 
+                {{-- SOLO SUPERADMIN Y ADMIN PUEDEN CREAR CARPETAS Y SUBIR ARCHIVOS --}}
+                @if(in_array(Auth::user()->role, ['superadmin', 'admin']))
                 <div class="mt-2">
                     <button type="button" class="btn text-white me-2" style="background-color: #737373;" data-bs-toggle="modal" data-bs-target="#createFolderModal">
                         <i class="bi bi-folder-plus me-1"></i> Nueva Carpeta
                     </button>
+                    
                     {{-- BOTÓN SUBIR ARCHIVO - SOLO APARECE DENTRO DE UNA CARPETA --}}
                     @if(isset($currentFolder) && $currentFolder)
                         <button type="button" class="btn text-white" style="background-color: #737373;" data-bs-toggle="modal" data-bs-target="#uploadFileModal">
@@ -27,6 +30,7 @@
                         </button>
                     @endif
                 </div>
+                @endif
             </div>
         </div>
     </div>
@@ -49,7 +53,7 @@
         </div>
     @endif
 
-    {{-- SI HAY UNA CARPETA SELECCIONADA, MOSTRAR BUSCADOR Y ORDENAR --}}
+    {{-- BUSCADOR Y ORDENAR - VISIBLE PARA TODOS DENTRO DE UNA CARPETA --}}
     @if(isset($currentFolder) && $currentFolder)
     <div class="row mb-4 align-items-end">
         <div class="col-md-6">
@@ -155,21 +159,33 @@
         color: #800000;
         font-weight: 500;
     }
-    /* ESTILOS PARA IGUALAR EL TAMAÑO DE ICONOS CON GESTIÓN DOCUMENTAL */
     .folder-icon i {
         font-size: 4rem;
     }
-    /* ESTILO ADICIONAL PARA QUE LAS CARPETAS TENGAN LA MISMA ALTURA */
     .folder-card .card-body {
         min-height: 160px;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
     }
+    
+    .swal2-popup {
+        font-size: 1.2rem !important;
+    }
+    .swal2-title {
+        color: #800000 !important;
+    }
+    .swal2-confirm {
+        background-color: #dc3545 !important;
+    }
+    .swal2-cancel {
+        background-color: #6c757d !important;
+    }
 </style>
 @endpush
 
 @prepend('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         @if(isset($currentFolder) && $currentFolder)
@@ -209,7 +225,6 @@
         const documentRows = document.querySelectorAll('.document-row');
         let visibleCount = 0;
         
-        // Buscar en carpetas
         folderCards.forEach(card => {
             const folderName = card.querySelector('.card-title')?.textContent.toLowerCase() || '';
             const parentCol = card.closest('.col');
@@ -223,7 +238,6 @@
             }
         });
         
-        // Buscar en matrices/documentos
         documentRows.forEach(row => {
             const fileName = row.querySelector('td:first-child')?.textContent.toLowerCase() || '';
             if (query === '' || fileName.includes(query)) {
@@ -234,13 +248,11 @@
             }
         });
         
-        // Actualizar contador de resultados
         const resultCount = document.getElementById('resultCount');
         if (resultCount) {
             resultCount.textContent = query === '' ? '' : `🔍 ${visibleCount} resultado${visibleCount !== 1 ? 's' : ''}`;
         }
         
-        // Mostrar mensaje si no hay resultados
         document.getElementById('noResultsMessage')?.remove();
         
         if (query !== '' && visibleCount === 0) {
@@ -266,14 +278,13 @@
     }
     
     function sortItems(sortBy) {
-        const tableBody = document.getElementById('documentTableBody');
+        const tableBody = document.getElementById('fileTableBody');
         if (!tableBody) {
-            // Intentar encontrar el tbody de la tabla de documentos
             const table = document.querySelector('.table tbody');
-            if (table) table.id = 'documentTableBody';
+            if (table) table.id = 'fileTableBody';
         }
         
-        const tbody = document.getElementById('documentTableBody') || document.querySelector('.table tbody');
+        const tbody = document.getElementById('fileTableBody') || document.querySelector('.table tbody');
         
         if (tbody) {
             const rows = Array.from(tbody.querySelectorAll('tr'));
@@ -306,7 +317,6 @@
                 }
             });
             
-            // Reordenar filas
             rows.forEach(row => tbody.appendChild(row));
         }
     }

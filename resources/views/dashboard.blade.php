@@ -9,7 +9,7 @@
         <div class="col-12">
             <div class="text-center">
                 <h1 class="h3 mb-2 text-dark">Dashboard Principal</h1>
-                <p class="text-muted mb-0">Seleccione una opción para gestionar el sistema</p>
+                <p class="text-muted mb-0">Bienvenido, {{ Auth::user()->name }} ({{ ucfirst(Auth::user()->role) }}) </p>
             </div>
         </div>
     </div>
@@ -17,62 +17,95 @@
     <!-- Dashboard Grid - Tarjetas de módulos -->
     <div class="row">
         @php
-            $modules = [
+            $userRole = Auth::user()->role;
+            
+            $allModules = [
                 [
                     'title' => 'Anexos',
                     'icon' => 'bi-folder',
                     'description' => 'Gestionar documentos anexos',
-                    'color' => '#4f46e5'
+                    'color' => '#4f46e5',
+                    'route' => route('anexos.index'),
+                    'visible' => true // Todos pueden ver
                 ],
                 [
                     'title' => 'Auditorías',
                     'icon' => 'bi-clipboard-check',
                     'description' => 'Gestión de auditorías',
-                    'color' => '#059669'
+                    'color' => '#059669',
+                    'route' => route('auditoria.dashboard'),
+                    'visible' => true // Todos pueden ver
                 ],
                 [
                     'title' => 'Gestión Documental',
                     'icon' => 'bi-files',
                     'description' => 'Control de documentos',
-                    'color' => '#dc2626'
-                ],
-                [
-                    'title' => 'Usuarios',
-                    'icon' => 'bi-people',
-                    'description' => 'Administración de usuarios',
-                    'color' => '#7c3aed'
+                    'color' => '#dc2626',
+                    'route' => route('documental.index'),
+                    'visible' => true // Todos pueden ver
                 ],
                 [
                     'title' => 'Matriz',
                     'icon' => 'bi-grid-3x3',
                     'description' => 'Matriz de procesos',
-                    'color' => '#0891b2'
+                    'color' => '#9333ea',
+                    'route' => route('matriz.index'),
+                    'visible' => true // Todos pueden ver
+                ],
+                [
+                    'title' => 'Lista Maestra',
+                    'icon' => 'bi-file-earmark-text',
+                    'description' => 'Formatos validados del sistema',
+                    'color' => '#16a34a',
+                    'route' => route('formatos.index'),
+                    'visible' => true // Todos pueden ver
+                ],
+                [
+                    'title' => 'Usuarios',
+                    'icon' => 'bi-people',
+                    'description' => 'Administración de usuarios',
+                    'color' => '#7c3aed',
+                    'route' => route('admin.usuarios.index'),
+                    'visible' => in_array($userRole, ['superadmin', 'admin'])
+                ],
+                [
+                    'title' => 'Historial de versiones',
+                    'icon' => 'bi-trash',
+                    'description' => 'Cambios realizados en documentos',
+                    'color' => '#0891b2',
+                    'route' => '#', // Módulo en desarrollo
+                    'visible' => $userRole === 'superadmin' // SOLO SUPERADMIN
                 ],
                 [
                     'title' => 'Notificaciones',
                     'icon' => 'bi-bell',
                     'description' => 'Alertas y notificaciones',
-                    'color' => '#ea580c'
-                ],
-                [
-                    'title' => 'Formatos',
-                    'icon' => 'bi-file-earmark-text',
-                    'description' => 'Formatos del sistema',
-                    'color' => '#16a34a'
+                    'color' => '#ea580c',
+                    'route' => '#', // Módulo en desarrollo
+                    'visible' => true // Todos pueden ver
                 ],
                 [
                     'title' => 'Avisos',
                     'icon' => 'bi-megaphone',
                     'description' => 'Avisos',
-                    'color' => '#9333ea'
+                    'color' => '#4f46e5',
+                    'route' => '#', // Módulo en desarrollo
+                    'visible' => true // Todos pueden ver
                 ]
             ];
+            
+            // Filtrar módulos según el rol
+            $modules = array_filter($allModules, function($module) {
+                return $module['visible'];
+            });
         @endphp
 
         @foreach($modules as $module)
         <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
             <div class="card dashboard-card h-100 border-0 shadow-sm" 
                  data-module="{{ $module['title'] }}"
+                 data-route="{{ $module['route'] }}"
+                 onclick="handleDashboardClick('{{ $module['title'] }}', '{{ $module['route'] }}')"
                  style="cursor: pointer;">
                 <div class="card-body text-center p-4">
                     <div class="dashboard-icon mb-3" style="background-color: {{ $module['color'] }}20; border-color: {{ $module['color'] }}">
@@ -286,60 +319,43 @@
     }
 
     // Función para manejar clic en tarjetas del dashboard
-    function handleDashboardClick(module) {
-        console.log('Clic en módulo:', module);
+    function handleDashboardClick(module, route) {
+        console.log('Clic en módulo:', module, 'Ruta:', route);
         
-        // Redirección real para Anexos
-        switch(module) {
-            case 'Anexos':
-                window.location.href = '{{ route("anexos.index") }}';
-                break;
-            case 'Gestión Documental':
-                window.location.href = '{{ route("documental.index") }}';
-                break;
-            case 'Matriz':
-                window.location.href = '{{ route("matriz.index") }}';
-                break;
-            case 'Formatos':
-                window.location.href = '{{ route("formatos.index") }}';
-                break;
-            default:
-                // Para los demás módulos, mostrar toast de "en desarrollo"
-                showToast(module);
+        // Efecto visual de clic
+        const card = event.currentTarget;
+        card.style.transform = 'scale(0.98)';
+        setTimeout(() => {
+            card.style.transform = '';
+        }, 150);
+        
+        // Si la ruta no es #, redirigir
+        if (route && route !== '#') {
+            window.location.href = route;
+        } else {
+            // Para módulos en desarrollo
+            showToast(module);
         }
     }
 
-                
     // Inicializar cuando el DOM esté listo
     document.addEventListener('DOMContentLoaded', function() {
-        // Agregar event listeners a todas las tarjetas del dashboard
-        const cards = document.querySelectorAll('.dashboard-card');
-        cards.forEach(card => {
-            card.addEventListener('click', function() {
-                const module = this.getAttribute('data-module');
-                
-                // Efecto visual de clic
-                this.style.transform = 'scale(0.98)';
-                setTimeout(() => {
-                    this.style.transform = '';
-                }, 150);
-                
-                // Manejar el clic
-                handleDashboardClick(module);
-            });
-        });
-        
         // Permitir navegación con teclado (Enter/Space)
+        const cards = document.querySelectorAll('.dashboard-card');
         cards.forEach(card => {
             card.setAttribute('tabindex', '0');
             card.addEventListener('keydown', function(e) {
                 if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
                     const module = this.getAttribute('data-module');
-                    handleDashboardClick(module);
+                    const route = this.getAttribute('data-route');
+                    handleDashboardClick(module, route);
                 }
             });
         });
     });
 </script>
 @endpush
+
+
+

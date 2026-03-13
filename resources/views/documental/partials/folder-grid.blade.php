@@ -7,33 +7,31 @@
                  data-folder-name="{{ strtolower($folder->name) }}" 
                  data-folder-date="{{ $folder->created_at }}"
                  data-folder-count="{{ $folder->documents->count() }}"
-                 onclick="window.location.href='{{ route('documental.index', ['folder' => $folder->id]) }}'"
-                 style="cursor: pointer; border-radius: 12px; overflow: hidden;">
+                 style="cursor: pointer; border-radius: 12px; overflow: hidden; border-top: 4px solid {{ $folder->color ?? '#800000' }} !important;"
+                 onclick="window.location.href='{{ route('documental.index', ['folder' => $folder->id]) }}'">
                 <div class="card-body text-center p-3">
                     <div class="folder-icon mb-2">
-                        <i class="bi bi-folder-fill" style="font-size: 4rem;"></i>
+                        <i class="bi bi-folder-fill" style="font-size: 4rem; color: {{ $folder->color ?? '#800000' }};"></i>
                     </div>
                     <h6 class="card-title fw-bold mb-0 text-truncate" title="{{ $folder->name }}">
                         {{ $folder->name }}
                     </h6>
                     
-                    {{-- BOTONES DE ACCIÓN DIRECTA --}}
+                    {{-- BOTONES DE ACCIÓN - Solo superadmin y admin --}}
+                    @if(in_array($userRole, ['superadmin', 'admin']))
                     <div class="mt-3 d-flex justify-content-center gap-1" onclick="event.stopPropagation();">
-                        {{-- RENOMBRAR --}}
                         <button type="button" class="btn btn-sm btn-outline-secondary" 
                                 onclick="openRenameModal('{{ $folder->id }}', '{{ $folder->name }}')"
                                 title="Renombrar carpeta">
                             <i class="bi bi-pencil"></i>
                         </button>
                         
-                        {{-- MOVER --}}
                         <button type="button" class="btn btn-sm btn-outline-secondary" 
                                 onclick="openMoveModal('{{ $folder->id }}', '{{ $folder->name }}')"
                                 title="Mover carpeta">
                             <i class="bi bi-arrow-right-circle"></i>
                         </button>
                         
-                        {{-- ELIMINAR CON SWEETALERT --}}
                         <form action="{{ route('documental.folder.destroy', $folder->id) }}" method="POST" class="d-inline" id="delete-form-{{ $folder->id }}">
                             @csrf
                             @method('DELETE')
@@ -44,6 +42,7 @@
                             </button>
                         </form>
                     </div>
+                    @endif
                 </div>
             </div>
         </div>
@@ -51,7 +50,6 @@
     </div>
 @endif
 
-{{-- SOLO MOSTRAR "VACÍA" SI NO HAY CARPETAS Y TAMBIÉN NO HAY ARCHIVOS --}}
 @if($folders->count() == 0 && (!isset($documents) || $documents->count() == 0))
     <div class="alert alert-info d-flex align-items-center mb-4" role="alert">
         <i class="bi bi-info-circle-fill me-2"></i>
@@ -132,7 +130,6 @@
 </div>
 
 @push('styles')
-{{-- SweetAlert2 CSS --}}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 <style>
     .swal2-popup {
@@ -148,34 +145,24 @@
         background-color: #6c757d !important;
     }
     
-    /* Color por defecto para todas las carpetas */
     .folder-card {
-        border-top: 4px solid #800000 !important;
+        transition: all 0.2s;
     }
-    .folder-card .bi-folder-fill {
-        color: #800000 !important;
+    .folder-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.08) !important;
     }
-    
-    /* Colores personalizados para cada carpeta */
-    @foreach($folders as $folder)
-        @if($folder->color)
-        .folder-card[data-folder-id="{{ $folder->id }}"] {
-            border-top-color: {{ $folder->color }} !important;
-        }
-        .folder-card[data-folder-id="{{ $folder->id }}"] .bi-folder-fill {
-            color: {{ $folder->color }} !important;
-        }
-        @endif
-    @endforeach
+    .folder-icon {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+    }
 </style>
 @endpush
 
 @push('scripts')
-{{-- SweetAlert2 JS --}}
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-    // Función para abrir modal de renombrar
     function openRenameModal(folderId, folderName) {
         event.stopPropagation();
         const form = document.getElementById('renameFolderForm');
@@ -186,7 +173,6 @@
         modal.show();
     }
 
-    // Función para abrir modal de mover
     function openMoveModal(folderId, folderName) {
         event.stopPropagation();
         const form = document.getElementById('moveFolderForm');
@@ -233,7 +219,6 @@
         modal.show();
     }
 
-    // FUNCIÓN PARA CONFIRMAR ELIMINAR CON SWEETALERT2
     function confirmDelete(folderId, folderName) {
         event.stopPropagation();
         event.preventDefault();

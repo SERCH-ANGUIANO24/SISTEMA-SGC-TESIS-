@@ -1,4 +1,12 @@
 @if($documents->count() > 0)
+@php
+    $hasUserDocuments = $documents->contains(function($doc) {
+        return !in_array($doc->user->role ?? null, ['superadmin', 'admin']);
+    });
+    $hasAdminDocuments = $documents->contains(function($doc) {
+        return in_array($doc->user->role ?? null, ['superadmin', 'admin']);
+    });
+@endphp
 <div class="card shadow-sm border-0">
     <div class="card-header bg-light py-3">
         <h6 class="mb-0 fw-bold" style="color: #800000;">
@@ -15,14 +23,25 @@
                         <th>Responsable</th>
                         <th>Proceso</th>
                         <th>Departamento</th>
+                        @if($hasAdminDocuments)
+                        <th>Clave Formato</th>
+                        <th>Código Proc.</th>
+                        <th>Versión Proc.</th>
+                        @endif
                         <th>Tamaño</th>
                         <th>Fecha y Hora</th>
+                        @if($hasUserDocuments)
                         <th>Estatus</th>
+                        @endif
                         <th class="text-end">Acciones</th>
                     </tr>
                 </thead>
                 <tbody id="documentTableBody">
                     @foreach($documents as $doc)
+                    @php
+                        $uploaderRole = $doc->user->role ?? null;
+                        $uploadedByAdmin = in_array($uploaderRole, ['superadmin', 'admin']);
+                    @endphp
                     <tr class="document-row"
                         data-file-id="{{ $doc->id }}"
                         data-file-name="{{ strtolower($doc->name) }}"
@@ -40,19 +59,30 @@
                                 elseif(in_array($ext, ['xls','xlsx'])) $icon = 'bi-file-excel';
                                 elseif(in_array($ext, $imageExtensions)) $icon = 'bi-file-image';
                                 
-                                // Limpiar el nombre para mostrar (quitar números y guiones bajos si es necesario)
                                 $displayName = $doc->name;
-                                // Si el nombre tiene muchos números, mostrar solo la parte legible
                                 if(preg_match('/^[0-9_]+(.+)$/', $displayName, $matches)) {
                                     $displayName = $matches[1];
                                 }
                             @endphp
                             <i class="bi {{ $icon }} me-2" style="color: #800000;"></i>
                             <span title="{{ $doc->original_name }}">{{ $displayName }}.{{ $ext }}</span>
+                            
+                            @if($doc->observaciones)
+                                <br>
+                                <small class="text-danger">
+                                    <i class="bi bi-exclamation-triangle-fill"></i>
+                                    {{ $doc->observaciones }}
+                                </small>
+                            @endif
                         </td>
                         <td>{{ $doc->responsable ?? $doc->user->name ?? 'N/A' }}</td>
                         <td>{{ $doc->proceso ?? $doc->user->proceso ?? 'N/A' }}</td>
                         <td>{{ $doc->departamento ?? $doc->user->departamento ?? 'N/A' }}</td>
+                        @if($hasAdminDocuments)
+                        <td>{{ $uploadedByAdmin ? ($doc->clave_formato ?? '—') : '—' }}</td>
+                        <td>{{ $uploadedByAdmin ? ($doc->codigo_procedimiento ?? '—') : '—' }}</td>
+                        <td>{{ $uploadedByAdmin ? ($doc->version_procedimiento ?? '—') : '—' }}</td>
+                        @endif
                         <td>
                             @if($doc->size)
                                 @if($doc->size < 1024)
@@ -70,22 +100,25 @@
                             {{ $doc->created_at->format('d/m/Y h:i A') }}
                         </td>
                         <td>
-                            @if(($doc->estatus ?? 'No Valido') == 'Valido')
-                                <span class="badge bg-success">Válido</span>
-                            @else
-                                <span class="badge bg-danger">No Válido</span>
+                            @if($hasUserDocuments && !$uploadedByAdmin)
+                                @if(($doc->estatus ?? 'Pendiente') == 'Valido')
+                                    <span class="badge bg-success">Válido</span>
+                                @elseif(($doc->estatus ?? 'Pendiente') == 'No Valido')
+                                    <span class="badge bg-danger">No Válido</span>
+                                @else
+                                    <span class="badge bg-warning text-white">Pendiente</span>
+                                @endif
                             @endif
                         </td>
-                        <td>
+                        <td class="text-end" style="white-space:nowrap;">
                             <div class="d-flex justify-content-end gap-1">
-                                {{-- Ver --}}
                                 @php
-                                    // === PARTE MODIFICADA: Todas las extensiones que pueden tener vista previa ===
                                     $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg', 'webp', 'ico', 'tiff', 'tif'];
                                     $textExtensions = ['txt', 'php', 'js', 'css', 'html', 'xml', 'json', 'sql', 'md'];
                                     $previewExtensions = array_merge(['pdf'], $imageExtensions, $textExtensions);
                                 @endphp
 
+                                {{-- VER - Visible para todos --}}
                                 @if(in_array($ext, $previewExtensions))
                                 <button type="button" class="btn btn-sm btn-outline-info" 
                                         onclick="viewDocument({{ $doc->id }})"
@@ -95,36 +128,50 @@
                                 </button>
                                 @endif
 
-                                
-                                {{-- Editar --}}
+                                {{-- EDITAR - Solo superadmin y admin, y solo si NO fue subido por admin --}}
+                                @if(in_array($userRole, ['superadmin', 'admin']) && !$uploadedByAdmin)
                                 <button type="button" class="btn btn-sm btn-outline-secondary" 
                                         onclick="editDocument({{ $doc->id }})">
                                     <i class="bi bi-pencil-square"></i>
                                 </button>
+                                @endif
+
+                                {{-- EDITAR ADMIN - Solo superadmin y admin, solo en documentos subidos por ellos --}}
+                                @if(in_array($userRole, ['superadmin', 'admin']) && $uploadedByAdmin)
+                                <button type="button" class="btn btn-sm btn-outline-secondary"
+                                        onclick="editAdminDocument({{ $doc->id }})">
+                                    <i class="bi bi-pencil-square"></i>
+                                </button>
+                                @endif
                                 
-                                {{-- Mover --}}
+                                {{-- MOVER - Solo superadmin y admin --}}
+                                @if(in_array($userRole, ['superadmin', 'admin']))
                                 <button type="button" class="btn btn-sm btn-outline-secondary" 
                                         onclick="moveDocument({{ $doc->id }}, '{{ $doc->name }}.{{ $ext }}')">
                                     <i class="bi bi-arrow-right-circle"></i>
                                 </button>
+                                @endif
                                 
-                                {{-- Descargar --}}
+                                {{-- DESCARGAR - Visible para todos --}}
                                 <a href="{{ route('documental.document.download', $doc->id) }}" 
                                    class="btn btn-sm btn-outline-primary">
                                     <i class="bi bi-download"></i>
                                 </a>
                                 
-                                {{-- Eliminar --}}
+                                {{-- ELIMINAR - Solo superadmin y admin --}}
+                                @if(in_array($userRole, ['superadmin', 'admin']))
                                 <form action="{{ route('documental.document.destroy', $doc->id) }}" 
                                       method="POST" 
-                                      class="d-inline"
-                                      onsubmit="return confirm('¿Eliminar este documento?')">
+                                      class="d-inline" 
+                                      id="delete-form-{{ $doc->id }}">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                    <button type="button" class="btn btn-sm btn-outline-danger" 
+                                            onclick="deleteDocument({{ $doc->id }}, '{{ addslashes($doc->name) }}', '{{ $ext }}')">
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </form>
+                                @endif
                             </div>
                         </td>
                     </tr>
@@ -135,31 +182,30 @@
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 function editDocument(id) {
     fetch(`/documental/document/${id}/data`)
         .then(response => response.json())
         .then(data => {
-            document.getElementById('edit_document_name').value = data.name;
-            document.getElementById('edit_responsable').value = data.responsable || '';
-            document.getElementById('edit_proceso').value = data.proceso || '';
-            document.getElementById('edit_departamento').value = data.departamento || '';
-            document.getElementById('edit_estatus').value = data.estatus;
+            document.getElementById('edit_document_name').value = data.name || '';
+            document.getElementById('edit_responsable').value   = data.responsable || '';
+            document.getElementById('edit_proceso').value       = data.proceso || '';
+            document.getElementById('edit_departamento').value  = data.departamento || '';
+            document.getElementById('edit_estatus').value       = data.estatus || 'Pendiente';
             document.getElementById('edit_observaciones').value = data.observaciones || '';
-            
-            // Usar created_at para el input datetime-local si fecha no está disponible
-            if (data.fecha) {
-                const fecha = new Date(data.fecha);
-                const year = fecha.getFullYear();
-                const month = String(fecha.getMonth() + 1).padStart(2, '0');
-                const day = String(fecha.getDate()).padStart(2, '0');
-                const hours = String(fecha.getHours()).padStart(2, '0');
-                const minutes = String(fecha.getMinutes()).padStart(2, '0');
-                document.getElementById('edit_fecha').value = `${year}-${month}-${day}T${hours}:${minutes}`;
-            } else {
-                document.getElementById('edit_fecha').value = '';
+
+            // Fecha: el servidor devuelve 'YYYY-MM-DDTHH:mm' ya en timezone correcto
+            document.getElementById('edit_fecha').value = data.fecha || '';
+
+            // Deshabilitar campos de info si el doc fue subido por usuario (no admin)
+            if (typeof setModoUsuario === 'function') {
+                setModoUsuario(!data.uploaded_by_admin);
             }
-            
+
+            // Disparar toggle de observaciones según estatus actual
+            document.getElementById('edit_estatus').dispatchEvent(new Event('change'));
+
             document.getElementById('editDocumentForm').action = `/documental/document/${id}`;
             new bootstrap.Modal(document.getElementById('editDocumentModal')).show();
         });
@@ -189,6 +235,42 @@ function moveDocument(id, name) {
         });
     
     new bootstrap.Modal(document.getElementById('moveDocumentModal')).show();
+}
+
+// Nueva función para eliminar con SweetAlert2
+function deleteDocument(id, name, ext) {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    const fullName = name + '.' + ext;
+    
+    Swal.fire({
+        title: '¿Eliminar documento?',
+        html: `
+            <div style="text-align: left;">
+                <center>
+                <p style="font-size: 1.1rem; margin-bottom: 10px;">
+                    ¿Estás seguro de eliminar  "<strong>📄 ${fullName}</strong>"?
+                </p>
+                </center>
+                
+                
+            </div>
+        `,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar',
+        reverseButtons: true,
+        showLoaderOnConfirm: true,
+        preConfirm: () => {
+            document.getElementById(`delete-form-${id}`).submit();
+        }
+    });
+    
+    return false;
 }
 </script>
 @endif

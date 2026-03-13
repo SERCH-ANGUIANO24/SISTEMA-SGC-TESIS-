@@ -24,6 +24,9 @@ class DocumentalDocument extends Model
         'responsable',
         'proceso',
         'departamento',
+        'clave_formato',
+        'codigo_procedimiento',
+        'version_procedimiento',
         'estatus',
         'observaciones',
         'fecha'
@@ -35,60 +38,47 @@ class DocumentalDocument extends Model
         'updated_at' => 'datetime'
     ];
 
-    // Relación con carpeta
     public function folder()
     {
         return $this->belongsTo(DocumentalFolder::class, 'folder_id');
     }
 
-    // Relación con usuario
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    // Obtener nombre completo con extensión
     public function getFullNameAttribute()
     {
         return $this->name . '.' . $this->extension;
     }
 
-    // Obtener tamaño formateado
     public function getFormattedSizeAttribute()
     {
         $bytes = $this->size;
-        
-        if ($bytes < 1024) {
-            return $bytes . ' B';
-        } elseif ($bytes < 1048576) {
-            return round($bytes / 1024, 1) . ' KB';
-        } elseif ($bytes < 1073741824) {
-            return round($bytes / 1048576, 1) . ' MB';
-        } else {
-            return round($bytes / 1073741824, 1) . ' GB';
-        }
+        if ($bytes < 1024) return $bytes . ' B';
+        elseif ($bytes < 1048576) return round($bytes / 1024, 1) . ' KB';
+        elseif ($bytes < 1073741824) return round($bytes / 1048576, 1) . ' MB';
+        else return round($bytes / 1073741824, 1) . ' GB';
     }
 
-    // Obtener ícono según extensión
     public function getIconAttribute()
     {
         $icons = [
-            'pdf' => 'bi-file-pdf',
-            'doc' => 'bi-file-word',
+            'pdf'  => 'bi-file-pdf',
+            'doc'  => 'bi-file-word',
             'docx' => 'bi-file-word',
-            'xls' => 'bi-file-excel',
+            'xls'  => 'bi-file-excel',
             'xlsx' => 'bi-file-excel',
-            'jpg' => 'bi-file-image',
+            'jpg'  => 'bi-file-image',
             'jpeg' => 'bi-file-image',
-            'png' => 'bi-file-image',
-            'gif' => 'bi-file-image',
-            'txt' => 'bi-file-text',
+            'png'  => 'bi-file-image',
+            'gif'  => 'bi-file-image',
+            'txt'  => 'bi-file-text',
         ];
-
         return $icons[strtolower($this->extension)] ?? 'bi-file-earmark';
     }
 
-    // Verificar si se puede previsualizar
     public function getCanPreviewAttribute()
     {
         $previewable = ['pdf', 'jpg', 'jpeg', 'png', 'gif', 'txt'];

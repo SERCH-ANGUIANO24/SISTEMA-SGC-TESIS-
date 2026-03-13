@@ -626,16 +626,17 @@
                                 required
                             >
                                 <option value="">Selecciona un departamento</option>
-                                <option value="Rectoría" {{ old('departamento') == 'Rectoría' ? 'selected' : '' }}>Rectoría</option>
-                                <option value="Dirección Académica" {{ old('departamento') == 'Dirección Académica' ? 'selected' : '' }}>Dirección Académica</option>
-                                <option value="Dirección de Administración y Finanzas" {{ old('departamento') == 'Dirección de Administración y Finanzas' ? 'selected' : '' }}>Dirección de Administración y Finanzas</option>
-                                <option value="Recursos Humanos" {{ old('departamento') == 'Recursos Humanos' ? 'selected' : '' }}>Recursos Humanos</option>
-                                <option value="Vinculación" {{ old('departamento') == 'Vinculación' ? 'selected' : '' }}>Vinculación</option>
-                                <option value="Sistemas Computacionales" {{ old('departamento') == 'Sistemas Computacionales' ? 'selected' : '' }}>Sistemas Computacionales</option>
-                                <option value="Recursos Financieros" {{ old('departamento') == 'Recursos Financieros' ? 'selected' : '' }}>Recursos Financieros</option>
-                                <option value="Almacén" {{ old('departamento') == 'Almacén' ? 'selected' : '' }}>Almacén</option>
-                                <option value="Encargado de Laboratorios" {{ old('departamento') == 'Encargado de Laboratorios' ? 'selected' : '' }}>Encargado de Laboratorios</option>
-                                <option value="Biblioteca" {{ old('departamento') == 'Biblioteca' ? 'selected' : '' }}>Biblioteca</option>
+                                <option value="Rectoría" data-proceso="Planeación">Rectoría</option>
+                                <option value="Dirección Académica" data-proceso="Planeación,Enseñanza/Aprendizaje">Dirección Académica</option>
+                                <option value="Dirección de Administración y Finanzas" data-proceso="Planeación">Dirección de Administración y Finanzas</option>
+                                <option value="Servicios Escolares" data-proceso="Preinscripción,Inscripción,Reinscripción,Titulación">Servicios Escolares</option>
+                                <option value="Recursos Humanos" data-proceso="Contratación o Control de Personal">Recursos Humanos</option>
+                                <option value="Vinculación" data-proceso="Vinculación">Vinculación</option>
+                                <option value="Sistemas Computacionales" data-proceso="TI">Sistemas Computacionales</option>
+                                <option value="Recursos Financieros" data-proceso="Gestión de Recursos">Recursos Financieros</option>
+                                <option value="Almacén" data-proceso="Gestión de Recursos">Almacén</option>
+                                <option value="Encargado/a de Laboratorios" data-proceso="Laboratorios y Talleres">Encargado/a de Laboratorios</option>
+                                <option value="Biblioteca" data-proceso="Centro de Información">Biblioteca</option>
                             </select>
                         </div>
                         @error('departamento')
@@ -741,6 +742,49 @@
             const passwordStrengthFill = document.getElementById('passwordStrengthFill');
             const passwordStrengthText = document.getElementById('passwordStrengthText');
             const passwordMatchText = document.getElementById('passwordMatchText');
+            
+            // Función para filtrar departamentos según el proceso seleccionado
+            function filterDepartamentos() {
+                const selectedProceso = procesoSelect.value;
+                const options = departamentoSelect.querySelectorAll('option');
+                
+                // Resetear selección
+                departamentoSelect.value = '';
+                
+                options.forEach(option => {
+                    if (option.value === '') {
+                        // Siempre mostrar la opción por defecto
+                        option.style.display = 'block';
+                        return;
+                    }
+                    
+                    const procesosPermitidos = option.getAttribute('data-proceso') || '';
+                    const procesosArray = procesosPermitidos.split(',');
+                    
+                    if (selectedProceso === '') {
+                        // Si no hay proceso seleccionado, ocultar todas las opciones excepto la primera
+                        option.style.display = 'none';
+                    } else if (procesosArray.includes(selectedProceso)) {
+                        // Mostrar solo las opciones que pertenecen al proceso seleccionado
+                        option.style.display = 'block';
+                    } else {
+                        option.style.display = 'none';
+                    }
+                });
+                
+                // Validar el select de departamento después del filtro
+                if (selectedProceso !== '') {
+                    validateSelect(departamentoSelect);
+                }
+            }
+            
+            // Evento change en el select de proceso
+            procesoSelect.addEventListener('change', filterDepartamentos);
+            
+            // Ejecutar filtro inicial si hay un valor guardado
+            if (procesoSelect.value) {
+                filterDepartamentos();
+            }
             
             // Form submission with loading state
             form.addEventListener('submit', function(e) {
@@ -976,7 +1020,10 @@
             // Auto-validar al cargar
             if (nameInput.value) validateName(nameInput);
             if (emailInput.value) validateEmail(emailInput);
-            if (procesoSelect.value) validateSelect(procesoSelect);
+            if (procesoSelect.value) {
+                validateSelect(procesoSelect);
+                filterDepartamentos();
+            }
             if (departamentoSelect.value) validateSelect(departamentoSelect);
             if (passwordInput.value) validatePasswordStrength(passwordInput.value);
             if (passwordConfirmInput.value) validatePasswordMatch();

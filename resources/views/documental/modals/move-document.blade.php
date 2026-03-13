@@ -1,4 +1,3 @@
-
 <div class="modal fade" id="moveDocumentModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <form action="" method="POST" id="moveDocumentForm">

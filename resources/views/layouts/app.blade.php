@@ -39,7 +39,7 @@
         }
 
         body {
-            background: var(--dark-bg);
+            background: #ffffff;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 

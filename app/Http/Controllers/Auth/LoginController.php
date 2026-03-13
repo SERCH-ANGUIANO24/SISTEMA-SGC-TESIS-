@@ -29,8 +29,20 @@ class LoginController extends Controller
 
         // Intentar autenticar
         if (Auth::attempt($credentials, $request->filled('remember'))) {
+
+            // Verificar si la cuenta está activa
+            if (!Auth::user()->is_active) {
+                Auth::logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+
+                return back()->withErrors([
+                    'email' => 'Tu cuenta está desactivada. Contacta al administrador.',
+                ])->onlyInput('email');
+            }
+
             $request->session()->regenerate();
-            
+
             // Redirigir a dashboard o página previa
             return redirect()->intended('dashboard');
         }
@@ -49,7 +61,7 @@ class LoginController extends Controller
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        
+
         return redirect('/');
     }
 }

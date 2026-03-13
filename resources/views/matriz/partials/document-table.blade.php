@@ -41,41 +41,46 @@
                             <td class="text-end">
                                 @php
                                     $ext = strtolower($doc->extension ?? '');
+                                    $userRole = Auth::user()->role;
+                                    $viewableExtensions = ['pdf', 'jpg', 'jpeg', 'png', 'gif', 'txt'];
                                 @endphp
                                 
-                                @if(!in_array($ext, ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx']))
+                                {{-- BOTÓN VER - SOLO extensiones visibles, EXCLUYENDO CSV --}}
+                                @if(in_array($ext, $viewableExtensions) && $ext !== 'csv')
                                     <button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#viewDocumentModal{{ $doc->id }}" title="Ver documento">
                                         <i class="bi bi-eye"></i>
                                     </button>
                                 @endif
                                 
-                                {{-- BOTÓN EDITAR --}}
-                                <button type="button" class="btn btn-sm btn-outline-secondary" 
-                                        onclick="editDocument({{ $doc->id }})"
-                                        title="Editar matriz">
-                                    <i class="bi bi-pencil"></i>
-                                </button>
-                                
-                                {{-- BOTÓN MOVER --}}
-                                <button type="button" class="btn btn-sm btn-outline-secondary" 
-                                        onclick="moveDocument({{ $doc->id }}, '{{ $doc->name }}.{{ $doc->extension }}')"
-                                        title="Mover matriz">
-                                    <i class="bi bi-arrow-right-circle"></i>
-                                </button>
-                                
-                                {{-- BOTÓN DESCARGAR --}}
+                                {{-- BOTÓN DESCARGAR - PARA TODOS --}}
                                 <a href="{{ route('matriz.document.download', $doc->id) }}" class="btn btn-sm btn-outline-primary" title="Descargar">
                                     <i class="bi bi-download"></i>
                                 </a>
                                 
-                                {{-- BOTÓN ELIMINAR --}}
-                                <form action="{{ route('matriz.document.destroy', $doc->id) }}" method="POST" class="d-inline">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('¿Eliminar esta matriz?')" title="Eliminar">
-                                        <i class="bi bi-trash"></i>
+                                {{-- BOTONES DE ADMINISTRACIÓN - SOLO SUPERADMIN/ADMIN --}}
+                                @if(in_array($userRole, ['superadmin', 'admin']))
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" 
+                                            onclick="editDocument({{ $doc->id }})"
+                                            title="Editar matriz">
+                                        <i class="bi bi-pencil"></i>
                                     </button>
-                                </form>
+                                    
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" 
+                                            onclick="moveDocument({{ $doc->id }}, '{{ $doc->name }}.{{ $doc->extension }}')"
+                                            title="Mover matriz">
+                                        <i class="bi bi-arrow-right-circle"></i>
+                                    </button>
+                                    
+                                    <form action="{{ route('matriz.document.destroy', $doc->id) }}" method="POST" class="d-inline" id="delete-doc-form-{{ $doc->id }}">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                onclick="confirmDeleteDocument({{ $doc->id }}, '{{ addslashes($doc->name) }}')"
+                                                title="Eliminar">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                @endif
                             </td>
                         </tr>
                         @endforeach
@@ -95,20 +100,16 @@
 @endif
 
 <script>
-// Función para abrir modal de renombrar matriz (ACTUALIZADA)
+// Función para abrir modal de renombrar matriz - SOLO SUPERADMIN/ADMIN
 function editDocument(id) {
+    @if(in_array(Auth::user()->role, ['superadmin', 'admin']))
     event.stopPropagation();
     
     fetch(`/matriz/document/${id}/data`)
         .then(response => response.json())
         .then(data => {
-            // Solo cargar el nombre del documento
             document.getElementById('edit_document_name').value = data.name;
-            
-            // Establecer la acción del formulario
             document.getElementById('editDocumentForm').action = `/matriz/document/${id}`;
-            
-            // Abrir el modal
             const modal = new bootstrap.Modal(document.getElementById('editDocumentModal'));
             modal.show();
         })
@@ -121,9 +122,18 @@ function editDocument(id) {
                 confirmButtonColor: '#800000'
             });
         });
+    @else
+    Swal.fire({
+        icon: 'error',
+        title: 'Acceso denegado',
+        text: 'No tienes permiso para editar matrices',
+        confirmButtonColor: '#800000'
+    });
+    @endif
 }
 
 function moveDocument(id, name) {
+    @if(in_array(Auth::user()->role, ['superadmin', 'admin']))
     document.getElementById('moveDocumentName').textContent = name;
     document.getElementById('moveDocumentForm').action = `/matriz/document/${id}/move`;
     
@@ -144,8 +154,25 @@ function moveDocument(id, name) {
                 option.textContent = '📁 ' + folder.full_path;
                 select.appendChild(option);
             });
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'No se pudo cargar la lista de carpetas',
+                confirmButtonColor: '#800000'
+            });
         });
     
     new bootstrap.Modal(document.getElementById('moveDocumentModal')).show();
+    @else
+    Swal.fire({
+        icon: 'error',
+        title: 'Acceso denegado',
+        text: 'No tienes permiso para mover matrices',
+        confirmButtonColor: '#800000'
+    });
+    @endif
 }
 </script>

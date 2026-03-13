@@ -14,27 +14,28 @@
                         <i class="bi bi-folder-fill" style="color: {{ $folder->color }};"></i>
                     </div>
                     <h6 class="card-title fw-bold text-truncate">{{ $folder->name }}</h6>
+                    
                     <p class="card-text small text-muted">
                         {{ $folder->documents->count() }} archivos
                     </p>
                     
-                    {{-- BOTONES DE ACCIÓN DIRECTA --}}
+                    @php $userRole = Auth::user()->role; @endphp
+                    
+                    {{-- BOTONES DE ACCIÓN - SOLO SUPERADMIN/ADMIN --}}
+                    @if(in_array($userRole, ['superadmin', 'admin']))
                     <div class="mt-2 d-flex justify-content-center gap-1" onclick="event.stopPropagation();">
-                        {{-- RENOMBRAR --}}
                         <button type="button" class="btn btn-sm btn-outline-secondary" 
                                 onclick="openRenameModal('{{ $folder->id }}', '{{ $folder->name }}')"
                                 title="Renombrar carpeta">
                             <i class="bi bi-pencil"></i>
                         </button>
                         
-                        {{-- MOVER --}}
                         <button type="button" class="btn btn-sm btn-outline-secondary" 
                                 onclick="openMoveModal('{{ $folder->id }}', '{{ $folder->name }}')"
                                 title="Mover carpeta">
                             <i class="bi bi-arrow-right-circle"></i>
                         </button>
                         
-                        {{-- ELIMINAR CON SWEETALERT --}}
                         <form action="{{ route('anexos.folder.destroy', $folder->id) }}" method="POST" class="d-inline" id="delete-form-{{ $folder->id }}">
                             @csrf
                             @method('DELETE')
@@ -45,6 +46,7 @@
                             </button>
                         </form>
                     </div>
+                    @endif
                 </div>
             </div>
         </div>
@@ -52,13 +54,14 @@
     </div>
 @endif
 
-{{-- SOLO MOSTRAR "VACÍA" SI NO HAY CARPETAS Y TAMBIÉN NO HAY ARCHIVOS --}}
 @if($folders->count() == 0 && (!isset($documents) || $documents->count() == 0))
     <div class="alert alert-info d-flex align-items-center mb-4" role="alert">
         <i class="bi bi-info-circle-fill me-2"></i>
         Esta carpeta está vacía.
     </div>
 @endif
+
+
 
 {{-- MODAL RENOMBRAR CARPETA --}}
 <div class="modal fade" id="renameFolderModal" tabindex="-1" aria-hidden="true">
@@ -214,7 +217,7 @@
         modal.show();
     }
 
-    // FUNCIÓN PARA CONFIRMAR ELIMINAR CON SWEETALERT2
+    // FUNCIÓN PARA CONFIRMAR ELIMINAR CARPETA CON SWEETALERT2
     function confirmDelete(folderId, folderName) {
         event.stopPropagation();
         event.preventDefault();
@@ -251,6 +254,29 @@
             preConfirm: () => {
                 const form = document.getElementById(`delete-form-${folderId}`);
                 form.submit();
+            }
+        });
+        
+        return false;
+    }
+
+    // FUNCIÓN PARA CONFIRMAR ELIMINAR DOCUMENTO
+    function confirmDeleteDocument(docId, docName) {
+        event.stopPropagation();
+        event.preventDefault();
+        
+        Swal.fire({
+            title: '¿Eliminar archivo?',
+            text: `¿Estás seguro de eliminar "${docName}"?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById(`delete-doc-form-${docId}`).submit();
             }
         });
         
