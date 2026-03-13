@@ -11,8 +11,7 @@ use App\Http\Controllers\DocumentalController;
 use App\Http\Controllers\MatrizController;
 use App\Http\Controllers\FormatoController;
 use App\Http\Controllers\Admin\UsuariosController;
-use App\Http\Controllers\Admin\ProcesoController;   
-use App\Http\Controllers\HistorialVersionesController;
+use App\Http\Controllers\Admin\ProcesoController;   // ← NUEVO
 
 // ===== CONTROLADORES DE AUDITORÍA =====
 use App\Http\Controllers\Auditoria\AuditoriaController;
@@ -107,7 +106,6 @@ Route::middleware(['auth'])->group(function () {
     });
 });
 
-
 /* ===== MÓDULO ADMINISTRACIÓN DE USUARIOS ===== */
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
     Route::prefix('usuarios')->name('usuarios.')->group(function () {
@@ -121,19 +119,6 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::post('/add-departamento',     [ProcesoController::class, 'addDepartamento'])->name('addDepartamento');
         Route::delete('/destroy-proceso',    [ProcesoController::class, 'destroyProceso'])->name('destroyProceso');
         Route::delete('/{proceso}',          [ProcesoController::class, 'destroy'])->name('destroy');
-    });
-});
-
-/* ===== MÓDULO HISTORIAL DE VERSIONES ===== */
-Route::middleware(['auth'])->group(function () {
-    Route::prefix('historial-versiones')->name('historial-versiones.')->group(function () {
-        Route::get('/', [HistorialVersionesController::class, 'index'])->name('index');
-        Route::get('/mis-actividades', [HistorialVersionesController::class, 'misActividades'])->name('mis-actividades');
-        Route::get('/datos/graficos', [HistorialVersionesController::class, 'datosGraficos'])->name('datos-graficos');
-        Route::get('/exportar', [HistorialVersionesController::class, 'exportar'])->name('exportar');
-        Route::delete('/limpiar', [HistorialVersionesController::class, 'limpiar'])->name('limpiar');
-        Route::post('/restaurar/{id}', [HistorialVersionesController::class, 'restaurar'])->name('restaurar'); // Nueva ruta
-        Route::get('/{id}', [HistorialVersionesController::class, 'show'])->name('show');
     });
 });
 

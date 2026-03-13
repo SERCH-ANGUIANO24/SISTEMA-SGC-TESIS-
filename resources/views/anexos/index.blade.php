@@ -28,10 +28,6 @@
                         <button type="button" class="btn text-white" style="background-color: #737373;" data-bs-toggle="modal" data-bs-target="#uploadFileModal">
                             <i class="bi bi-upload me-1"></i> Subir Archivo
                         </button>
-                    @else
-                        <button type="button" class="btn text-white" style="background-color: #a9a9a9;" disabled>
-                            <i class="bi bi-upload me-1"></i> Selecciona una carpeta
-                        </button>
                     @endif
                 </div>
                 @endif
@@ -43,7 +39,13 @@
         @include('anexos.partials.breadcrumbs', ['breadcrumbs' => $breadcrumbs, 'currentFolder' => $currentFolder])
     </div>
 
-    {{-- SOLO MOSTRAR ERRORES, NO MOSTRAR MENSAJES DE ÉXITO --}}
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle me-2"></i> {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+
     @if(session('error'))
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
             <i class="bi bi-exclamation-triangle me-2"></i> {{ session('error') }}
@@ -400,7 +402,19 @@
         flex-direction: column;
         justify-content: space-between;
     }
+    .btn-outline-secondary {
+        border-color: #dee2e6;
+    }
+    .btn-outline-secondary:hover {
+        background-color: #f8f9fa;
+        border-color: #800000;
+    }
+    .btn-outline-danger:hover {
+        background-color: #dc3545;
+        color: white;
+    }
     
+    /* SweetAlert2 custom styles */
     .swal2-popup {
         font-size: 1.2rem !important;
     }
@@ -420,6 +434,7 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Inicializar SOLO si estamos dentro de una carpeta
         @if(isset($currentFolder) && $currentFolder)
             initSearch();
             initSorting();
@@ -453,32 +468,16 @@
             .then(folders => {
                 select.innerHTML = '<option value="">📁 Raíz principal</option>';
                 select.disabled = false;
-                
-                if (folders.length === 0) {
+                folders.forEach(folder => {
                     const option = document.createElement('option');
-                    option.value = '';
-                    option.textContent = '📁 No hay otras carpetas disponibles';
-                    option.disabled = true;
+                    option.value = folder.id;
+                    option.textContent = '📁 ' + folder.full_path;
                     select.appendChild(option);
-                } else {
-                    folders.forEach(folder => {
-                        const option = document.createElement('option');
-                        option.value = folder.id;
-                        option.textContent = '📁 ' + folder.full_path;
-                        select.appendChild(option);
-                    });
-                }
+                });
             })
-            .catch(error => {
-                console.error('Error:', error);
+            .catch(() => {
                 select.innerHTML = '<option value="">❌ Error al cargar carpetas</option>';
                 select.disabled = false;
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'No se pudo cargar la lista de carpetas',
-                    confirmButtonColor: '#800000'
-                });
             });
         
         new bootstrap.Modal(document.getElementById('moveDocumentModal')).show();
@@ -507,32 +506,16 @@
             .then(folders => {
                 select.innerHTML = '<option value="">📁 Raíz principal</option>';
                 select.disabled = false;
-                
-                if (folders.length === 0) {
+                folders.forEach(folder => {
                     const option = document.createElement('option');
-                    option.value = '';
-                    option.textContent = '📁 No hay otras carpetas disponibles';
-                    option.disabled = true;
+                    option.value = folder.id;
+                    option.textContent = '📁 ' + folder.full_path;
                     select.appendChild(option);
-                } else {
-                    folders.forEach(folder => {
-                        const option = document.createElement('option');
-                        option.value = folder.id;
-                        option.textContent = '📁 ' + folder.full_path;
-                        select.appendChild(option);
-                    });
-                }
+                });
             })
-            .catch(error => {
-                console.error('Error:', error);
+            .catch(() => {
                 select.innerHTML = '<option value="">❌ Error al cargar carpetas</option>';
                 select.disabled = false;
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'No se pudo cargar la lista de carpetas',
-                    confirmButtonColor: '#800000'
-                });
             });
         
         new bootstrap.Modal(document.getElementById('moveFolderModal')).show();
@@ -540,110 +523,57 @@
 
     function deleteElement(id, name, type) {
         event.stopPropagation();
-        
-        if (type === 'Documento') {
-            Swal.fire({
-                title: '¿Eliminar archivo?',
-                text: `¿Estás seguro de eliminar "${name}"?`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#dc3545',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: 'Sí, eliminar',
-                cancelButtonText: 'Cancelar'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    proceedWithDeletion(id, type, name);
-                }
-            });
-        } else {
-            Swal.fire({
-                title: '¿Eliminar ' + type.toLowerCase() + '?',
-                html: `
-                    <div style="text-align: left;">
-                        <p style="font-size: 1.1rem; margin-bottom: 10px;">
-                            <strong>${type === 'Carpeta' ? '📁' : '📄'} ${name}</strong>
-                        </p>
-                        <p style="color: #dc3545; font-weight: 500;">
-                            ⚠️ Esta acción eliminará permanentemente:
-                        </p>
-                        <ul style="text-align: left; margin-bottom: 15px;">
-                            <li>La ${type.toLowerCase()} <strong>"${name}"</strong></li>
-                            ${type === 'Carpeta' ? '<li>Todas las subcarpetas dentro de ella</li>' : ''}
-                            <li>Todos los archivos dentro ${type === 'Carpeta' ? 'de la carpeta' : ''}</li>
-                        </ul>
-                        <p style="color: #856404; background-color: #fff3cd; padding: 10px; border-radius: 5px;">
-                            <i class="bi bi-exclamation-triangle-fill"></i>
-                            <strong>¡No podrás recuperar esta información después de eliminarla!</strong>
-                        </p>
-                    </div>
-                `,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#dc3545',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: 'Sí, eliminar',
-                cancelButtonText: 'Cancelar',
-                reverseButtons: true
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    proceedWithDeletion(id, type, name);
-                }
-            });
-        }
-        
-        return false;
-    }
-
-    function proceedWithDeletion(id, type, name) {
         Swal.fire({
-            title: 'Eliminando...',
-            text: 'Por favor espere',
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
-        });
-        
-        const url = '/anexos/' + (type === 'Documento' ? 'document/' : 'folder/') + id;
-        
-        fetch(url, {
-            method: 'DELETE',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                Swal.fire({
-                    icon: 'success',
-                    title: '¡Eliminado!',
-                    text: data.message,
-                    confirmButtonColor: '#800000',
-                    timer: 2000
-                }).then(() => {
-                    location.reload();
+            title: '¿Eliminar ' + type.toLowerCase() + '?',
+            text: `¿Estás seguro de eliminar "${name}"?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const url = '/anexos/' + (type === 'Documento' ? 'document/' : 'folder/') + id;
+                
+                fetch(url, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: '¡Eliminado!',
+                            text: data.message,
+                            confirmButtonColor: '#800000',
+                            timer: 2000
+                        }).then(() => {
+                            location.reload();
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: data.message || 'Error al eliminar',
+                            confirmButtonColor: '#800000'
+                        });
+                    }
+                })
+                .catch(error => {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Error de conexión',
+                        confirmButtonColor: '#800000'
+                    });
                 });
-            } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: data.message || 'Error al eliminar',
-                    confirmButtonColor: '#800000'
-                });
             }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Error de conexión',
-                confirmButtonColor: '#800000'
-            });
         });
     }
     @endif

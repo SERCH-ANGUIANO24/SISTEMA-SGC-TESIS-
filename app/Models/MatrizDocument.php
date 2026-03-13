@@ -4,11 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Traits\RegistraHistorialVersiones;
 
 class MatrizDocument extends Model
 {
-    use HasFactory, RegistraHistorialVersiones;
+    use HasFactory;
 
     protected $table = 'matrices_documents';
 

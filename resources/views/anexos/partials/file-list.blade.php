@@ -43,11 +43,10 @@
                                     $ext = strtolower(pathinfo($doc->original_name, PATHINFO_EXTENSION));
                                     $userRole = Auth::user()->role;
                                     $viewableExtensions = ['pdf', 'jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg', 'webp', 'txt'];
-                                    $noViewable = ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'csv'];
                                 @endphp
                                 
                                 {{-- BOTÓN VER - PARA TODOS (solo extensiones visibles) --}}
-                                @if(!in_array($ext, $noViewable))
+                                @if(in_array($ext, $viewableExtensions))
                                     <button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#viewDocumentModal{{ $doc->id }}">
                                         <i class="bi bi-eye"></i>
                                     </button>
@@ -61,22 +60,26 @@
                                 {{-- BOTONES DE ADMINISTRACIÓN - SOLO SUPERADMIN/ADMIN --}}
                                 @if(in_array($userRole, ['superadmin', 'admin']))
                                     <button type="button" class="btn btn-sm btn-outline-secondary" 
-                                            onclick="openRenameDocumentModal({{ $doc->id }}, '{{ $doc->name }}')"
+                                            onclick="openRenameDocumentModal('{{ $doc->id }}', '{{ $doc->name }}')"
                                             title="Renombrar archivo">
                                         <i class="bi bi-pencil"></i>
                                     </button>
                                     
                                     <button type="button" class="btn btn-sm btn-outline-secondary" 
-                                            onclick="openMoveDocumentModal({{ $doc->id }}, '{{ $doc->name }}.{{ pathinfo($doc->original_name, PATHINFO_EXTENSION) }}')"
+                                            onclick="openMoveDocumentModal('{{ $doc->id }}', '{{ $doc->name }}.{{ pathinfo($doc->original_name, PATHINFO_EXTENSION) }}')"
                                             title="Mover archivo">
                                         <i class="bi bi-arrow-right-circle"></i>
                                     </button>
                                     
-                                    <button type="button" class="btn btn-sm btn-outline-danger" 
-                                            onclick="deleteElement({{ $doc->id }}, '{{ addslashes($doc->name) }}', 'Documento')"
-                                            title="Eliminar archivo">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
+                                    <form action="{{ route('anexos.document.destroy', $doc->id) }}" method="POST" class="d-inline" id="delete-doc-form-{{ $doc->id }}">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                onclick="confirmDeleteDocument({{ $doc->id }}, '{{ addslashes($doc->name) }}')"
+                                                title="Eliminar archivo">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
                                 @endif
                             </td>
                         </tr>

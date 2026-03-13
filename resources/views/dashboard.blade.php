@@ -69,12 +69,12 @@
                     'visible' => in_array($userRole, ['superadmin', 'admin'])
                 ],
                 [
-                    'title' => 'Historial de Versiones',
-                    'icon' => 'bi-clock-history',
-                    'description' => 'Registro completo de actividades',
+                    'title' => 'Historial de versiones',
+                    'icon' => 'bi-trash',
+                    'description' => 'Cambios realizados en documentos',
                     'color' => '#0891b2',
-                    'route' => route('historial-versiones.index'), // <<< CORREGIDO
-                    'visible' => in_array($userRole, ['superadmin', 'admin'])
+                    'route' => '#', // Módulo en desarrollo
+                    'visible' => $userRole === 'superadmin' // SOLO SUPERADMIN
                 ],
                 [
                     'title' => 'Notificaciones',

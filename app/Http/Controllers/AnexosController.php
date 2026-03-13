@@ -119,36 +119,22 @@ class AnexosController extends Controller
         $user = Auth::user();
         
         if (!in_array($user->role, ['superadmin', 'admin'])) {
-            return response()->json([
-                'success' => false, 
-                'message' => 'No tienes permiso para eliminar carpetas.'
-            ], 403);
+            return response()->json(['success' => false, 'message' => 'No tienes permiso para eliminar carpetas.'], 403);
         }
         
-        try {
-            $folder = Folder::findOrFail($id);
-            $parentId = $folder->parent_id;
+        $folder = Folder::findOrFail($id);
+        $parentId = $folder->parent_id;
 
-            // Eliminar documentos y archivos físicos
-            foreach ($folder->documents as $doc) {
-                Storage::disk('public')->delete($doc->file_path);
-                $doc->delete();
-            }
-
-            $this->recursiveDeleteFiles($folder);
-            $folder->delete();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Carpeta eliminada correctamente.',
-                'parent_id' => $parentId
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al eliminar la carpeta: ' . $e->getMessage()
-            ], 500);
+        foreach ($folder->documents as $doc) {
+            Storage::disk('public')->delete($doc->file_path);
+            $doc->delete();
         }
+
+        $this->recursiveDeleteFiles($folder);
+        $folder->delete();
+
+        return redirect()->route('anexos.index', ['folder' => $parentId])
+                         ->with('success', 'Carpeta eliminada.');
     }
 
     /**
@@ -159,30 +145,17 @@ class AnexosController extends Controller
         $user = Auth::user();
         
         if (!in_array($user->role, ['superadmin', 'admin'])) {
-            return response()->json([
-                'success' => false, 
-                'message' => 'No tienes permiso para eliminar documentos.'
-            ], 403);
+            return response()->json(['success' => false, 'message' => 'No tienes permiso para eliminar documentos.'], 403);
         }
         
-        try {
-            $document = Document::findOrFail($id);
-            $folderId = $document->folder_id;
+        $document = Document::findOrFail($id);
+        $folderId = $document->folder_id;
 
-            Storage::disk('public')->delete($document->file_path);
-            $document->delete();
+        Storage::disk('public')->delete($document->file_path);
+        $document->delete();
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Documento eliminado correctamente.',
-                'folder_id' => $folderId
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al eliminar el documento: ' . $e->getMessage()
-            ], 500);
-        }
+        return redirect()->route('anexos.index', ['folder' => $folderId])
+                         ->with('success', 'Archivo eliminado.');
     }
 
     /**
