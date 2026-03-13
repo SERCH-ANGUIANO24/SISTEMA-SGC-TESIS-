@@ -1,0 +1,169 @@
+PRACTICA 1 DE CISCO-PARCIAL DOS
+-------------------------------------------------------------------
+				SW1 (Switch Izquierdo)
+
+enable
+configure terminal
+
+! Crear las VLANs
+vlan 10
+  name Verdes
+vlan 20
+  name Rojas
+exit
+
+! Configurar puerto para PC0 (VLAN 10)
+interface FastEthernet0/2
+  switchport mode access
+  switchport access vlan 10
+exit
+
+! Configurar puerto para PC1 (VLAN 20)
+interface FastEthernet0/3
+  switchport mode access
+  switchport access vlan 20
+exit
+
+! Configurar puerto hacia R1 como Troncal
+interface FastEthernet0/1
+  switchport mode trunk
+exit
+
+end
+write memory
+------------------------------------------------------------------------------
+				SW2 (Switch Derecho)
+
+enable
+configure terminal
+
+! Crear las VLANs
+vlan 10
+  name Verdes
+vlan 20
+  name Rojas
+exit
+
+! Configurar puerto para PC2 (VLAN 10)
+interface FastEthernet0/2
+  switchport mode access
+  switchport access vlan 10
+exit
+
+! Configurar puerto para PC3 (VLAN 20)
+interface FastEthernet0/3
+  switchport mode access
+  switchport access vlan 20
+exit
+
+! Configurar puerto para Server0 (VLAN 10)
+interface FastEthernet0/4
+  switchport mode access
+  switchport access vlan 10
+exit
+
+! Configurar puerto hacia R2 como Troncal
+interface FastEthernet0/1
+  switchport mode trunk
+exit
+
+end
+write memory
+----------------------------------------------------------------------------------
+				R1 (Router Izquierdo)
+
+enable
+configure terminal
+
+! Configurar la subinterfaz para VLAN 10 (Red 192.168.10.0/24)
+interface GigabitEthernet0/0.10
+  encapsulation dot1q 10
+  ip address 192.168.10.1 255.255.255.0
+exit
+
+! Configurar la subinterfaz para VLAN 20 (Red 192.168.20.0/24)
+interface GigabitEthernet0/0.20
+  encapsulation dot1q 20
+  ip address 192.168.20.1 255.255.255.0
+exit
+
+! Encender la interfaz física principal
+interface GigabitEthernet0/0
+  no ip address
+  no shutdown
+exit
+
+! Configurar el enlace WAN (Serial)
+interface Serial0/3/0
+  ip address 10.0.0.1 255.255.255.252
+  clock rate 64000  ! Asumiendo que R1 es el lado DCE
+  no shutdown
+exit
+
+end
+-------------------------------------------------------------------------------------
+					R2 (Router Derecho)
+
+enable
+configure terminal
+
+! Configurar la subinterfaz para VLAN 10 (Red 172.120.10.0/24)
+interface GigabitEthernet0/0.10
+  encapsulation dot1q 10
+  ip address 172.120.10.1 255.255.255.0
+exit
+
+! Configurar la subinterfaz para VLAN 20 (Red 172.120.20.0/24)
+interface GigabitEthernet0/0.20
+  encapsulation dot1q 20
+  ip address 172.120.20.1 255.255.255.0
+exit
+
+! Encender la interfaz física principal
+interface GigabitEthernet0/0
+  no ip address
+  no shutdown
+exit
+
+! Configurar el enlace WAN (Serial)
+interface Serial0/3/0
+  ip address 10.0.0.2 255.255.255.252
+  no shutdown
+exit
+
+end
+----------------------------------------------------------------------------------
+					R1 (EIGRP)
+
+configure terminal
+
+! Habilitar EIGRP AS 100
+router eigrp 100
+  ! Anunciar las redes conectadas (LANs y WAN)
+  network 192.168.10.0
+  network 192.168.20.0
+  network 10.0.0.0
+  ! Buena práctica para evitar sumarización inesperada
+  no auto-summary
+exit
+
+end
+write memory
+--------------------------------------------------------------------------------
+					R2 (EIGRP)
+
+configure terminal
+
+! Habilitar EIGRP AS 100
+router eigrp 100
+  ! Anunciar las redes conectadas (LANs y WAN)
+  network 172.120.10.0
+  network 172.120.20.0
+  network 10.0.0.0
+  ! Buena práctica
+  no auto-summary
+exit
+
+end
+write memory
+-------------------------------------------------------------------------------
