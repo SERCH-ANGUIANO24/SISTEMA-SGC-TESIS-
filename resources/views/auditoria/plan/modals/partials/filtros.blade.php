@@ -8,8 +8,8 @@
                     <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted" style="font-size: 1rem;"></i>
                     <input type="text" class="form-control ps-5" style="width: 100%; height: 42px; font-size: 1rem; border-radius: 4px 0 0 4px; border-right: none;" placeholder="Buscar archivos" id="buscadorArchivos">
                 </div>
-                <button class="btn btn-outline-secondary d-flex align-items-center justify-content-center" 
-                        style="width: 42px; height: 42px; border-radius: 0 4px 4px 0; background-color: white; border-left: none;"
+                <button class="btn btn-outline-secondary d-flex align-items-center justify-content-center btn-clear-search" 
+                        style="width: 42px; height: 42px; border-radius: 0 4px 4px 0; background-color: white; border-left: none; transition: all 0.2s;"
                         id="limpiarBusqueda"
                         onclick="limpiarBuscador()"
                         title="Limpiar búsqueda">
@@ -56,3 +56,14 @@
         </div>
     </div>
 </div>
+
+<style>
+    /* Hover para botón de limpiar búsqueda */
+    .btn-clear-search:hover {
+        background-color: #737373 !important;
+        border-color: #737373 !important;
+    }
+    .btn-clear-search:hover i {
+        color: white !important;
+    }
+</style>
