@@ -4,80 +4,140 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="modalNuevaSolicitudLabel">
-                    <i class="bi bi-pencil-square me-2" style="color: #800000;"></i>
+                    <i class="bi bi-file-earmark-plus me-2" style="color: #800000;"></i>
                     Registrar Nueva Solicitud de Mejora
                 </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form id="formSolicitud" enctype="multipart/form-data" novalidate>
                 @csrf
                 <div class="modal-body">
                     <input type="hidden" id="solicitud_id" name="solicitud_id">
-                    
+
                     <!-- DATOS DE LA SOLICITUD -->
                     <div class="row mb-4">
                         <div class="col-12">
                             <h6 class="fw-bold mb-3" style="color: #800000;">DATOS DE LA SOLICITUD</h6>
                         </div>
-                        
-                        <!-- No. de Identificación (antes Folio) -->
+
+                        <!-- Informe Relacionado -->
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">No. de Identificación *</label>
-                            <input type="text" class="form-control" id="folio_solicitud" name="folio_solicitud" placeholder="Ej: F001">
-                            <div class="invalid-feedback" id="error-folio_solicitud">El número de identificación es obligatorio.</div>
+                            <label class="form-label">Informe Relacionado</label>
+                            <select class="form-select" id="informe_id" name="informe_id">
+                                <option value="">-- Seleccionar informe --</option>
+                                @foreach($informes as $inf)
+                                    <option value="{{ $inf->id }}" data-fecha="{{ $inf->fecha_informe ? $inf->fecha_informe->format('Y-m-d') : '' }}">
+                                        {{ $inf->nombre_informe }}
+                                    </option>
+                                @endforeach
+                            </select>
                         </div>
-                        
+
+                        <!-- Fecha del Informe -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Fecha del Informe <small class="text-muted fw-normal"><i class="bi bi-lock-fill"></i> Se llena automáticamente</small></label>
+                            <input type="text" class="form-control" id="fecha_informe_display" readonly
+                                   placeholder="Selecciona un informe"
+                                   style="background-color:#f8f9fa; cursor:not-allowed; border-color:#ced4da;">
+                            <input type="hidden" id="fecha_informe" name="fecha_informe">
+                        </div>
+
+                        <!-- No. de Identificación -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">No. de Identificación</label>
+                            <input type="text" class="form-control" id="folio_solicitud" name="folio_solicitud" placeholder="Ej: F001">
+                            <div class="invalid-feedback" id="error-folio_solicitud"></div>
+                        </div>
+
                         <!-- Fecha de Solicitud -->
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Fecha de Solicitud *</label>
+                            <label class="form-label">Fecha de Solicitud</label>
                             <input type="date" class="form-control" id="fecha_solicitud" name="fecha_solicitud">
-                            <div class="invalid-feedback" id="error-fecha_solicitud">La fecha de solicitud es obligatoria.</div>
+                            <div class="invalid-feedback" id="error-fecha_solicitud"></div>
                         </div>
-                        
+
                         <!-- Responsable de la Acción -->
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Responsable de la Acción *</label>
+                            <label class="form-label">Responsable de la Acción</label>
                             <input type="text" class="form-control" id="responsable_accion" name="responsable_accion" placeholder="Nombre del responsable">
-                            <div class="invalid-feedback" id="error-responsable_accion">El responsable de la acción es obligatorio.</div>
+                            <div class="invalid-feedback" id="error-responsable_accion"></div>
                         </div>
-                        
-                        <!-- Periodo de Aplicación (antes Fecha de Aplicación) -->
+
+                        <!-- Periodo de Aplicación -->
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Periodo de Aplicación *</label>
+                            <label class="form-label">Periodo de Aplicación</label>
                             <input type="month" class="form-control" id="fecha_aplicacion" name="fecha_aplicacion">
-                            <div class="invalid-feedback" id="error-fecha_aplicacion">El periodo de aplicación es obligatorio.</div>
+                            <div class="invalid-feedback" id="error-fecha_aplicacion"></div>
                         </div>
-                        
-                        <!-- Periodo de Verificación (antes Fecha de Verificación) -->
+
+                        <!-- Periodo de Verificación -->
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Periodo de Verificación</label>
                             <input type="month" class="form-control" id="fecha_verificacion" name="fecha_verificacion">
                         </div>
-                        
+
                         <!-- Estatus -->
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Estatus *</label>
+                            <label class="form-label">Estatus</label>
                             <select class="form-select" id="estatus" name="estatus">
                                 <option value="">Seleccione un estatus</option>
                                 <option value="No Atendida">No Atendida</option>
                                 <option value="En Proceso">En Proceso</option>
                                 <option value="Cerrado">Cerrado</option>
                             </select>
-                            <div class="invalid-feedback" id="error-estatus">El estatus es obligatorio.</div>
+                            <div class="invalid-feedback" id="error-estatus"></div>
                         </div>
-                        
-                        <!-- Actividades de Verificación (AHORA OBLIGATORIO) -->
+
+                        <!-- Procesos Auditados -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Procesos Auditados</label>
+                            <select class="form-select" id="procesos_auditados" name="procesos_auditados">
+                                <option value="">-- Seleccionar proceso --</option>
+                                @foreach($todosLosProcesos as $proceso)
+                                    <option value="{{ $proceso }}">{{ $proceso }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <!-- Indicadores NC/OM del proceso (se muestra al seleccionar proceso + informe) -->
+                        <div class="col-12 mb-3" id="indicadoresNcOm" style="display:none;">
+                            <div class="rounded p-3 d-flex gap-3 justify-content-center" style="background:#fff;border:1px solid #bab2b2;">
+                                <div class="text-center">
+                                    <div style="font-size:0.78rem;color:#dc3545;font-weight:600;">NO CONFORMIDADES</div>
+                                    <div id="valorNC" style="font-size:2rem;font-weight:700;color:#dc3545;line-height:1.1;">0</div>
+                                    <div style="font-size:0.72rem;color:#737373;">en este proceso</div>
+                                </div>
+                                <div style="width:1px;background:#e8c0c0;"></div>
+                                <div class="text-center">
+                                    <div style="font-size:0.78rem;color:#28a745;font-weight:600;">OPORTUNIDADES DE MEJORA</div>
+                                    <div id="valorOM" style="font-size:2rem;font-weight:700;color:#28a745;line-height:1.1;">0</div>
+                                    <div style="font-size:0.72rem;color:#737373;">en este proceso</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tipo de Solicitud -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Tipo de Solicitud</label>
+                            <select class="form-select" id="tipo_solicitud" name="tipo_solicitud">
+                                <option value="">-- Seleccionar tipo --</option>
+                                <option value="No Conformidad">No Conformidad</option>
+                                <option value="Oportunidad de Mejora">Oportunidad de Mejora</option>
+                            </select>
+                            <div class="invalid-feedback" id="error-tipo_solicitud"></div>
+                        </div>
+
+                        <!-- Actividades de Verificación -->
                         <div class="col-12 mb-3">
-                            <label class="form-label">Actividades de Verificación *</label>
+                            <label class="form-label">Actividades de Verificación</label>
                             <textarea class="form-control" id="actividades_verificacion" name="actividades_verificacion" rows="3" placeholder="Describa las actividades de verificación..."></textarea>
-                            <div class="invalid-feedback" id="error-actividades_verificacion">Las actividades de verificación son obligatorias.</div>
+                            <div class="invalid-feedback" id="error-actividades_verificacion"></div>
                         </div>
                     </div>
-                    
+
                     <!-- ARCHIVO ADJUNTO -->
                     <div class="row mb-4">
                         <div class="col-12">
-                            <h6 class="fw-bold mb-3" style="color: #800000;">DOCUMENTO ADJUNTO *</h6>
+                            <h6 class="fw-bold mb-3" style="color: #800000;">DOCUMENTO ADJUNTO</h6>
                             <div class="border rounded p-4 bg-light" id="dropZone">
                                 <div class="text-center mb-3">
                                     <i class="bi bi-cloud-upload" style="font-size: 3rem; color: #800000;"></i>
@@ -90,7 +150,7 @@
                                 <div id="nombreArchivoActual" class="text-center mt-2 text-muted" style="display: none;">
                                     Archivo actual: <span id="nombreArchivo"></span>
                                 </div>
-                                <div class="invalid-feedback text-center" id="error-archivo" style="display: none;">El archivo adjunto es obligatorio.</div>
+                                <div class="invalid-feedback text-center" id="error-archivo" style="display: none;"></div>
                             </div>
                         </div>
                     </div>
@@ -108,32 +168,125 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('formSolicitud');
-    const dropZone = document.getElementById('dropZone');
-    const archivoInput = document.getElementById('archivo');
-    const solicitudId = document.getElementById('solicitud_id');
-    const btnGuardar = document.getElementById('btnGuardar');
-    
-    // Quitar el required de HTML5 para evitar el cuadro chiquito
-    const camposRequeridos = document.querySelectorAll('#formSolicitud [required]');
-    camposRequeridos.forEach(campo => campo.removeAttribute('required'));
-    
+    const dropZone      = document.getElementById('dropZone');
+    const archivoInput  = document.getElementById('archivo');
+    const solicitudId   = document.getElementById('solicitud_id');
+    const btnGuardar    = document.getElementById('btnGuardar');
+    const informeSelect = document.getElementById('informe_id');
+    const procesoSelect = document.getElementById('procesos_auditados');
+    const modal         = document.getElementById('modalNuevaSolicitud');
+
+    document.querySelectorAll('#formSolicitud [required]').forEach(c => c.removeAttribute('required'));
+
+    // ===== FUNCIÓN PARA CAMBIAR TÍTULO DEL MODAL =====
+    function setModalTitle(tipo) {
+        const titleElement = document.getElementById('modalNuevaSolicitudLabel');
+        if (tipo === 'editar') {
+            titleElement.innerHTML = '<i class="bi bi-pencil-square me-2" style="color: #800000;"></i> Editar Solicitud de Mejora';
+        } else {
+            titleElement.innerHTML = '<i class="bi bi-file-earmark-plus me-2" style="color: #800000;"></i> Registrar Nueva Solicitud de Mejora';
+        }
+    }
+
+    // ===== FUNCIÓN PARA LIMPIAR EL FORMULARIO =====
+    function limpiarFormulario() {
+        document.getElementById('formSolicitud').reset();
+        solicitudId.value = '';
+        document.getElementById('nombreArchivoActual').style.display = 'none';
+        document.getElementById('fecha_informe_display').value = '';
+        document.getElementById('fecha_informe').value = '';
+        document.getElementById('procesos_auditados').value = '';
+        document.getElementById('tipo_solicitud').value = '';
+        document.getElementById('indicadoresNcOm').style.display = 'none';
+        archivoInput.value = '';
+        
+        // Limpiar errores
+        document.querySelectorAll('#formSolicitud .is-invalid').forEach(i => i.classList.remove('is-invalid'));
+        document.querySelectorAll('#formSolicitud .invalid-feedback').forEach(m => m.style.display = 'none');
+    }
+
+    // ===== EVENTO AL ABRIR EL MODAL =====
+    modal.addEventListener('show.bs.modal', function() {
+        if (!solicitudId.value) {
+            // Es una nueva solicitud
+            setModalTitle('nuevo');
+            limpiarFormulario();
+        } else {
+            // Es una edición
+            setModalTitle('editar');
+        }
+    });
+
+    // ===== EVENTO AL CERRAR EL MODAL =====
+    modal.addEventListener('hidden.bs.modal', function() {
+        // Limpiar todo al cerrar el modal
+        limpiarFormulario();
+        setModalTitle('nuevo');
+    });
+
+    // ── Función para cargar NC/OM según informe + proceso ──
+    function cargarNcOm() {
+        const informeId = informeSelect.value;
+        const proceso   = procesoSelect.value;
+
+        if (!informeId || !proceso) {
+            document.getElementById('indicadoresNcOm').style.display = 'none';
+            return;
+        }
+
+        fetch(`{{ route('auditoria.solicitudes.ncOmPorProceso') }}?informe_id=${informeId}&proceso=${encodeURIComponent(proceso)}`, {
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(r => r.json())
+        .then(data => {
+            document.getElementById('valorNC').textContent = data.nc ?? 0;
+            document.getElementById('valorOM').textContent = data.om ?? 0;
+            document.getElementById('indicadoresNcOm').style.display = 'block';
+        })
+        .catch(() => {
+            document.getElementById('indicadoresNcOm').style.display = 'none';
+        });
+    }
+
+    // Al seleccionar informe → llenar fecha + cargar NC/OM
+    informeSelect.addEventListener('change', function() {
+        const selected     = this.options[this.selectedIndex];
+        const fecha        = selected.dataset.fecha || '';
+        const hiddenFecha  = document.getElementById('fecha_informe');
+        const displayFecha = document.getElementById('fecha_informe_display');
+
+        if (fecha) {
+            const partes = fecha.split('-');
+            displayFecha.value = partes[2] + '/' + partes[1] + '/' + partes[0];
+            hiddenFecha.value  = fecha;
+        } else {
+            displayFecha.value = '';
+            hiddenFecha.value  = '';
+        }
+
+        cargarNcOm();
+    });
+
+    // Al seleccionar proceso → cargar NC/OM
+    procesoSelect.addEventListener('change', cargarNcOm);
+
     // Drag and drop
     if (dropZone) {
         dropZone.addEventListener('dragover', (e) => {
             e.preventDefault();
             dropZone.style.backgroundColor = '#e9ecef';
         });
-
         dropZone.addEventListener('dragleave', (e) => {
             e.preventDefault();
             dropZone.style.backgroundColor = '';
         });
-
         dropZone.addEventListener('drop', (e) => {
             e.preventDefault();
             dropZone.style.backgroundColor = '';
-            
             const files = e.dataTransfer.files;
             if (archivoInput && files.length > 0) {
                 archivoInput.files = files;
@@ -142,8 +295,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-    
-    // Validar archivo al cambiar
+
     if (archivoInput) {
         archivoInput.addEventListener('change', function() {
             if (archivoInput.files && archivoInput.files.length > 0) {
@@ -152,142 +304,54 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-    
-    // Eventos para quitar la clase invalid
-    const folioInput = document.getElementById('folio_solicitud');
-    folioInput.addEventListener('input', function() {
-        this.classList.remove('is-invalid');
-        document.getElementById('error-folio_solicitud').style.display = 'none';
-    });
-    
-    const fechaSolInput = document.getElementById('fecha_solicitud');
-    fechaSolInput.addEventListener('change', function() {
-        this.classList.remove('is-invalid');
-        document.getElementById('error-fecha_solicitud').style.display = 'none';
-    });
-    
-    const responsableInput = document.getElementById('responsable_accion');
-    responsableInput.addEventListener('input', function() {
-        this.classList.remove('is-invalid');
-        document.getElementById('error-responsable_accion').style.display = 'none';
-    });
-    
-    const fechaApliInput = document.getElementById('fecha_aplicacion');
-    fechaApliInput.addEventListener('change', function() {
-        this.classList.remove('is-invalid');
-        document.getElementById('error-fecha_aplicacion').style.display = 'none';
-    });
-    
-    const estatusSelect = document.getElementById('estatus');
-    estatusSelect.addEventListener('change', function() {
-        this.classList.remove('is-invalid');
-        document.getElementById('error-estatus').style.display = 'none';
-    });
-    
-    const actividadesInput = document.getElementById('actividades_verificacion');
-    actividadesInput.addEventListener('input', function() {
-        this.classList.remove('is-invalid');
-        document.getElementById('error-actividades_verificacion').style.display = 'none';
-    });
-    
-    // Función para validar formulario (solo al guardar)
+
     function validarFormulario() {
-        let isValid = true;
-        
-        // Validar folio_solicitud
-        const folio = document.getElementById('folio_solicitud');
-        if (!folio.value.trim()) {
-            folio.classList.add('is-invalid');
-            document.getElementById('error-folio_solicitud').style.display = 'block';
-            isValid = false;
-        }
-        
-        // Validar fecha_solicitud
-        const fechaSol = document.getElementById('fecha_solicitud');
-        if (!fechaSol.value) {
-            fechaSol.classList.add('is-invalid');
-            document.getElementById('error-fecha_solicitud').style.display = 'block';
-            isValid = false;
-        }
-        
-        // Validar responsable_accion
-        const responsable = document.getElementById('responsable_accion');
-        if (!responsable.value.trim()) {
-            responsable.classList.add('is-invalid');
-            document.getElementById('error-responsable_accion').style.display = 'block';
-            isValid = false;
-        }
-        
-        // Validar fecha_aplicacion
-        const fechaApli = document.getElementById('fecha_aplicacion');
-        if (!fechaApli.value) {
-            fechaApli.classList.add('is-invalid');
-            document.getElementById('error-fecha_aplicacion').style.display = 'block';
-            isValid = false;
-        }
-        
-        // Validar estatus
-        const estatus = document.getElementById('estatus');
-        if (!estatus.value) {
-            estatus.classList.add('is-invalid');
-            document.getElementById('error-estatus').style.display = 'block';
-            isValid = false;
-        }
-        
-        // Validar actividades_verificacion
-        const actividades = document.getElementById('actividades_verificacion');
-        if (!actividades.value.trim()) {
-            actividades.classList.add('is-invalid');
-            document.getElementById('error-actividades_verificacion').style.display = 'block';
-            isValid = false;
-        }
-        
-        // Validar archivo (solo en creación)
-        if (!solicitudId.value && (!archivoInput.files || archivoInput.files.length === 0)) {
-            archivoInput.classList.add('is-invalid');
-            document.getElementById('error-archivo').style.display = 'block';
-            isValid = false;
-        }
-        
-        return isValid;
+        return true;
     }
-    
-    // Evento del botón guardar
+
     btnGuardar.addEventListener('click', function() {
-        if (validarFormulario()) {
-            guardarSolicitud();
-        }
+        if (validarFormulario()) guardarSolicitud();
     });
-    
-    // Resetear validaciones al abrir el modal
-    const modal = document.getElementById('modalNuevaSolicitud');
-    modal.addEventListener('show.bs.modal', function() {
-        const invalidInputs = document.querySelectorAll('#formSolicitud .is-invalid');
-        invalidInputs.forEach(input => input.classList.remove('is-invalid'));
-        
-        const errorMessages = document.querySelectorAll('#formSolicitud .invalid-feedback');
-        errorMessages.forEach(msg => msg.style.display = 'none');
-        
-        if (!solicitudId.value) {
-            archivoInput.value = '';
-            document.getElementById('nombreArchivoActual').style.display = 'none';
-        }
-    });
-    
-    // Función guardarSolicitud se llama desde el scope global (definida en index)
-    window.guardarSolicitud = function() {
-        const id = document.getElementById('solicitud_id').value;
-        const url = id ? 
-            `{{ url('auditoria/solicitudes') }}/${id}` : 
-            '{{ route('auditoria.solicitudes.store') }}';
-        
-        const formData = new FormData(document.getElementById('formSolicitud'));
-        
-        if (id) {
-            formData.append('_method', 'PUT');
+
+    // Función global para cargar informe al editar
+    window.cargarInformeEnModal = function(informeId, fechaInformeRaw) {
+        const select = document.getElementById('informe_id');
+        select.value = informeId || '';
+
+        const displayFecha = document.getElementById('fecha_informe_display');
+        const hiddenFecha  = document.getElementById('fecha_informe');
+
+        if (fechaInformeRaw) {
+            const partes = fechaInformeRaw.substring(0, 10).split('-');
+            displayFecha.value = partes[2] + '/' + partes[1] + '/' + partes[0];
+            hiddenFecha.value  = fechaInformeRaw.substring(0, 10);
+        } else {
+            const selected = select.options[select.selectedIndex];
+            const fecha    = selected ? (selected.dataset.fecha || '') : '';
+            if (fecha) {
+                const partes = fecha.split('-');
+                displayFecha.value = partes[2] + '/' + partes[1] + '/' + partes[0];
+                hiddenFecha.value  = fecha;
+            } else {
+                displayFecha.value = '';
+                hiddenFecha.value  = '';
+            }
         }
 
-        const submitBtn = document.getElementById('btnGuardar');
+        // Cargar NC/OM al editar si ya hay proceso seleccionado
+        cargarNcOm();
+    };
+
+    window.guardarSolicitud = function() {
+        const id  = document.getElementById('solicitud_id').value;
+        const url = id ?
+            `{{ url('auditoria/solicitudes') }}/${id}` :
+            '{{ route('auditoria.solicitudes.store') }}';
+
+        const formData = new FormData(document.getElementById('formSolicitud'));
+        if (id) formData.append('_method', 'PUT');
+
+        const submitBtn    = document.getElementById('btnGuardar');
         const originalText = submitBtn.innerHTML;
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Guardando...';
@@ -305,13 +369,13 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             if (data.success) {
                 const modalElement = document.getElementById('modalNuevaSolicitud');
-                const modal = bootstrap.Modal.getInstance(modalElement);
-                if (modal) modal.hide();
-                
+                const modalInstance = bootstrap.Modal.getInstance(modalElement);
+                if (modalInstance) modalInstance.hide();
+
                 if (window.cargarSolicitudes) window.cargarSolicitudes();
-                
+
                 const container = document.getElementById('mensajeExitoContainer');
-                const alertDiv = document.createElement('div');
+                const alertDiv  = document.createElement('div');
                 alertDiv.className = 'alert alert-success alert-dismissible fade show mb-3';
                 alertDiv.setAttribute('role', 'alert');
                 alertDiv.innerHTML = `
@@ -320,19 +384,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 `;
                 container.innerHTML = '';
                 container.appendChild(alertDiv);
-                
                 setTimeout(() => alertDiv.remove(), 5000);
-                
-                document.getElementById('formSolicitud').reset();
-                document.getElementById('solicitud_id').value = '';
-                document.getElementById('nombreArchivoActual').style.display = 'none';
-                document.getElementById('modalNuevaSolicitudLabel').textContent = 'Registrar Nueva Solicitud de Mejora';
+
+                // Limpiar formulario después de guardar
+                limpiarFormulario();
+                setModalTitle('nuevo');
+
             } else {
                 if (data.errors) {
                     for (const campo in data.errors) {
                         const errorDiv = document.getElementById(`error-${campo}`);
                         if (errorDiv) {
-                            errorDiv.textContent = data.errors[campo][0];
+                            errorDiv.textContent   = data.errors[campo][0];
                             errorDiv.style.display = 'block';
                             const input = document.getElementById(campo);
                             if (input) input.classList.add('is-invalid');
@@ -348,9 +411,95 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('Error al guardar la solicitud. Por favor, intente de nuevo.');
         })
         .finally(() => {
-            submitBtn.disabled = false;
+            submitBtn.disabled  = false;
             submitBtn.innerHTML = originalText;
         });
     };
 });
+
+// ===== FUNCIÓN EDITAR SOLICITUD =====
+function editarSolicitud(id) {
+    const solicitud = solicitudesData.find(s => s.id === id);
+    if (solicitud) {
+        document.getElementById('solicitud_id').value = solicitud.id;
+        document.getElementById('folio_solicitud').value = solicitud.folio_solicitud || '';
+        document.getElementById('responsable_accion').value = solicitud.responsable_accion || '';
+        document.getElementById('actividades_verificacion').value = solicitud.actividades_verificacion || '';
+
+        // ===== ESTATUS =====
+        const estatusValue  = solicitud.estatus ? solicitud.estatus.trim() : '';
+        const estatusSelect = document.getElementById('estatus');
+        let optionExists = false;
+        for (let i = 0; i < estatusSelect.options.length; i++) {
+            if (estatusSelect.options[i].value === estatusValue) {
+                optionExists = true;
+                break;
+            }
+        }
+        estatusSelect.value = (optionExists && estatusValue !== '') ? estatusValue : '';
+
+        // ===== PROCESOS AUDITADOS =====
+        const selectProcesos = document.getElementById('procesos_auditados');
+        if (selectProcesos) {
+            selectProcesos.value = solicitud.procesos_auditados || '';
+        }
+
+        // ===== TIPO DE SOLICITUD =====
+        const selectTipo = document.getElementById('tipo_solicitud');
+        if (selectTipo) {
+            selectTipo.value = solicitud.tipo_solicitud || '';
+        }
+
+        // ===== FECHAS =====
+        if (solicitud.fecha_solicitud) {
+            const fecha = new Date(solicitud.fecha_solicitud);
+            const año   = fecha.getFullYear();
+            const mes   = String(fecha.getMonth() + 1).padStart(2, '0');
+            const dia   = String(fecha.getDate()).padStart(2, '0');
+            document.getElementById('fecha_solicitud').value = `${año}-${mes}-${dia}`;
+        } else {
+            document.getElementById('fecha_solicitud').value = '';
+        }
+
+        if (solicitud.fecha_aplicacion) {
+            const fecha = new Date(solicitud.fecha_aplicacion);
+            const año   = fecha.getFullYear();
+            const mes   = String(fecha.getMonth() + 1).padStart(2, '0');
+            document.getElementById('fecha_aplicacion').value = `${año}-${mes}`;
+        } else {
+            document.getElementById('fecha_aplicacion').value = '';
+        }
+
+        if (solicitud.fecha_verificacion) {
+            const fecha = new Date(solicitud.fecha_verificacion);
+            const año   = fecha.getFullYear();
+            const mes   = String(fecha.getMonth() + 1).padStart(2, '0');
+            document.getElementById('fecha_verificacion').value = `${año}-${mes}`;
+        } else {
+            document.getElementById('fecha_verificacion').value = '';
+        }
+
+        // ===== INFORME RELACIONADO Y FECHA DEL INFORME =====
+        if (window.cargarInformeEnModal) {
+            window.cargarInformeEnModal(
+                solicitud.informe_id || '',
+                solicitud.fecha_informe || ''
+            );
+        }
+
+        // ===== ARCHIVO =====
+        const nombreArchivoActual = document.getElementById('nombreArchivoActual');
+        const nombreArchivo       = document.getElementById('nombreArchivo');
+        if (solicitud.archivo_nombre) {
+            if (nombreArchivoActual) nombreArchivoActual.style.display = 'block';
+            if (nombreArchivo) nombreArchivo.textContent = solicitud.archivo_nombre;
+        } else {
+            if (nombreArchivoActual) nombreArchivoActual.style.display = 'none';
+        }
+
+        // El título se manejará automáticamente en el evento show.bs.modal
+        const modal = new bootstrap.Modal(document.getElementById('modalNuevaSolicitud'));
+        modal.show();
+    }
+}
 </script>

@@ -8,7 +8,7 @@
                     <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted" style="font-size: 1rem;"></i>
                     <input type="text" class="form-control ps-5" style="width: 100%; height: 42px; font-size: 1rem; border-radius: 4px 0 0 4px; border-right: none;" placeholder="Buscar solicitudes..." id="buscadorArchivos">
                 </div>
-                <button class="btn btn-outline-secondary d-flex align-items-center justify-content-center" 
+                <button class="btn btn-outline-secondary d-flex align-items-center justify-content-center btn-clear-search" 
                         style="width: 42px; height: 42px; border-radius: 0 4px 4px 0; background-color: white; border-left: none;"
                         id="limpiarBusqueda"
                         onclick="limpiarBuscador()"
@@ -55,9 +55,54 @@
                     <li><a class="dropdown-item" href="#" onclick="seleccionarEstatus('Cerrado', 'Cerrado')">Cerrado</a></li>
                 </ul>
             </div>
+
+            <!-- Botón Ver Estadísticas -->
+            @if(in_array(Auth::user()->role, ['admin', 'superadmin']))
+            <button class="btn" type="button" onclick="abrirModalGraficas()"
+                style="height: 42px; background-color: #0dcaf0; color: white; border: none; border-radius: 4px;">
+                <i class="bi bi-pie-chart-fill me-1"></i> Estadísticas
+            </button>
+
+            <!-- Botón Histórico -->
+            <button class="btn" type="button" onclick="abrirModalHistorico()"
+                style="height: 42px; background-color: #0d6efd; color: white; border: none; border-radius: 4px;">
+                <i class="bi bi-bar-chart-line-fill me-1"></i> Histórico
+            </button>
+            @endif
         </div>
     </div>
 </div>
+
+<style>
+    /* Estilos específicos para el botón de limpiar búsqueda */
+    .btn-clear-search {
+        border-color: #ced4da !important;
+        background-color: white !important;
+        transition: all 0.2s ease;
+    }
+
+    .btn-clear-search:hover {
+        background-color: #6c757d !important;
+        border-color: #6c757d !important;
+    }
+
+    .btn-clear-search:hover i {
+        color: white !important;
+    }
+
+    /* Asegurar que el input tenga el mismo borde gris */
+    #buscadorArchivos {
+        border-color: #ced4da !important;
+    }
+
+    /* Opcional: si quieres que el borde del input sea consistente en focus */
+    #buscadorArchivos:focus {
+        border-color: #86b7fe;
+        outline: 0;
+        box-shadow: 0 0 0 0.25rem rgba(13,110,253,.25);
+        z-index: 2;
+    }
+</style>
 
 <script>
 function limpiarBuscador() {

@@ -8,6 +8,8 @@
                         <th>Fecha de Solicitud</th>
                         <th>No. Identificación</th>
                         <th>Responsable de la Acción</th>
+                        <th>Proceso Auditado</th>
+                        <th>Tipo de Solicitud</th>
                         <th>Periodo de Aplicación</th>
                         <th>Actividades de Verificación</th>
                         <th>Documento</th>
@@ -18,7 +20,7 @@
                 </thead>
                 <tbody id="tablaBody">
                     <tr>
-                        <td colspan="9" class="text-center py-4">
+                        <td colspan="11" class="text-center py-4">
                             <div class="d-flex flex-column align-items-center">
                                 <i class="bi bi-rectangle-fill" style="font-size: 2rem; color: #800000; opacity: 0.5;"></i>
                                 <p class="mt-2 text-muted">No hay solicitudes de mejora registradas</p>

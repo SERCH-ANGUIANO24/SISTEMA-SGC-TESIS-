@@ -42,11 +42,17 @@ class FormatoController extends Controller
         if ($request->filled('proceso')) {
             $query->where('proceso', $request->proceso);
         }
-        
+
         // Filtro por departamento (coincidencia exacta desde select)
         if ($request->filled('departamento')) {
             $query->where('departamento', $request->departamento);
         }
+        
+        // Filtro por tipo de documento
+        if ($request->filled('tipo_documento')) {
+            $query->where('tipo_documento', $request->tipo_documento);
+        }
+ 
 
         $formatos = $query->orderBy('created_at', 'desc')->get();
 
@@ -83,7 +89,7 @@ class FormatoController extends Controller
             ->pluck('proceso')
             ->filter()
             ->values();
-            
+
         $departamentosUnicos = Formato::orderBy('departamento')
             ->distinct()
             ->pluck('departamento')
@@ -101,7 +107,7 @@ class FormatoController extends Controller
             'departamentosUnicos'
         ));
     }
-    
+
     /**
      * Almacena un nuevo formato. — SOLO SUPERADMIN/ADMIN
      */
@@ -140,6 +146,7 @@ class FormatoController extends Controller
             'ruta_archivo'          => $ruta,
             'extension_archivo'     => strtoupper($extension),
             'tamanio_archivo'       => $archivo->getSize(),
+            'tipo_documento'        => 'Formato',
         ]);
 
         if ($claveRepetida) {

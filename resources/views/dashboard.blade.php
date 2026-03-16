@@ -44,14 +44,7 @@
                     'route' => route('documental.index'),
                     'visible' => true // Todos pueden ver
                 ],
-                [
-                    'title' => 'Matriz',
-                    'icon' => 'bi-grid-3x3',
-                    'description' => 'Matriz de procesos',
-                    'color' => '#9333ea',
-                    'route' => route('matriz.index'),
-                    'visible' => true // Todos pueden ver
-                ],
+
                 [
                     'title' => 'Lista Maestra',
                     'icon' => 'bi-file-earmark-text',
@@ -69,19 +62,19 @@
                     'visible' => in_array($userRole, ['superadmin', 'admin'])
                 ],
                 [
-                    'title' => 'Historial de versiones',
-                    'icon' => 'bi-trash',
-                    'description' => 'Cambios realizados en documentos',
+                    'title' => 'Historial de Versiones',
+                    'icon' => 'bi-clock-history',
+                    'description' => 'Registro completo de actividades',
                     'color' => '#0891b2',
-                    'route' => '#', // Módulo en desarrollo
-                    'visible' => $userRole === 'superadmin' // SOLO SUPERADMIN
+                    'route' => route('historial-versiones.index'), // <<< CORREGIDO
+                    'visible' => in_array($userRole, ['superadmin', 'admin'])
                 ],
                 [
                     'title' => 'Notificaciones',
                     'icon' => 'bi-bell',
                     'description' => 'Alertas y notificaciones',
                     'color' => '#ea580c',
-                    'route' => '#', // Módulo en desarrollo
+                    'route' => route('notificaciones.index'),
                     'visible' => true // Todos pueden ver
                 ],
                 [

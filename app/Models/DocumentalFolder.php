@@ -5,10 +5,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\RegistraHistorialVersiones;
 
 class DocumentalFolder extends Model
 {
-    use HasFactory;
+    use HasFactory, RegistraHistorialVersiones;
 
     protected $table = 'documental_folders';
 

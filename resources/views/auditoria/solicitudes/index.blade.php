@@ -48,6 +48,10 @@
 
 <!-- CONTENEDOR PARA MODALES DINÁMICOS -->
 <div id="modalesContainer"></div>
+<!-- MODAL GRÁFICAS -->
+@include('auditoria.solicitudes.modal.modal_graficas')
+@include('auditoria.solicitudes.modal.modal_historico')
+
 @endsection
 
 @push('styles')
@@ -399,6 +403,7 @@
 @endpush
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
@@ -571,7 +576,7 @@
         tbody.innerHTML = '';
 
         if (data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="9" class="text-center py-4">No hay solicitudes de mejora registradas</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="11" class="text-center py-4">No hay solicitudes de mejora registradas</td></tr>';
             return;
         }
 
@@ -672,7 +677,7 @@
                             </a>` : ''}
                         
                         <button type="button" class="btn btn-sm btn-outline-danger" 
-                                onclick="eliminarSolicitud(${solicitud.id}, '${(solicitud.folio_solicitud || '').replace(/'/g, "\\'")}')"
+                                onclick="eliminarSolicitud(${solicitud.id}, '${(solicitud.folio_solicitud || '').replace(/'/g, "\'")}')"
                                 title="Eliminar solicitud">
                             <i class="bi bi-trash"></i>
                         </button>
@@ -709,6 +714,10 @@
                 <td class="text-center">${fechaSolicitud}</td>
                 <td class="text-center">${solicitud.folio_solicitud || '-'}</td>
                 <td>${solicitud.responsable_accion || ''}</td>
+                <td class="text-center">${solicitud.procesos_auditados || '<span class="text-muted">—</span>'}</td>
+                <td class="text-center">${solicitud.tipo_solicitud ? 
+                    `<span style="background-color:${solicitud.tipo_solicitud === 'No Conformidad' ? '#fdeaea' : '#edfde8'}; color:${solicitud.tipo_solicitud === 'No Conformidad' ? '#dc3545' : '#28a745'}; padding: 3px 8px; border-radius: 5px; font-size: 0.8rem; font-weight: 500;">${solicitud.tipo_solicitud}</span>` 
+                    : '<span class="text-muted">—</span>'}</td>
                 <td class="text-center">${periodoAplicacion}</td>
                 <td>${solicitud.actividades_verificacion ? 
                     (solicitud.actividades_verificacion.length > 30 ? 
@@ -829,16 +838,11 @@
 
         const hoy = new Date();
         hoy.setHours(0, 0, 0, 0);
-        
-        const fechaSolicitud = new Date(solicitud.fecha_solicitud);
-        fechaSolicitud.setHours(0, 0, 0, 0);
-        
-        // IMPORTANTE: Tomar el primer día del mes de aplicación
-        const fechaAplicacion = new Date(solicitud.fecha_aplicacion);
-        fechaAplicacion.setDate(1); // Forzar al primer día del mes
-        fechaAplicacion.setHours(0, 0, 0, 0);
-        
-        // ===== SOLICITUD CERRADA - MOSTRAR SOLO MENSAJE SIN DETALLES =====
+
+        const fechaSolicitud = solicitud.fecha_solicitud ? new Date(solicitud.fecha_solicitud) : null;
+        if (fechaSolicitud) fechaSolicitud.setHours(0, 0, 0, 0);
+
+        // ===== SOLICITUD CERRADA =====
         if (solicitud.estatus === 'Cerrado') {
             const contenidoCerrado = `
                 <div class="p-4 text-center">
@@ -846,99 +850,230 @@
                         <i class="bi bi-check-circle-fill"></i>
                         <h4>SOLICITUD CERRADA</h4>
                         <p>Esta solicitud de mejora ha sido cerrada</p>
-                        <p class="text-muted">y ya no está activa.</p>
-                        <p class="text-muted small mt-3">No se requiere seguimiento adicional.</p>
                     </div>
                 </div>
             `;
-            
             document.getElementById('calendarioContent').innerHTML = contenidoCerrado;
             const modal = new bootstrap.Modal(document.getElementById('calendarioModal'));
             modal.show();
             return;
         }
-        
-        // ===== SOLO PARA ESTATUS NO CERRADOS =====
-        
-        // Calcular días para la fecha de aplicación (alerta)
-        const diffTime = fechaAplicacion - hoy;
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        
-        let alertaAplicacion = '';
-        if (diffDays <= 3 && diffDays >= 0) {
-            alertaAplicacion = `<div class="alert-warning-custom mt-2"><i class="bi bi-exclamation-triangle me-2"></i> ¡Faltan ${diffDays} días para la fecha de aplicación!</div>`;
-        } else if (diffDays < 0) {
-            alertaAplicacion = `<div class="alert-secondary-custom mt-2"><i class="bi bi-calendar-x me-2"></i> La fecha de aplicación ya pasó.</div>`;
+
+                // ===== SOLICITUD NO ATENDIDA - VERIFICAR SI VENCIÓ EL PLAZO =====
+        if (solicitud.estatus === 'No Atendida') {
+            const fechaInforme = solicitud.fecha_informe 
+                ? (() => { const d = new Date(solicitud.fecha_informe); d.setHours(0,0,0,0); return d; })()
+                : null;
+
+            let vencidoPor15Dias = false;
+            let vencidoPor27 = false;
+
+            // Verificar si pasaron 15 días hábiles desde el informe
+            if (fechaInforme) {
+                const diasHabiles = businessDaysBetween(fechaInforme, hoy);
+                if (diasHabiles >= 15) vencidoPor15Dias = true;
+            }
+
+            // Verificar si ya pasó el día 27 del mes de aplicación
+            if (solicitud.fecha_aplicacion) {
+                const fechaApli = new Date(solicitud.fecha_aplicacion);
+                const dia27MesApli = new Date(fechaApli.getFullYear(), fechaApli.getMonth(), 27);
+                dia27MesApli.setHours(0, 0, 0, 0);
+                if (hoy > dia27MesApli) vencidoPor27 = true;
+            }
+
+            if (vencidoPor15Dias || vencidoPor27) {
+                const contenidoVencido = `
+                    <div class="p-4 text-center">
+                        <div style="background-color:#f8f9fa;border:2px solid #dc3545;border-radius:10px;padding:30px;text-align:center;margin:20px 0;box-shadow:0 4px 8px rgba(0,0,0,0.05);">
+                            <i class="bi bi-exclamation-triangle-fill" style="font-size:4rem;color:#dc3545;margin-bottom:15px;display:block;"></i>
+                            <h4 style="color:#dc3545;font-weight:700;margin-bottom:10px;">PLAZO DE ATENCIÓN VENCIDO</h4>
+                            <p style="color:#495057;font-size:1.1rem;margin-bottom:5px;">En este momento tu solicitud ha vencido el plazo de atención.</p>
+                            <p style="color:#495057;font-size:1.1rem;margin-bottom:15px;">Por lo que es necesario contactarse con la</p>
+                            <p style="background-color:#dc3545;color:white;padding:10px 20px;border-radius:8px;font-weight:600;font-size:1.1rem;display:inline-block;">
+                                <i class="bi bi-telephone-fill me-2"></i>Coordinación del SGC
+                            </p>
+                            <div class="mt-3" style="font-size:0.85rem;color:#6c757d;">
+                                ${vencidoPor15Dias ? '<p><i class="bi bi-clock me-1"></i> Han transcurrido más de 15 días hábiles desde la fecha del informe.</p>' : ''}
+                                ${vencidoPor27 ? '<p><i class="bi bi-calendar-x me-1"></i> Ya pasó el día 27 del mes de aplicación.</p>' : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.getElementById('calendarioContent').innerHTML = contenidoVencido;
+                const modal = new bootstrap.Modal(document.getElementById('calendarioModal'));
+                modal.show();
+                return;
+            }
         }
 
-        // ===== LÓGICA DEL CRONÓMETRO DE 15 DÍAS HÁBILES CON NUEVO DISEÑO =====
-        let cronometroHTML = '';
-        let cronometroClass = 'cronometro-info';
-        
-        if (hoy < fechaAplicacion) {
-            // Aún no comienza el periodo de aplicación
-            cronometroHTML = `
-                <div class="text-center">
-                    <i class="bi bi-info-circle" style="font-size: 2rem; color: #6c757d;"></i>
-                    <p class="mt-2 mb-1">El periodo de aplicación comenzará el</p>
-                    <strong>${fechaAplicacion.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}</strong>
-                    <p class="text-muted small mt-2">El cronómetro de 15 días hábiles iniciará en esa fecha.</p>
+        // ===== NOTIFICACIÓN: 3 DÍAS ANTES DEL 27 DE CADA MES =====
+        let alertaDia27 = '';
+        const dia27Actual = new Date(hoy.getFullYear(), hoy.getMonth(), 27);
+        dia27Actual.setHours(0, 0, 0, 0);
+        const diffHacia27 = Math.ceil((dia27Actual - hoy) / (1000 * 60 * 60 * 24));
+
+        if (diffHacia27 >= 0 && diffHacia27 <= 3) {
+            const diasTexto = diffHacia27 === 0 ? 'hoy' : `en ${diffHacia27} día${diffHacia27 > 1 ? 's' : ''}`;
+            alertaDia27 = `
+                <div class="alert-warning-custom mt-2">
+                    <i class="bi bi-bell-fill me-2"></i>
+                    <strong>¡Atención!</strong> El día 27 del mes vence ${diasTexto}.
+                    Recuerda verificar el estado de esta solicitud.
                 </div>
             `;
-            cronometroClass = 'cronometro-info';
-        } 
-        else if (hoy >= fechaAplicacion) {
-            // Ya comenzó el periodo de aplicación - calcular días hábiles transcurridos
-            const diasHabilesTranscurridos = businessDaysBetween(fechaAplicacion, hoy);
-            
-            if (diasHabilesTranscurridos >= 15) {
-                // Ya pasaron los 15 días hábiles - NUEVO DISEÑO GRIS
-                cronometroHTML = `
-                    <div class="text-center">
-                        <i class="bi bi-calendar-check" style="font-size: 2.5rem; color: #495057;"></i>
-                        <h5 class="mt-2 fw-bold" style="color: #495057;">YA PASARON LOS 15 DÍAS HÁBILES</h5>
-                        <p class="mb-1">Han transcurrido <strong>${diasHabilesTranscurridos}</strong> días hábiles</p>
-                        <p class="text-muted small">desde el inicio del periodo de aplicación</p>
-                    </div>
-                `;
-                cronometroClass = 'cronometro-completado';
-            } else {
-                // Está dentro del periodo de 15 días
-                const diasRestantes = 15 - diasHabilesTranscurridos;
-                const fechaLimite = addBusinessDays(fechaAplicacion, 15);
-                
-                cronometroHTML = `
-                    <div class="text-center">
-                        <i class="bi bi-hourglass-split" style="font-size: 2rem; color: #6c757d;"></i>
-                        <h6 class="mt-2 fw-bold">Cronómetro de días hábiles (15 días)</h6>
-                        <p class="mb-1">Han transcurrido <strong>${diasHabilesTranscurridos}</strong> días hábiles</p>
-                        <p class="mb-2">Faltan <strong>${diasRestantes}</strong> días hábiles para completar 15</p>
-                        <p class="text-muted small">Fecha límite: ${fechaLimite.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
-                    </div>
-                `;
-                cronometroClass = 'cronometro-activo';
+        }
+
+        // ===== BLOQUE CRONÓMETRO / ENTREGADA =====
+        // Si ya tiene fecha_solicitud → "Tu solicitud fue entregada"
+        // Si no → mostrar cronómetro de 15 días hábiles
+        let cronometroHTML = '';
+        let cronometroClass = 'cronometro-info';
+
+        if (solicitud.fecha_solicitud) {
+            // Ya tiene fecha de solicitud → entregada
+            const fechaEntrega = new Date(solicitud.fecha_solicitud);
+            cronometroHTML = `
+                <div class="text-center">
+                    <i class="bi bi-check2-circle" style="font-size: 2.5rem; color: #495057;"></i>
+                    <h5 class="mt-2 fw-bold" style="color: #495057;">TU SOLICITUD FUE ENTREGADA</h5>
+                    <p class="mb-1">Fecha de entrega: <strong>${fechaEntrega.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}</strong></p>
+                </div>
+            `;
+            cronometroClass = 'cronometro-completado';
+        } else {
+            // Sin fecha de solicitud → mostrar cronómetro 15 días hábiles
+            const fechaInicioCronometro = solicitud.fecha_informe
+                ? (() => { const d = new Date(solicitud.fecha_informe); d.setHours(0,0,0,0); return d; })()
+                : null;
+
+            if (fechaInicioCronometro) {
+                if (hoy < fechaInicioCronometro) {
+                    cronometroHTML = `
+                        <div class="text-center">
+                            <i class="bi bi-info-circle" style="font-size: 2rem; color: #6c757d;"></i>
+                            <p class="mt-2 mb-1">El cronómetro de 15 días hábiles iniciará el</p>
+                            <strong>${fechaInicioCronometro.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}</strong>
+                            <p class="text-muted small mt-2">(Fecha del informe relacionado)</p>
+                        </div>
+                    `;
+                    cronometroClass = 'cronometro-info';
+                } else {
+                    const diasHabiles = businessDaysBetween(fechaInicioCronometro, hoy);
+                    if (diasHabiles >= 15) {
+                        cronometroHTML = `
+                            <div class="text-center">
+                                <i class="bi bi-calendar-check" style="font-size: 2.5rem; color: #495057;"></i>
+                                <h5 class="mt-2 fw-bold" style="color: #495057;">YA PASARON LOS 15 DÍAS HÁBILES</h5>
+                                <p class="mb-1">Han transcurrido <strong>${diasHabiles}</strong> días hábiles</p>
+                                <p class="text-muted small">desde la fecha del informe relacionado</p>
+                            </div>
+                        `;
+                        cronometroClass = 'cronometro-completado';
+                    } else {
+                        const diasRestantes = 15 - diasHabiles;
+                        const fechaLimite   = addBusinessDays(fechaInicioCronometro, 15);
+                        cronometroHTML = `
+                            <div class="text-center">
+                                <i class="bi bi-hourglass-split" style="font-size: 2rem; color: #6c757d;"></i>
+                                <h6 class="mt-2 fw-bold">Cronómetro de días hábiles (15 días)</h6>
+                                <p class="mb-1">Han transcurrido <strong>${diasHabiles}</strong> días hábiles</p>
+                                <p class="mb-2">Faltan <strong>${diasRestantes}</strong> días hábiles para completar 15</p>
+                                <p class="text-muted small">Fecha límite: ${fechaLimite.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                            </div>
+                        `;
+                        cronometroClass = 'cronometro-activo';
+                    }
+                }
             }
+        }
+
+        // ===== SIN PERIODO DE APLICACIÓN =====
+        if (!solicitud.fecha_aplicacion) {
+            const contenidoSinFecha = `
+                <div class="p-3">
+                    <h6 class="fw-bold">Detalle de fechas</h6>
+                    <ul class="list-unstyled">
+                        <li><strong>Fecha de Solicitud:</strong> ${fechaSolicitud ? fechaSolicitud.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : 'No establecida'}</li>
+                        ${solicitud.fecha_informe ? `<li><strong>Fecha del Informe:</strong> ${new Date(solicitud.fecha_informe).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })} <small class="text-muted">(inicio del cronómetro)</small></li>` : ''}
+                        <li><strong>Periodo de Aplicación:</strong> <span class="text-muted fst-italic">No se ha establecido el periodo de aplicación</span></li>
+                        ${solicitud.fecha_verificacion ? `<li><strong>Periodo de Verificación:</strong> ${new Date(solicitud.fecha_verificacion).toLocaleDateString('es-ES', { year: 'numeric', month: 'long' })}</li>` : ''}
+                        <li><strong>Responsable:</strong> ${solicitud.responsable_accion || 'No establecido'}</li>
+                        <li><strong>No. Identificación:</strong> ${solicitud.folio_solicitud || '-'}</li>
+                    </ul>
+                    <div class="alert-info-custom mt-2">
+                        <i class="bi bi-info-circle me-2"></i> Esta solicitud aún no tiene un periodo de aplicación definido.
+                    </div>
+                    ${alertaDia27}
+                    ${cronometroHTML ? `
+                    <div class="mt-3 p-3 rounded ${cronometroClass}">
+                        ${cronometroHTML}
+                        <small class="text-muted d-block mt-2 text-center">
+                            <i class="bi bi-info-circle" style="font-size: 1rem; vertical-align: middle;"></i>
+                            Días hábiles: lunes a viernes, excluyendo sábados y domingos.
+                        </small>
+                    </div>` : ''}
+                </div>
+            `;
+            document.getElementById('calendarioContent').innerHTML = contenidoSinFecha;
+            const modal = new bootstrap.Modal(document.getElementById('calendarioModal'));
+            modal.show();
+            return;
+        }
+
+        // ===== CON PERIODO DE APLICACIÓN =====
+        const fechaAplicacion = new Date(solicitud.fecha_aplicacion);
+        fechaAplicacion.setDate(1);
+        fechaAplicacion.setHours(0, 0, 0, 0);
+
+        // Alerta de inicio del periodo de aplicación
+        const diffInicioApli = Math.ceil((fechaAplicacion - hoy) / (1000 * 60 * 60 * 24));
+        let alertaAplicacion = '';
+        if (diffInicioApli > 0) {
+            alertaAplicacion = `
+                <div class="alert-info-custom mt-2">
+                    <i class="bi bi-calendar-event me-2"></i>
+                    El periodo de aplicación inicia el <strong>${fechaAplicacion.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}</strong>
+                    — faltan <strong>${diffInicioApli}</strong> día${diffInicioApli > 1 ? 's' : ''}.
+                </div>
+            `;
+        } else if (diffInicioApli === 0) {
+            alertaAplicacion = `
+                <div class="alert-warning-custom mt-2">
+                    <i class="bi bi-calendar-check me-2"></i>
+                    <strong>¡Hoy inicia</strong> el periodo de aplicación!
+                </div>
+            `;
+        } else {
+            alertaAplicacion = `
+                <div class="alert-secondary-custom mt-2">
+                    <i class="bi bi-calendar-x me-2"></i> El periodo de aplicación ya inició
+                    (${fechaAplicacion.toLocaleDateString('es-ES', { year: 'numeric', month: 'long' })}).
+                </div>
+            `;
         }
 
         const contenido = `
             <div class="p-3">
                 <h6 class="fw-bold">Detalle de fechas</h6>
                 <ul class="list-unstyled">
-                    <li><strong>Fecha de Solicitud:</strong> ${fechaSolicitud.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</li>
-                    <li><strong>Periodo de Aplicación:</strong> ${fechaAplicacion.toLocaleDateString('es-ES', { year: 'numeric', month: 'long' })} 
-                        <small class="text-muted">(Se considera como fecha de inicio: ${fechaAplicacion.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })})</small>
+                    <li><strong>Fecha de Solicitud:</strong> ${fechaSolicitud ? fechaSolicitud.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : 'No establecida'}</li>
+                    ${solicitud.fecha_informe ? `<li><strong>Fecha del Informe:</strong> ${new Date(solicitud.fecha_informe).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })} <small class="text-muted">(inicio del cronómetro)</small></li>` : ''}
+                    <li><strong>Periodo de Aplicación:</strong> ${fechaAplicacion.toLocaleDateString('es-ES', { year: 'numeric', month: 'long' })}
+                        <small class="text-muted">(inicia el ${fechaAplicacion.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })})</small>
                     </li>
                     ${solicitud.fecha_verificacion ? `<li><strong>Periodo de Verificación:</strong> ${new Date(solicitud.fecha_verificacion).toLocaleDateString('es-ES', { year: 'numeric', month: 'long' })}</li>` : ''}
-                    <li><strong>Responsable:</strong> ${solicitud.responsable_accion}</li>
+                    <li><strong>Responsable:</strong> ${solicitud.responsable_accion || 'No establecido'}</li>
                     <li><strong>No. Identificación:</strong> ${solicitud.folio_solicitud || '-'}</li>
                 </ul>
-                
+
                 ${alertaAplicacion}
-                
+                ${alertaDia27}
+
                 <div class="mt-3 p-3 rounded ${cronometroClass}">
                     ${cronometroHTML}
                     <small class="text-muted d-block mt-2 text-center">
-                        <i class="bi bi-info-circle" style="font-size: 1rem; vertical-align: middle;"></i> 
+                        <i class="bi bi-info-circle" style="font-size: 1rem; vertical-align: middle;"></i>
                         Días hábiles: lunes a viernes, excluyendo sábados y domingos.
                     </small>
                 </div>
@@ -949,7 +1084,6 @@
         const modal = new bootstrap.Modal(document.getElementById('calendarioModal'));
         modal.show();
     }
-
     // ===== FUNCIÓN GUARDAR SOLICITUD =====
     function guardarSolicitud() {
         const id = document.getElementById('solicitud_id').value;
@@ -1063,7 +1197,6 @@
                             timer: 2000
                         }).then(() => {
                             cargarSolicitudes();
-                            mostrarMensajeExito('Solicitud eliminada correctamente');
                         });
                     } else {
                         Swal.fire({
@@ -1108,21 +1241,18 @@
         }, 5000);
     }
 
-    // ===== FUNCIÓN EDITAR SOLICITUD =====
+// ===== FUNCIÓN EDITAR SOLICITUD =====
     function editarSolicitud(id) {
         const solicitud = solicitudesData.find(s => s.id === id);
         if (solicitud) {
             document.getElementById('solicitud_id').value = solicitud.id;
             document.getElementById('folio_solicitud').value = solicitud.folio_solicitud || '';
-            document.getElementById('responsable_accion').value = solicitud.responsable_accion;
+            document.getElementById('responsable_accion').value = solicitud.responsable_accion || '';
             document.getElementById('actividades_verificacion').value = solicitud.actividades_verificacion || '';
-            
-            // ===== CORRECCIÓN IMPORTANTE PARA ESTATUS =====
-            // Limpiar espacios y asegurar que coincida exactamente
-            const estatusValue = solicitud.estatus ? solicitud.estatus.trim() : '';
+
+            // ===== ESTATUS =====
+            const estatusValue  = solicitud.estatus ? solicitud.estatus.trim() : '';
             const estatusSelect = document.getElementById('estatus');
-            
-            // Verificar si el valor existe en las opciones
             let optionExists = false;
             for (let i = 0; i < estatusSelect.options.length; i++) {
                 if (estatusSelect.options[i].value === estatusValue) {
@@ -1130,53 +1260,70 @@
                     break;
                 }
             }
-            
-            if (optionExists && estatusValue !== '') {
-                estatusSelect.value = estatusValue;
-            } else {
-                // Si no existe o está vacío, establecer un valor por defecto
-                console.warn('Valor de estatus no válido:', estatusValue);
-                estatusSelect.value = 'En Proceso'; // Valor por defecto
+            estatusSelect.value = (optionExists && estatusValue !== '') ? estatusValue : '';
+
+            // ===== PROCESOS AUDITADOS =====
+            const selectProcesos = document.getElementById('procesos_auditados');
+            if (selectProcesos) {
+                selectProcesos.value = solicitud.procesos_auditados || '';
             }
-            
-            // Fechas
+
+            // ===== TIPO DE SOLICITUD =====
+            const selectTipo = document.getElementById('tipo_solicitud');
+            if (selectTipo) {
+                selectTipo.value = solicitud.tipo_solicitud || '';
+            }
+
+            // ===== FECHAS =====
             if (solicitud.fecha_solicitud) {
                 const fecha = new Date(solicitud.fecha_solicitud);
-                const año = fecha.getFullYear();
-                const mes = String(fecha.getMonth() + 1).padStart(2, '0');
-                const dia = String(fecha.getDate()).padStart(2, '0');
+                const año   = fecha.getFullYear();
+                const mes   = String(fecha.getMonth() + 1).padStart(2, '0');
+                const dia   = String(fecha.getDate()).padStart(2, '0');
                 document.getElementById('fecha_solicitud').value = `${año}-${mes}-${dia}`;
+            } else {
+                document.getElementById('fecha_solicitud').value = '';
             }
-            
+
             if (solicitud.fecha_aplicacion) {
                 const fecha = new Date(solicitud.fecha_aplicacion);
-                const año = fecha.getFullYear();
-                const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+                const año   = fecha.getFullYear();
+                const mes   = String(fecha.getMonth() + 1).padStart(2, '0');
                 document.getElementById('fecha_aplicacion').value = `${año}-${mes}`;
+            } else {
+                document.getElementById('fecha_aplicacion').value = '';
             }
-            
+
             if (solicitud.fecha_verificacion) {
                 const fecha = new Date(solicitud.fecha_verificacion);
-                const año = fecha.getFullYear();
-                const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+                const año   = fecha.getFullYear();
+                const mes   = String(fecha.getMonth() + 1).padStart(2, '0');
                 document.getElementById('fecha_verificacion').value = `${año}-${mes}`;
             } else {
                 document.getElementById('fecha_verificacion').value = '';
             }
-            
-            // Archivo
+
+            // ===== INFORME RELACIONADO Y FECHA DEL INFORME =====
+            // Llama a la función del modal para cargar el informe y su fecha
+            if (window.cargarInformeEnModal) {
+                window.cargarInformeEnModal(
+                    solicitud.informe_id || '',
+                    solicitud.fecha_informe || ''
+                );
+            }
+
+            // ===== ARCHIVO =====
             const nombreArchivoActual = document.getElementById('nombreArchivoActual');
-            const nombreArchivo = document.getElementById('nombreArchivo');
-            
+            const nombreArchivo       = document.getElementById('nombreArchivo');
             if (solicitud.archivo_nombre) {
                 if (nombreArchivoActual) nombreArchivoActual.style.display = 'block';
                 if (nombreArchivo) nombreArchivo.textContent = solicitud.archivo_nombre;
             } else {
                 if (nombreArchivoActual) nombreArchivoActual.style.display = 'none';
             }
-            
-            document.getElementById('modalNuevaSolicitudLabel').textContent = 'Editar Solicitud de Mejora';
-            
+
+            document.getElementById('modalNuevaSolicitudLabel').innerHTML = '<i class="bi bi-pencil-square me-2" style="color: #80000;"></i> Editar Solicitud de Mejora';
+
             const modal = new bootstrap.Modal(document.getElementById('modalNuevaSolicitud'));
             modal.show();
         }

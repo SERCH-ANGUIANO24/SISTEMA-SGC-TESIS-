@@ -50,37 +50,20 @@
         @include('documental.partials.breadcrumbs', ['breadcrumbs' => $breadcrumbs, 'currentFolder' => $currentFolder])
     </div>
 
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="bi bi-check-circle me-2"></i> {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    @endif
 
-    @if(session('error'))
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="bi bi-exclamation-triangle me-2"></i> {{ session('error') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    @endif
-
-    {{-- ============================================================
-         CONTROLES: visibles SIEMPRE que se esté dentro de una carpeta
-         (para todos los roles)
-         ============================================================ --}}
-    @if(isset($currentFolder) && $currentFolder && $currentFolder->parent_id !== null)
+    @if(isset($currentFolder) && $currentFolder && $documents->count() > 0)
     @php
         $hasAdminDocs = $versionesUnicas->count() > 0
                      || $codigosUnicos->count() > 0
                      || $clavesUnicas->count() > 0;
     @endphp
 
-    {{-- FILA 1: Buscar + Ordenar (siempre visibles juntos) --}}
+    {{-- FILA 1: Buscar + Ordenar --}}
     <div class="row mb-3 align-items-stretch">
         <div class="col-md-6">
             <div class="card shadow-sm border-0 h-100">
                 <div class="card-body p-3">
-                    <label class="form-label fw-bold mb-2" style="color: #800000;">
+                    <label class="form-label fw-bold mb-2" style="color: #000000;">
                         <i class="bi bi-search me-1"></i> Buscar archivos
                     </label>
                     <div class="input-group">
@@ -107,7 +90,7 @@
         <div class="col-md-6">
             <div class="card shadow-sm border-0 h-100">
                 <div class="card-body p-3">
-                    <label class="form-label fw-bold mb-2" style="color: #800000;">
+                    <label class="form-label fw-bold mb-2" style="color: #000000;">
                         <i class="bi bi-sort-down me-1"></i> Ordenar por
                     </label>
                     <select id="sortSelect" class="form-select">
@@ -123,96 +106,36 @@
         </div>
     </div>
 
-    {{-- FILA 2: Filtros de campo (solo si hay documentos subidos por admin) --}}
-    @if($hasAdminDocs)
+    {{-- FILA 3: Filtro por tipo de documento (cliente, solo cuando hay docs de usuario) --}}
+    @if($documents->count() > 0)
     <div class="row mb-4">
         <div class="col-12">
             <div class="card shadow-sm border-0">
                 <div class="card-body p-3">
                     <label class="form-label fw-bold mb-2" style="color: #800000;">
-                        <i class="bi bi-funnel me-1"></i> Filtrar por campo específico
+                        <i class="bi bi-tag me-1"></i> Filtrar por tipo de documento
                     </label>
-                    <form method="GET" action="{{ route('documental.index') }}" id="form-filtros">
-                        <input type="hidden" name="folder" value="{{ $currentFolder->id }}">
-
-                        <div class="d-flex gap-2 flex-wrap">
-                            <select id="select-tipo-campo"
-                                    class="form-select"
-                                    onchange="cambiarTipoCampo(this.value)"
-                                    style="flex: 0 0 210px; max-width: 210px; border: 1px solid #dee2e6;">
-                                <option value="">— Elegir campo —</option>
-                                <option value="version" {{ request('version') ? 'selected' : '' }}>📋 Versión</option>
-                                <option value="codigo"  {{ request('codigo')  ? 'selected' : '' }}>🔢 Código de procedimiento</option>
-                                <option value="clave"   {{ request('clave')   ? 'selected' : '' }}>🔑 Clave de formato</option>
-                            </select>
-
-                            <select id="select-valor-campo"
-                                    name="filtro_valor"
-                                    class="form-select"
-                                    {{ !(request('version') || request('codigo') || request('clave')) ? 'disabled' : '' }}
-                                    style="flex: 1; min-width: 180px; max-width: 300px; border: 1px solid #dee2e6;">
-                                <option value="">— Primero elige un campo —</option>
-                                @foreach($versionesUnicas as $v)
-                                    <option value="version:{{ $v }}" data-tipo="version"
-                                        {{ request('version') == $v ? 'selected' : '' }}>{{ $v }}</option>
-                                @endforeach
-                                @foreach($codigosUnicos as $c)
-                                    <option value="codigo:{{ $c }}" data-tipo="codigo"
-                                        {{ request('codigo') == $c ? 'selected' : '' }}>{{ $c }}</option>
-                                @endforeach
-                                @foreach($clavesUnicas as $cl)
-                                    <option value="clave:{{ $cl }}" data-tipo="clave"
-                                        {{ request('clave') == $cl ? 'selected' : '' }}>{{ $cl }}</option>
-                                @endforeach
-                            </select>
-
-                            <input type="hidden" name="version" id="hidden-version" value="{{ request('version') }}">
-                            <input type="hidden" name="codigo"  id="hidden-codigo"  value="{{ request('codigo') }}">
-                            <input type="hidden" name="clave"   id="hidden-clave"   value="{{ request('clave') }}">
-
-                            <button type="submit" class="btn px-3"
-                                    style="background: #800000; color: white; white-space: nowrap; border: none;">
-                                Aplicar
-                            </button>
-
-                            @if(request('version') || request('codigo') || request('clave'))
-                                <a href="{{ route('documental.index', ['folder' => $currentFolder->id]) }}"
-                                   class="btn btn-outline-secondary px-3" title="Limpiar filtro">
-                                    <i class="bi bi-x-lg"></i>
-                                </a>
-                            @endif
-                        </div>
-
-                        {{-- Badges filtros activos --}}
-                        @if(request('version') || request('codigo') || request('clave'))
-                        <div class="d-flex flex-wrap gap-2 mt-2">
-                            @if(request('version'))
-                                <span class="badge rounded-pill"
-                                      style="background:#e8f7ee;color:#1a6b3a;border:1px solid #b8e6c9;font-size:0.78rem;">
-                                    Versión: {{ request('version') }}
-                                    <a href="{{ route('documental.index', ['folder' => $currentFolder->id]) }}"
-                                       class="ms-1 text-decoration-none" style="color:#1a6b3a;">✕</a>
-                                </span>
-                            @endif
-                            @if(request('codigo'))
-                                <span class="badge rounded-pill"
-                                      style="background:#e8f7ee;color:#1a6b3a;border:1px solid #b8e6c9;font-size:0.78rem;">
-                                    Código: {{ request('codigo') }}
-                                    <a href="{{ route('documental.index', ['folder' => $currentFolder->id]) }}"
-                                       class="ms-1 text-decoration-none" style="color:#1a6b3a;">✕</a>
-                                </span>
-                            @endif
-                            @if(request('clave'))
-                                <span class="badge rounded-pill"
-                                      style="background:#e8f7ee;color:#1a6b3a;border:1px solid #b8e6c9;font-size:0.78rem;">
-                                    Clave: {{ request('clave') }}
-                                    <a href="{{ route('documental.index', ['folder' => $currentFolder->id]) }}"
-                                       class="ms-1 text-decoration-none" style="color:#1a6b3a;">✕</a>
-                                </span>
-                            @endif
-                        </div>
-                        @endif
-                    </form>
+                    <div class="d-flex gap-2 flex-wrap align-items-center">
+                        <button type="button" class="btn btn-sm filtro-tipo activo-tipo"
+                                onclick="filtrarPorTipo('')"
+                                id="filtro-tipo-todos"
+                                style="border:1px solid #800000; background:#800000; color:white;">
+                            Todos
+                        </button>
+                        <button type="button" class="btn btn-sm filtro-tipo"
+                                onclick="filtrarPorTipo('Formato')"
+                                id="filtro-tipo-formato"
+                                style="border:1px solid #737373; color:#000000; background:white;">
+                            📄 Formato
+                        </button>
+                        <button type="button" class="btn btn-sm filtro-tipo"
+                                onclick="filtrarPorTipo('Procedimiento')"
+                                id="filtro-tipo-procedimiento"
+                                style="border:1px solid #737373; color:#000000; background:white;">
+                            📋 Procedimiento
+                        </button>
+                        <small class="text-muted ms-2" id="info-filtro-tipo" style="font-size:0.78rem;"></small>
+                    </div>
                 </div>
             </div>
         </div>
@@ -273,7 +196,12 @@
     }
     .folder-icon   { font-size: 2.5rem; margin-bottom: 0.5rem; }
     .document-row:hover { background-color: rgba(0,0,0,0.02); }
-    .breadcrumb-item a  { text-decoration: none; color: #800000; font-weight: 500; }
+    .breadcrumb-item a  { text-decoration: none; color: #6c757d; font-weight: 500; }
+    .filtro-tipo.activo-tipo {
+        background-color: #ffffff !important;
+        color: black !important;
+        border-color: #737373 !important;
+    }
 </style>
 @endpush
 
@@ -291,6 +219,47 @@ const labelsFiltro = {
     clave:   'Clave de formato',
 };
 
+// ── Filtro por tipo de documento (cliente) ──
+let tipoFiltroActivo = '';
+
+function filtrarPorTipo(tipo) {
+    tipoFiltroActivo = tipo;
+
+    // Actualizar estilo de botones
+    document.querySelectorAll('.filtro-tipo').forEach(btn => {
+        btn.style.background  = 'white';
+        btn.style.color       = btn.id === 'filtro-tipo-formato'       ? '#000000' :
+                                 btn.id === 'filtro-tipo-procedimiento' ? '#000000' : '#ffffff';
+        btn.style.borderColor = btn.id === 'filtro-tipo-formato'       ? '#000000' :
+                                 btn.id === 'filtro-tipo-procedimiento' ? '#737373' : '#ffffff';
+    });
+
+    const btnActivo = document.getElementById(
+        tipo === ''              ? 'filtro-tipo-todos' :
+        tipo === 'Formato'       ? 'filtro-tipo-formato' :
+                                   'filtro-tipo-procedimiento'
+    );
+    if (btnActivo) {
+        btnActivo.style.background  = '#ffffff';
+        btnActivo.style.color       = 'black';
+        btnActivo.style.borderColor = '#800000';
+    }
+
+    // Filtrar filas
+    let visible = 0;
+    document.querySelectorAll('.document-row').forEach(row => {
+        const tipoDoc = row.dataset.tipoDocumento || '';
+        const mostrar = tipo === '' || tipoDoc === tipo;
+        row.style.display = mostrar ? '' : 'none';
+        if (mostrar) visible++;
+    });
+
+    const info = document.getElementById('info-filtro-tipo');
+    if (info) {
+        info.textContent = tipo === '' ? '' : `${visible} documento${visible !== 1 ? 's' : ''}`;
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function () {
 
     // Buscar en tiempo real sobre filas visibles
@@ -301,8 +270,10 @@ document.addEventListener('DOMContentLoaded', function () {
             let visible = 0;
 
             document.querySelectorAll('.document-row').forEach(row => {
-                const name = row.querySelector('td:first-child')?.textContent.toLowerCase() || '';
-                const show = q === '' || name.includes(q);
+                const name    = row.querySelector('td:first-child')?.textContent.toLowerCase() || '';
+                const tipoDoc = row.dataset.tipoDocumento || '';
+                const pasaTipo = tipoFiltroActivo === '' || tipoDoc === tipoFiltroActivo;
+                const show = pasaTipo && (q === '' || name.includes(q));
                 row.style.display = show ? '' : 'none';
                 if (show) visible++;
             });

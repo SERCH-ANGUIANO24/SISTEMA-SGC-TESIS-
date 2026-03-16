@@ -23,11 +23,14 @@ class InformeAuditoriaController extends Controller
             'Preinscripción',
             'Inscripción',
             'Reinscripción',
+            'Titulación',
             'Enseñanza Aprendizaje',
             'Contratación u control de personal',
             'Vinculación',
             'Tecnologías de la información',
             'Gestión de Recursos',
+            'Laboratorios y Talleres',
+            'Centro de Información',
         ];
 
         $custom = ProcesoCustom::whereNotNull('proceso')
@@ -63,6 +66,9 @@ class InformeAuditoriaController extends Controller
     // ------------------------------------------------------------------
     public function index(Request $request)
     {
+        // Registrar visualización del módulo
+        \App\Helpers\HistorialVersionesHelper::ver('INFORMES_AUDITORIA', null, 'index');
+
         $query = InformeAuditoria::with('auditoriaRelacionada');
 
         if ($request->filled('anio')) {
@@ -125,7 +131,6 @@ class InformeAuditoriaController extends Controller
     {
         $validated = $this->validarFormulario($request);
 
-        // ── Garantizar que fecha_auditoria siempre tenga valor ──────────
         if (empty($validated['fecha_auditoria'])) {
             $validated['fecha_auditoria'] = $validated['fecha_inicio']
                 ?? $validated['fecha_informe'];
@@ -140,15 +145,14 @@ class InformeAuditoriaController extends Controller
         }
 
         $validated['procesos_auditados'] = $request->procesos_auditados ?? [];
-
-        // ── NUEVO: guardar NC y OM por proceso ──────────────────────────
         $validated['nc_om_por_proceso'] = $this->buildNcOmPorProceso($request);
-
-        // Recalcular totales desde el desglose
         $validated['no_conformidades']   = collect($validated['nc_om_por_proceso'])->sum('nc');
         $validated['oportunidades_mejora'] = collect($validated['nc_om_por_proceso'])->sum('om');
 
-        InformeAuditoria::create($validated);
+        $informe = InformeAuditoria::create($validated);
+
+        // Registrar SUBIR (documento)
+        \App\Helpers\HistorialVersionesHelper::subir('INFORMES_AUDITORIA', $informe);
 
         return response()->json(['success' => true, 'message' => 'Informe guardado correctamente.']);
     }
@@ -160,10 +164,12 @@ class InformeAuditoriaController extends Controller
     {
         $informeAuditoria->load('auditoriaRelacionada');
 
+        // Registrar visualización del detalle
+        \App\Helpers\HistorialVersionesHelper::ver('INFORMES_AUDITORIA', $informeAuditoria, 'detalle');
+
         $data = $informeAuditoria->toArray();
         $data['fecha_informe']   = $informeAuditoria->fecha_informe->format('Y-m-d');
         $data['fecha_auditoria'] = $informeAuditoria->fecha_auditoria->format('Y-m-d');
-        // Si el informe no tiene fecha_inicio/fin propias, tomarlas de la auditoría relacionada
         $fechaInicio = $informeAuditoria->fecha_inicio
             ?? ($informeAuditoria->auditoriaRelacionada?->fecha_inicio ?? null);
         $fechaFin = $informeAuditoria->fecha_fin
@@ -171,7 +177,6 @@ class InformeAuditoriaController extends Controller
         $data['fecha_inicio'] = $fechaInicio ? \Carbon\Carbon::parse($fechaInicio)->format('Y-m-d') : null;
         $data['fecha_fin']    = $fechaFin    ? \Carbon\Carbon::parse($fechaFin)->format('Y-m-d')    : null;
 
-        // ── NUEVO: incluir desglose por proceso ─────────────────────────
         $data['nc_om_por_proceso'] = $informeAuditoria->nc_om_por_proceso ?? [];
 
         return response()->json([
@@ -187,10 +192,12 @@ class InformeAuditoriaController extends Controller
     // ------------------------------------------------------------------
     public function update(Request $request, InformeAuditoria $informeAuditoria)
     {
+        // Guardar datos anteriores para el historial
+        $datosAnteriores = $informeAuditoria->toArray();
+
         $validated = $this->validarFormulario($request, $informeAuditoria->id);
         unset($validated['documento']);
 
-        // ── Garantizar que fecha_auditoria siempre tenga valor ──────────
         if (empty($validated['fecha_auditoria'])) {
             $validated['fecha_auditoria'] = $validated['fecha_inicio']
                 ?? $informeAuditoria->fecha_auditoria->format('Y-m-d');
@@ -208,15 +215,14 @@ class InformeAuditoriaController extends Controller
         }
 
         $validated['procesos_auditados'] = $request->procesos_auditados ?? [];
-
-        // ── NUEVO: guardar NC y OM por proceso ──────────────────────────
         $validated['nc_om_por_proceso'] = $this->buildNcOmPorProceso($request);
-
-        // Recalcular totales desde el desglose
         $validated['no_conformidades']    = collect($validated['nc_om_por_proceso'])->sum('nc');
         $validated['oportunidades_mejora'] = collect($validated['nc_om_por_proceso'])->sum('om');
 
         $informeAuditoria->update($validated);
+
+        // Registrar EDICIÓN
+        \App\Helpers\HistorialVersionesHelper::editar('INFORMES_AUDITORIA', $informeAuditoria, $datosAnteriores, $informeAuditoria->toArray());
 
         return response()->json(['success' => true, 'message' => 'Informe actualizado correctamente.']);
     }
@@ -226,10 +232,16 @@ class InformeAuditoriaController extends Controller
     // ------------------------------------------------------------------
     public function destroy(InformeAuditoria $informeAuditoria)
     {
+        // Guardar datos antes de eliminar
+        $datosInforme = $informeAuditoria->toArray();
+
         if ($informeAuditoria->documento_path) {
             Storage::disk('public')->delete($informeAuditoria->documento_path);
         }
         $informeAuditoria->delete();
+
+        // Registrar ELIMINAR
+        \App\Helpers\HistorialVersionesHelper::eliminar('INFORMES_AUDITORIA', (object)$datosInforme);
 
         return response()->json(['success' => true, 'message' => 'Informe eliminado correctamente.']);
     }
@@ -249,7 +261,7 @@ class InformeAuditoriaController extends Controller
                 'no_conformidades'     => $i->no_conformidades,
                 'oportunidades_mejora' => $i->oportunidades_mejora,
                 'procesos'             => $i->procesos_auditados ?? [],
-                'nc_om_por_proceso'    => $i->nc_om_por_proceso ?? [],   // ← NUEVO
+                'nc_om_por_proceso'    => $i->nc_om_por_proceso ?? [],
             ]);
 
         return response()->json(array_merge($stats, [
@@ -265,6 +277,9 @@ class InformeAuditoriaController extends Controller
     public function verDocumento(InformeAuditoria $informeAuditoria)
     {
         if (!$informeAuditoria->documento_path) abort(404);
+
+        // Registrar visualización del documento
+        \App\Helpers\HistorialVersionesHelper::ver('INFORMES_AUDITORIA', $informeAuditoria, 'ver_archivo');
 
         $ruta = storage_path('app/public/' . $informeAuditoria->documento_path);
         if (!file_exists($ruta)) abort(404, 'Archivo no encontrado.');
@@ -294,6 +309,10 @@ class InformeAuditoriaController extends Controller
     {
         $informe = InformeAuditoria::findOrFail($id);
         if (!$informe->documento_path) abort(404, 'El documento no existe');
+
+        // Registrar descarga
+        \App\Helpers\HistorialVersionesHelper::descargar('INFORMES_AUDITORIA', $informe);
+
         $path = storage_path('app/public/' . $informe->documento_path);
         if (!file_exists($path)) abort(404, 'El archivo no se encuentra en el servidor');
         return response()->download($path, $informe->documento_nombre);
@@ -309,7 +328,7 @@ class InformeAuditoriaController extends Controller
             'no_conformidades'     => $informeAuditoria->no_conformidades,
             'oportunidades_mejora' => $informeAuditoria->oportunidades_mejora,
             'procesos_auditados'   => $informeAuditoria->procesos_auditados ?? [],
-            'nc_om_por_proceso'    => $informeAuditoria->nc_om_por_proceso ?? [], // ← NUEVO
+            'nc_om_por_proceso'    => $informeAuditoria->nc_om_por_proceso ?? [],
             'fecha_auditoria'      => $informeAuditoria->fecha_auditoria->format('d/m/Y'),
             'tipo'                 => $informeAuditoria->tipo_auditoria,
         ]);
@@ -327,18 +346,20 @@ class InformeAuditoriaController extends Controller
 
     // ------------------------------------------------------------------
     // HELPER: construir array nc_om_por_proceso desde el request
-    // Espera inputs con nombre: nc_por_proceso[Proceso] y om_por_proceso[Proceso]
+    // AHORA INCLUYE EL CAMPO criterio_por_proceso
     // ------------------------------------------------------------------
     private function buildNcOmPorProceso(Request $request): array
     {
         $procesos = $request->input('procesos_auditados', []);
         $ncMap    = $request->input('nc_por_proceso', []);
         $omMap    = $request->input('om_por_proceso', []);
+        $criterioMap = $request->input('criterio_por_proceso', []); // ← NUEVO
 
         $resultado = [];
         foreach ($procesos as $proceso) {
             $resultado[] = [
                 'proceso' => $proceso,
+                'criterio' => $criterioMap[$proceso] ?? '', // ← NUEVO
                 'nc'      => isset($ncMap[$proceso]) ? max(0, (int) $ncMap[$proceso]) : 0,
                 'om'      => isset($omMap[$proceso]) ? max(0, (int) $omMap[$proceso]) : 0,
             ];
@@ -362,10 +383,11 @@ class InformeAuditoriaController extends Controller
             'auditoria_relacionada_id' => 'nullable|exists:auditorias,id',
             'procesos_auditados'       => 'nullable|array',
             'procesos_auditados.*'     => 'string',
-            'no_conformidades'         => 'nullable|integer|min:0',  // ahora se recalcula
-            'oportunidades_mejora'     => 'nullable|integer|min:0',  // ahora se recalcula
-            'nc_por_proceso'           => 'nullable|array',          // ← NUEVO
-            'om_por_proceso'           => 'nullable|array',          // ← NUEVO
+            'no_conformidades'         => 'nullable|integer|min:0',
+            'oportunidades_mejora'     => 'nullable|integer|min:0',
+            'nc_por_proceso'           => 'nullable|array',
+            'om_por_proceso'           => 'nullable|array',
+            'criterio_por_proceso'     => 'nullable|array', 
             'documento'                => ($ignoreId
                 ? 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,csv|max:10240'
                 : 'required|file|mimes:pdf,doc,docx,xls,xlsx,csv|max:10240'),

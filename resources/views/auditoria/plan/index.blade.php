@@ -42,8 +42,8 @@
                         <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted" style="font-size: 1rem;"></i>
                         <input type="text" class="form-control ps-5" style="width: 100%; height: 42px; border-radius: 4px 0 0 4px; border-right: none;" placeholder="Buscar archivos" id="buscadorArchivos">
                     </div>
-                    <button class="btn btn-outline-secondary d-flex align-items-center justify-content-center" 
-                            style="width: 42px; height: 42px; border-radius: 0 4px 4px 0; background-color: white; border: 1px solid #ced4da; border-left: none;"
+                    <button class="btn btn-outline-secondary d-flex align-items-center justify-content-center btn-clear-search" 
+                            style="width: 42px; height: 42px; border-radius: 0 4px 4px 0; background-color: white; border: 1px solid #ced4da; border-left: none; transition: all 0.2s;"
                             id="limpiarBusqueda"
                             onclick="limpiarBuscador()"
                             title="Limpiar búsqueda">
@@ -375,6 +375,15 @@
         display: inline-block;
         vertical-align: middle;
     }
+
+    /* Hover para botón de limpiar búsqueda */
+    .btn-clear-search:hover {
+        background-color: #737373 !important;
+        border-color: #737373 !important;
+    }
+    .btn-clear-search:hover i {
+        color: white !important;
+    }
 </style>
 @endpush
 
@@ -552,7 +561,7 @@
                         ${tieneVista ? '<button class="btn btn-sm btn-outline-info" onclick="verArchivo('+auditoria.id+')" title="Ver"><i class="bi bi-eye"></i></button>' : ''}
                         <button class="btn btn-sm btn-outline-secondary" onclick="editarAuditoria(${auditoria.id})" title="Editar"><i class="bi bi-pencil-square"></i></button>
                         <a href="{{ url('auditoria/plan/download') }}/${auditoria.id}" class="btn btn-sm btn-outline-primary" title="Descargar"><i class="bi bi-download"></i></a>
-                        <button class="btn btn-sm btn-outline-danger" onclick="eliminarAuditoria(${auditoria.id}, '${auditoria.nombre_auditoria}')" title="Eliminar"><i class="bi bi-trash"></i></button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="eliminarAuditoria(${auditoria.id}, '${auditoria.nombre_auditoria.replace(/'/g, "\\'")}')" title="Eliminar"><i class="bi bi-trash"></i></button>
                     </div>
                 `;
             @else
@@ -774,26 +783,62 @@
 
     function eliminarAuditoria(id, nombre) {
         Swal.fire({
-            title: '¿Eliminar?',
+            title: '¿Eliminar auditoría?',
             text: `¿Estás seguro de eliminar "${nombre}"?`,
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#dc3545',
             cancelButtonColor: '#6c757d',
-            confirmButtonText: 'Sí, eliminar'
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
         }).then((result) => {
             if (result.isConfirmed) {
+                Swal.fire({
+                    title: 'Eliminando...',
+                    text: 'Por favor espere',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
                 fetch(`{{ url('auditoria/plan') }}/${id}`, {
                     method: 'DELETE',
-                    headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' }
+                    headers: { 
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}', 
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
                 })
-                .then(res => res.json())
+                .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        Swal.fire('Eliminado', data.message, 'success').then(() => location.reload());
+                        Swal.fire({
+                            icon: 'success',
+                            title: '¡Eliminado!',
+                            text: data.message,
+                            confirmButtonColor: '#800000',
+                            timer: 2000
+                        }).then(() => {
+                            location.reload();
+                        });
                     } else {
-                        Swal.fire('Error', data.message, 'error');
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: data.message || 'Error al eliminar',
+                            confirmButtonColor: '#800000'
+                        });
                     }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Error de conexión',
+                        confirmButtonColor: '#800000'
+                    });
                 });
             }
         });
@@ -866,6 +911,11 @@
 
     function filtrarPorBusqueda() {
         filtrarYRenderizar();
+    }
+    
+    function limpiarBuscador() {
+        $('#buscadorArchivos').val('');
+        filtrarPorBusqueda('');
     }
 </script>
 @endpush

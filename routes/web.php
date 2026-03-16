@@ -11,7 +11,10 @@ use App\Http\Controllers\DocumentalController;
 use App\Http\Controllers\MatrizController;
 use App\Http\Controllers\FormatoController;
 use App\Http\Controllers\Admin\UsuariosController;
-use App\Http\Controllers\Admin\ProcesoController;   // ← NUEVO
+use App\Http\Controllers\Admin\ProcesoController;   
+use App\Http\Controllers\HistorialVersionesController;
+use App\Http\Controllers\{DocumentoController, NotificacionController};//CONTROLADORES QUE FUNCIONAN CON EL MODULO DE NOTIFICACIONES
+
 
 // ===== CONTROLADORES DE AUDITORÍA =====
 use App\Http\Controllers\Auditoria\AuditoriaController;
@@ -106,6 +109,7 @@ Route::middleware(['auth'])->group(function () {
     });
 });
 
+
 /* ===== MÓDULO ADMINISTRACIÓN DE USUARIOS ===== */
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
     Route::prefix('usuarios')->name('usuarios.')->group(function () {
@@ -119,6 +123,19 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::post('/add-departamento',     [ProcesoController::class, 'addDepartamento'])->name('addDepartamento');
         Route::delete('/destroy-proceso',    [ProcesoController::class, 'destroyProceso'])->name('destroyProceso');
         Route::delete('/{proceso}',          [ProcesoController::class, 'destroy'])->name('destroy');
+    });
+});
+
+/* ===== MÓDULO HISTORIAL DE VERSIONES ===== */
+Route::middleware(['auth'])->group(function () {
+    Route::prefix('historial-versiones')->name('historial-versiones.')->group(function () {
+        Route::get('/', [HistorialVersionesController::class, 'index'])->name('index');
+        Route::get('/mis-actividades', [HistorialVersionesController::class, 'misActividades'])->name('mis-actividades');
+        Route::get('/datos/graficos', [HistorialVersionesController::class, 'datosGraficos'])->name('datos-graficos');
+        Route::get('/exportar', [HistorialVersionesController::class, 'exportar'])->name('exportar');
+        Route::delete('/limpiar', [HistorialVersionesController::class, 'limpiar'])->name('limpiar');
+        Route::post('/restaurar/{id}', [HistorialVersionesController::class, 'restaurar'])->name('restaurar'); // Nueva ruta
+        Route::get('/{id}', [HistorialVersionesController::class, 'show'])->name('show');
     });
 });
 
@@ -165,6 +182,10 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/{id}', [SolicitudMejoraController::class, 'destroy'])->name('destroy');
         Route::get('/ver/{id}', [SolicitudMejoraController::class, 'view'])->name('view');
         Route::get('/download/{id}', [SolicitudMejoraController::class, 'download'])->name('download');
+        Route::get('/nc-om-por-proceso', [SolicitudMejoraController::class, 'ncOmPorProceso'])->name('ncOmPorProceso');//++
+        Route::get('/graficas', [SolicitudMejoraController::class, 'graficasSolicitudes'])->name('graficas');//++
+        Route::get('/nc-om-proceso-anio', [SolicitudMejoraController::class, 'ncOmPorProcesoAnio'])->name('ncOmPorProcesoAnio');//++
+        Route::get('/historico', [SolicitudMejoraController::class, 'historico'])->name('historico');//++
     });
 
     /* ===== MÓDULO COMPETENCIAS ===== */
@@ -184,6 +205,35 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/folders/tree', [CompetenciaController::class, 'getFoldersTree'])->name('folders.tree');
         Route::get('/document/{id}/data', [CompetenciaController::class, 'getDocumentData'])->name('document.data');
     });
+});
+
+//RUTAS DE NOTIFICACIONES QUE FUNCIONAN CON EL MODULO DE GESTION DOCUMENTAL 
+Route::middleware(['auth'])->group(function () {
+    // ── DOCUMENTOS ─────────────────────────────────────────────
+    Route::prefix('documentos')->name('documentos.')->group(function () {
+        Route::get('/',        [DocumentoController::class, 'index'])->name('index');
+        Route::get('/create',  [DocumentoController::class, 'create'])->name('create');
+        Route::post('/',       [DocumentoController::class, 'store'])->name('store');
+        Route::get('/{doc}',   [DocumentoController::class, 'show'])->name('show');
+
+        // Solo admin y superadmin pueden validar documentos
+        Route::middleware(['can:admin-access'])->group(function () {
+            Route::post('/{doc}/aprobar',  [DocumentoController::class, 'aprobar'])->name('aprobar');
+            Route::post('/{doc}/rechazar', [DocumentoController::class, 'rechazar'])->name('rechazar');
+        });
+    });
+
+    // ── NOTIFICACIONES ─────────────────────────────────────────
+    Route::prefix('notificaciones')->name('notificaciones.')->group(function () {
+        Route::get('/',                [NotificacionController::class, 'index'])->name('index');
+        Route::post('/{n}/leer',       [NotificacionController::class, 'marcarLeida'])->name('marcar-leida');
+        Route::post('/leer-todas',     [NotificacionController::class, 'marcarTodasLeidas'])->name('leer-todas');
+        Route::delete('/{n}',          [NotificacionController::class, 'destroy'])->name('destroy');
+        Route::delete('/limpiar',      [NotificacionController::class, 'limpiar'])->name('limpiar');
+        Route::get('/api/conteo',      [NotificacionController::class, 'conteo'])->name('conteo');
+        Route::get('/api/ultimas',     [NotificacionController::class, 'ultimas'])->name('ultimas');
+    });
+
 });
 
 /* ===== RUTAS DE AUTENTICACIÓN ===== */

@@ -19,6 +19,7 @@ class Formato extends Model
         'ruta_archivo',
         'extension_archivo',
         'tamanio_archivo',
+        'tipo_documento',
     ];
 
     /**

@@ -93,7 +93,6 @@ class DocumentalController extends Controller
             ->distinct()->pluck('clave_formato')->sort()->values();
 
         // ── Procesos y departamentos dinámicos para el modal de subir archivo ──
-        // Procesos/deptos estándar hardcodeados
         $procesosEstandar = [
             'Planeación'                          => ['Rectoría', 'Dirección Académica', 'Dirección de Administración y Finanzas'],
             'Preinscripción'                      => ['Servicios Escolares'],
@@ -109,14 +108,12 @@ class DocumentalController extends Controller
             'Centro de Información'               => ['Biblioteca'],
         ];
 
-        // Procesos/deptos de usuarios registrados en la BD
         $usuariosProcesos = \App\Models\User::whereNotNull('proceso')
             ->whereNotNull('departamento')
             ->select('proceso', 'departamento')
             ->distinct()
             ->get();
 
-        // Procesos custom (tabla proceso_custom si existe)
         $procesosCustomData = collect();
         try {
             $procesosCustomData = \App\Models\ProcesoCustom::select('proceso', 'departamento')->get();
@@ -124,7 +121,6 @@ class DocumentalController extends Controller
             // Si la tabla/modelo no existe, ignorar
         }
 
-        // Combinar todo en un array proceso => [departamentos]
         $procesosDepartamentos = $procesosEstandar;
 
         foreach ($usuariosProcesos as $up) {
@@ -165,12 +161,12 @@ class DocumentalController extends Controller
             'procesosDepartamentos'
         ));
     }
-    
+
     private function buildBreadcrumbs($folder)
     {
         $breadcrumbs = [];
         $current = $folder;
-        
+
         while ($current) {
             array_unshift($breadcrumbs, [
                 'id' => $current->id,
@@ -178,7 +174,7 @@ class DocumentalController extends Controller
             ]);
             $current = $current->parent;
         }
-        
+
         return $breadcrumbs;
     }
 
@@ -208,61 +204,77 @@ class DocumentalController extends Controller
     public function upload(Request $request)
     {
         $isAdmin = in_array(Auth::user()->role, ['superadmin', 'admin']);
-
+ 
         // Validación base para todos
-        $rules = [
-            'file'      => 'required|file|max:102400',
-            'folder_id' => 'nullable|exists:documental_folders,id',
-        ];
-
-        // Validación extra solo para admin/superadmin
+        $request->validate([
+            'file'           => 'required|file|max:102400',
+            'folder_id'      => 'nullable|exists:documental_folders,id',
+            'tipo_documento' => 'required|in:Formato,Procedimiento',
+        ]);
+ 
         if ($isAdmin) {
-            $rules['proceso']               = 'required|string|max:255';
-            $rules['departamento']          = 'required|string|max:255';
-            $rules['clave_formato']         = 'required|string|max:255';
-            $rules['codigo_procedimiento']  = 'required|string|max:255';
-            $rules['version_procedimiento'] = 'required|string|max:255';
+            $request->validate([
+                'clave_formato'         => 'nullable|string|max:255',
+                'codigo_procedimiento'  => 'nullable|string|max:255',
+                'version_procedimiento' => 'nullable|string|max:255',
+            ]);
         }
-
-        $request->validate($rules);
-
-        $file         = $request->file('file');
-        $originalName = $file->getClientOriginalName();
-        $extension    = $file->getClientOriginalExtension();
+ 
+        $file           = $request->file('file');
+        $originalName   = $file->getClientOriginalName();
+        $extension      = $file->getClientOriginalExtension();
         $nameWithoutExt = pathinfo($originalName, PATHINFO_FILENAME);
-
-        $fileName = time() . '_' . uniqid() . '.' . $extension;
-        $path = $file->storeAs('documental/' . Auth::id(), $fileName, 'public');
-
-        $data = [
-            'name'          => $nameWithoutExt,
-            'original_name' => $originalName,
-            'file_path'     => $path,
-            'mime_type'     => $file->getMimeType(),
-            'size'          => $file->getSize(),
-            'extension'     => $extension,
-            'folder_id'     => $request->folder_id,
-            'user_id'       => Auth::id(),
-            'responsable'   => Auth::user()->name,
-            'proceso'       => $isAdmin ? $request->proceso       : Auth::user()->proceso,
-            'departamento'  => $isAdmin ? $request->departamento  : Auth::user()->departamento,
-            'estatus'       => 'Pendiente',
-            'fecha'         => now(),
-        ];
-
-        // Campos extra solo cuando los sube admin/superadmin
+        $fileName       = time() . '_' . uniqid() . '.' . $extension;
+        $path           = $file->storeAs('documental/' . Auth::id(), $fileName, 'public');
+ 
+        // proceso y departamento del perfil del usuario (admin o no)
+        $proceso      = Auth::user()->proceso;
+        $departamento = Auth::user()->departamento;
+ 
+        // Guardar en Gestión Documental
+        DocumentalDocument::create([
+            'name'                  => $nameWithoutExt,
+            'original_name'         => $originalName,
+            'file_path'             => $path,
+            'mime_type'             => $file->getMimeType(),
+            'size'                  => $file->getSize(),
+            'extension'             => $extension,
+            'folder_id'             => $request->folder_id,
+            'user_id'               => Auth::id(),
+            'responsable'           => Auth::user()->name,
+            'proceso'               => $proceso,
+            'departamento'          => $departamento,
+            'estatus'               => $isAdmin ? 'Valido' : 'Pendiente',
+            'fecha'                 => now(),
+            'tipo_documento'        => $request->tipo_documento,
+            'clave_formato'         => $isAdmin && $request->filled('clave_formato')         ? $request->clave_formato         : null,
+            'codigo_procedimiento'  => $isAdmin && $request->filled('codigo_procedimiento')  ? $request->codigo_procedimiento  : null,
+            'version_procedimiento' => $isAdmin && $request->filled('version_procedimiento') ? $request->version_procedimiento : null,
+        ]);
+ 
+        // Admin/Superadmin: registrar en Lista Maestra SIN copiar el archivo
+        // Se usa la misma ruta del archivo subido
         if ($isAdmin) {
-            $data['clave_formato']         = $request->clave_formato;
-            $data['codigo_procedimiento']  = $request->codigo_procedimiento;
-            $data['version_procedimiento'] = $request->version_procedimiento;
+            \App\Models\Formato::create([
+                'proceso'               => $proceso,
+                'departamento'          => $departamento,
+                'clave_formato'         => $request->filled('clave_formato')         ? $request->clave_formato         : null,
+                'codigo_procedimiento'  => $request->filled('codigo_procedimiento')  ? $request->codigo_procedimiento  : null,
+                'version_procedimiento' => $request->filled('version_procedimiento') ? $request->version_procedimiento : null,
+                'nombre_archivo'        => $originalName,
+                'ruta_archivo'          => $path,
+                'extension_archivo'     => strtoupper($extension),
+                'tamanio_archivo'       => $file->getSize(),
+                'tipo_documento'        => $request->tipo_documento,
+            ]);
+ 
+            return redirect()->back()->with('success', 'Archivo subido y enviado al módulo de Lista Maestra exitosamente.');
         }
-
-        DocumentalDocument::create($data);
-
+ 
         return redirect()->back()->with('success', 'Archivo subido exitosamente.');
     }
 
-    public function getDocumentData($id)
+     public function getDocumentData($id)
     {
         $query = DocumentalDocument::query();
         if (!in_array(Auth::user()->role, ['superadmin', 'admin'])) {
@@ -289,61 +301,29 @@ class DocumentalController extends Controller
             'original_name'         => $document->original_name,
             'extension'             => $document->extension,
             'uploaded_by_admin'     => $uploadedByAdmin,
+            'tipo_documento'        => $document->tipo_documento,
         ]);
     }
-    
-   public function updateDocument(Request $request, $id)
+    public function updateDocument(Request $request, $id)
     {
         if (!in_array(Auth::user()->role, ['superadmin', 'admin'])) {
             abort(403, 'No tienes permiso para editar documentos.');
         }
-
-        $document     = DocumentalDocument::findOrFail($id);
-        $uploaderRole = $document->user->role ?? null;
+ 
+        $document        = DocumentalDocument::findOrFail($id);
+        $uploaderRole    = $document->user->role ?? null;
         $uploadedByAdmin = in_array($uploaderRole, ['superadmin', 'admin']);
-
-        // ── Documento subido por admin/superadmin ──
+ 
+        // ── Documento subido por admin/superadmin: solo renombrar ──
         if ($uploadedByAdmin) {
             $request->validate([
-                'responsable'           => 'nullable|string|max:255',
-                'proceso'               => 'required|string|max:255',
-                'departamento'          => 'required|string|max:255',
-                'clave_formato'         => 'required|string|max:255',
-                'codigo_procedimiento'  => 'required|string|max:255',
-                'version_procedimiento' => 'required|string|max:255',
-                'new_file'              => 'nullable|file|max:102400',
+                'name' => 'required|string|max:255',
             ]);
-
-            $data = [
-                'responsable'           => $request->responsable,
-                'proceso'               => $request->proceso,
-                'departamento'          => $request->departamento,
-                'clave_formato'         => $request->clave_formato,
-                'codigo_procedimiento'  => $request->codigo_procedimiento,
-                'version_procedimiento' => $request->version_procedimiento,
-            ];
-
-            if ($request->hasFile('new_file')) {
-                if (Storage::disk('public')->exists($document->file_path)) {
-                    Storage::disk('public')->delete($document->file_path);
-                }
-                $file           = $request->file('new_file');
-                $originalName   = $file->getClientOriginalName();
-                $extension      = $file->getClientOriginalExtension();
-                $nameWithoutExt = pathinfo($originalName, PATHINFO_FILENAME);
-                $fileName       = time() . '_' . uniqid() . '.' . $extension;
-                $path           = $file->storeAs('documental/' . $document->user_id, $fileName, 'public');
-
-                $data['name']          = $nameWithoutExt;
-                $data['original_name'] = $originalName;
-                $data['file_path']     = $path;
-                $data['mime_type']     = $file->getMimeType();
-                $data['size']          = $file->getSize();
-                $data['extension']     = $extension;
-            }
-
-            $document->update($data);
-
+ 
+            $document->update(['name' => $request->name]);
+ 
+            return redirect()->back()->with('success', 'Documento renombrado exitosamente.');
+ 
         // ── Documento subido por usuario ──
         } else {
             $request->validate([
@@ -353,47 +333,42 @@ class DocumentalController extends Controller
                 'departamento'          => 'nullable|string|max:255',
                 'estatus'               => 'required|in:Pendiente,Valido,No Valido',
                 'observaciones'         => 'nullable|string',
-                // Campos de formato: requeridos solo si estatus es Válido
                 'clave_formato'         => 'nullable|string|max:255',
                 'codigo_procedimiento'  => 'nullable|string|max:255',
                 'version_procedimiento' => 'nullable|string|max:255',
             ]);
-
+ 
             $data = $request->only([
                 'name', 'responsable', 'proceso', 'departamento',
                 'estatus', 'observaciones',
             ]);
-
+ 
             if ($request->estatus === 'Valido') {
                 $data['observaciones'] = null;
-
-                // Si vienen los campos de formato, guardarlos en el documento
+ 
                 if ($request->filled('clave_formato')) {
                     $data['clave_formato']         = $request->clave_formato;
                     $data['codigo_procedimiento']  = $request->codigo_procedimiento;
                     $data['version_procedimiento'] = $request->version_procedimiento;
                 }
+ 
+                if (!$request->filled('clave_formato') && $request->filled('codigo_procedimiento')) {
+                    $data['codigo_procedimiento']  = $request->codigo_procedimiento;
+                    $data['version_procedimiento'] = $request->version_procedimiento;
+                }
             }
-
+ 
             unset($data['fecha']);
             $document->update($data);
-
-            // ── Mover a Formatos si Válido y tiene los 3 campos de formato ──
+ 
+            // ── Enviar a Lista Maestra si Válido tipo Formato ──
+            // Solo se registra la información, NO se copia el archivo
             if (
                 $request->estatus === 'Valido'
                 && $request->filled('clave_formato')
                 && $request->filled('codigo_procedimiento')
                 && $request->filled('version_procedimiento')
             ) {
-                // Copiar archivo a carpeta de formatos
-                $extension      = $document->extension;
-                $nuevoNombre    = time() . '_' . uniqid() . '.' . $extension;
-                $rutaDestino    = 'formatos/' . $nuevoNombre;
-
-                if (Storage::disk('public')->exists($document->file_path)) {
-                    Storage::disk('public')->copy($document->file_path, $rutaDestino);
-                }
-
                 \App\Models\Formato::create([
                     'proceso'               => $document->proceso,
                     'departamento'          => $document->departamento,
@@ -401,18 +376,43 @@ class DocumentalController extends Controller
                     'codigo_procedimiento'  => $request->codigo_procedimiento,
                     'version_procedimiento' => $request->version_procedimiento,
                     'nombre_archivo'        => $document->original_name,
-                    'ruta_archivo'          => $rutaDestino,
-                    'extension_archivo'     => $extension,
+                    'ruta_archivo'          => $document->file_path,
+                    'extension_archivo'     => strtoupper($document->extension),
                     'tamanio_archivo'       => $document->size,
+                    'tipo_documento'        => 'Formato',
                 ]);
-
+ 
                 return redirect()->back()->with('success', 'Documento validado y enviado al módulo de Lista Maestra exitosamente.');
             }
+ 
+            // ── Enviar a Lista Maestra si Válido tipo Procedimiento ──
+            // Solo se registra la información, NO se copia el archivo
+            if (
+                $request->estatus === 'Valido'
+                && !$request->filled('clave_formato')
+                && $request->filled('codigo_procedimiento')
+                && $request->filled('version_procedimiento')
+            ) {
+                \App\Models\Formato::create([
+                    'proceso'               => $document->proceso,
+                    'departamento'          => $document->departamento,
+                    'clave_formato'         => null,
+                    'codigo_procedimiento'  => $request->codigo_procedimiento,
+                    'version_procedimiento' => $request->version_procedimiento,
+                    'nombre_archivo'        => $document->original_name,
+                    'ruta_archivo'          => $document->file_path,
+                    'extension_archivo'     => strtoupper($document->extension),
+                    'tamanio_archivo'       => $document->size,
+                    'tipo_documento'        => 'Procedimiento',
+                ]);
+ 
+                return redirect()->back()->with('success', 'Procedimiento validado y enviado al módulo de Lista Maestra exitosamente.');
+            }
         }
-
+ 
         return redirect()->back()->with('success', 'Documento actualizado exitosamente.');
     }
-    
+
     public function moveDocument(Request $request, $id)
     {
         // Solo superadmin y admin pueden mover documentos
@@ -421,7 +421,7 @@ class DocumentalController extends Controller
         }
 
         $document = DocumentalDocument::findOrFail($id);
-        
+
         $request->validate([
             'destination_id' => 'nullable|exists:documental_folders,id'
         ]);
@@ -432,7 +432,7 @@ class DocumentalController extends Controller
         return redirect()->back()->with('success', 'Documento movido exitosamente.');
     }
 
-public function downloadDocument($id)
+    public function downloadDocument($id)
     {
         // Todos pueden descargar cualquier documento de la carpeta
         $document = DocumentalDocument::findOrFail($id);
@@ -441,7 +441,7 @@ public function downloadDocument($id)
             return redirect()->back()->with('error', 'El archivo no existe.');
         }
 
-        return Storage::disk('public')->download($document->file_path, $document->original_name);
+        return Storage::disk('public')->download($document->file_path, $document->name . '.' . $document->extension);
     }
 
     public function viewDocument($id)
@@ -490,28 +490,39 @@ public function downloadDocument($id)
             abort(403, 'No tienes permiso para eliminar documentos.');
         }
 
-        $document = DocumentalDocument::findOrFail($id);
-        
-        if (Storage::disk('public')->exists($document->file_path)) {
-            Storage::disk('public')->delete($document->file_path);
-        }
-        
-        $document->delete();
+        try {
+            $document = DocumentalDocument::findOrFail($id);
 
-        return redirect()->back()->with('success', 'Documento eliminado exitosamente.');
+            if (Storage::disk('public')->exists($document->file_path)) {
+                Storage::disk('public')->delete($document->file_path);
+            }
+
+            $document->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Archivo eliminado exitosamente.'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al eliminar el archivo.'
+            ], 500);
+        }
     }
 
     public function getFoldersTree(Request $request)
     {
         $currentFolderId = $request->get('current_folder');
-        
+
         // Admin ve todas las carpetas
         $foldersQuery = DocumentalFolder::where('id', '!=', $currentFolderId);
-        
+
         if (!in_array(Auth::user()->role, ['superadmin', 'admin'])) {
             $foldersQuery->where('user_id', Auth::id());
         }
-        
+
         $folders = $foldersQuery->get()
             ->map(function($folder) {
                 return [
@@ -519,29 +530,32 @@ public function downloadDocument($id)
                     'full_path' => $folder->full_path
                 ];
             });
-        
+
         return response()->json($folders);
     }
 
     public function destroyFolder($id)
     {
-        // Solo superadmin y admin pueden eliminar
         if (!in_array(Auth::user()->role, ['superadmin', 'admin'])) {
             abort(403, 'No tienes permiso para eliminar carpetas.');
         }
 
         try {
             $folder = DocumentalFolder::findOrFail($id);
-            
             $this->deleteFolderRecursively($folder);
-            
             $folder->delete();
 
-            return redirect()->back()->with('success', 'Carpeta y todo su contenido eliminados exitosamente.');
-            
+            return response()->json([
+                'success' => true,
+                'message' => 'Carpeta y todo su contenido eliminados exitosamente.'
+            ]);
+
         } catch (\Exception $e) {
             Log::error('Error al eliminar carpeta: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Error al eliminar la carpeta: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al eliminar la carpeta.'
+            ], 500);
         }
     }
 
@@ -553,7 +567,7 @@ public function downloadDocument($id)
             }
             $document->delete();
         }
-        
+
         foreach ($folder->subfolders as $subfolder) {
             $this->deleteFolderRecursively($subfolder);
             $subfolder->delete();
@@ -596,7 +610,7 @@ public function downloadDocument($id)
             ]);
 
             $folder = DocumentalFolder::findOrFail($id);
-            
+
             if ($request->destination_id == $id) {
                 return redirect()->back()->with('error', 'No puedes mover una carpeta a sí misma.');
             }
@@ -625,14 +639,14 @@ public function downloadDocument($id)
     private function wouldCreateCycle($folder, $newParentId)
     {
         $parent = DocumentalFolder::find($newParentId);
-        
+
         while ($parent) {
             if ($parent->id == $folder->id) {
                 return true;
             }
             $parent = $parent->parent;
         }
-        
+
         return false;
     }
 }

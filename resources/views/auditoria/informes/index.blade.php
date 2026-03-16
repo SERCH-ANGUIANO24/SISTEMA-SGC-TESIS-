@@ -6,556 +6,144 @@
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
 <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
 <style>
-    /* ── Tabla - igual que Plan de Auditorías ── */
-    .table th {
-        background-color: #f8f9fa;
-        color: black;
-        text-align: center;
-        vertical-align: middle;
-        border-left: none !important;
-        border-right: none !important;
-        font-size: 0.9rem;
-        font-weight: 600;
-        padding: 12px;
-        white-space: nowrap;
-    }
-
-    .table td {
-        vertical-align: middle;
-        border-left: none !important;
-        border-right: none !important;
-        font-size: 0.9rem;
-        padding: 10px 12px;
-    }
-
-    .table tbody tr:hover {
-        background-color: #fdf0f1;
-    }
-
-    /* ── Badges igual que Plan de Auditorías ── */
-    .badge-interna {
-        background-color: #28a745;
-        color: white;
-        padding: 0.3rem 0.6rem;
-        border-radius: 5px;
-        font-size: 0.8rem;
-        font-weight: 500;
-    }
-
-    .badge-externa {
-        background-color: #dc3545;
-        color: white;
-        padding: 0.3rem 0.6rem;
-        border-radius: 5px;
-        font-size: 0.8rem;
-        font-weight: 500;
-    }
-
-    /* ── Botones de acción - igual que Plan de Auditorías ── */
-    .btn-accion {
-        margin: 0 2px;
-    }
-
+    .table th { background-color: #f8f9fa; color: black; text-align: center; vertical-align: middle; border-left: none !important; border-right: none !important; font-size: 0.9rem; font-weight: 600; padding: 12px; white-space: nowrap; }
+    .table td { vertical-align: middle; border-left: none !important; border-right: none !important; font-size: 0.9rem; padding: 10px 12px; }
+    .table tbody tr:hover { background-color: #f0fdf1; }
+    .badge-interna { background-color: #28a745; color: white; padding: 0.3rem 0.6rem; border-radius: 5px; font-size: 0.8rem; font-weight: 500; }
+    .badge-externa { background-color: #dc3545; color: white; padding: 0.3rem 0.6rem; border-radius: 5px; font-size: 0.8rem; font-weight: 500; }
+    .btn-accion { margin: 0 2px; }
     .btn-outline-info    { color: #0dcaf0; border-color: #0dcaf0; }
-    .btn-outline-info:hover    { background-color: 0dcaf0; color: #fff; }
-
+    .btn-outline-info:hover    { background-color: #0dcaf0; color: #fff; }
     .btn-outline-secondary { color: #6c757d; border-color: #6c757d; }
     .btn-outline-secondary:hover { background-color: #6c757d; color: #fff; }
-
     .btn-outline-primary { color: #0d6efd; border-color: #0d6efd; }
     .btn-outline-primary:hover { background-color: #0d6efd; color: #fff; }
-
     .btn-outline-danger  { color: #dc3545; border-color: #dc3545; }
     .btn-outline-danger:hover  { background-color: #dc3545; color: #fff; }
-
-    .btn-sm {
-        padding: 0.25rem 0.5rem;
-        font-size: 0.875rem;
-        border-radius: 0.2rem;
-    }
-
-    /* ── Botones dropdown - igual que Plan de Auditorías ── */
-    .btn-light {
-        background-color: white !important;
-        color: #6c757d;
-        border: 1px solid #ced4da;
-    }
-
-    .btn-light:hover {
-        background-color: #f8f9fa !important;
-        border-color: #800000;
-    }
-
+    .btn-sm { padding: 0.25rem 0.5rem; font-size: 0.875rem; border-radius: 0.2rem; }
+    .btn-light { background-color: white !important; color: #6c757d; border: 1px solid #ced4da; }
+    .btn-light:hover { background-color: #f8f9fa !important; border-color: #800000; }
     .btn-light i { color: #6c757d; }
-
-    .btn-light.seleccionado {
-        background-color: #e9ecef !important;
-        border-color: #737373;
-        color: #495057;
-    }
-
+    .btn-light.seleccionado { background-color: #e9ecef !important; border-color: #737373; color: #495057; }
     .btn-light.seleccionado i { color: #495057; }
-
-    .dropdown-item:hover {
-        background-color: #737373 !important;
-        color: #ffffff !important;
-    }
-
-    .dropdown-item.active {
-        background-color: #800000 !important;
-        color: white !important;
-    }
-
-    /* ── Botón limpiar búsqueda ── */
-    #limpiarBusqueda {
-        transition: all 0.2s ease;
-        border-color: #ced4da;
-        background-color: white;
-    }
-
-    #limpiarBusqueda:hover {
-        background-color: #f8f9fa;
-        border-color: #800000;
-    }
-
-    #limpiarBusqueda:hover i { color: #800000; }
-
-    /* ── Hover botón registrar ── */
-    .btn[style*="background-color: #737373"]:hover {
-        background-color: #5a5a5a !important;
-        color: white !important;
-    }
-
-    /* ── Tabla responsive ── */
-    .table-responsive {
-        border: 1px solid #dee2e6;
-        border-radius: 5px;
-        overflow: hidden;
-        margin-bottom: 15px;
-    }
-
-    /* ── Paginación ── */
-    .pagination-info {
-        color: #6c757d;
-        font-size: 0.9rem;
-        margin-bottom: 10px;
-    }
-
-    .pagination {
-        display: flex;
-        justify-content: flex-end;
-        gap: 5px;
-    }
-
-    /* ── Procesos ── */
-    .procesos-container {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 3px;
-    }
-
-    .tag-proceso {
-        background-color: #e9ecef;
-        color: #495057;
-        border-radius: 20px;
-        padding: 2px 9px;
-        font-size: 0.72rem;
-        display: inline-block;
-        margin: 1px;
-    }
-
+    .dropdown-item:hover { background-color: #737373 !important; color: #ffffff !important; }
+    .dropdown-item.active { background-color: #737373 !important; color: white !important; }
+    #limpiarBusqueda { transition: all 0.2s ease; border-color: #ced4da; background-color: white; width: 42px; height: 42px; border-radius: 0 4px 4px 0; border-left: none; }
+    #limpiarBusqueda:hover { background-color: #737373 !important; border-color: #737373 !important; }
+    #limpiarBusqueda:hover i { color: white !important; }
+    .btn[style*="background-color: #737373"]:hover { background-color: #5a5a5a !important; color: white !important; }
+    .table-responsive { border: 1px solid #dee2e6; border-radius: 5px; overflow: hidden; margin-bottom: 15px; }
+    .pagination-info { color: #6c757d; font-size: 0.9rem; margin-bottom: 10px; }
+    .pagination { display: flex; justify-content: flex-end; gap: 5px; }
+    .procesos-container { display: flex; flex-wrap: wrap; gap: 3px; }
+    .tag-proceso { background-color: #e9ecef; color: #495057; border-radius: 20px; padding: 2px 9px; font-size: 0.72rem; display: inline-block; margin: 1px; }
     .num-red    { color: #dc3545; font-weight: 700; text-align: center; }
-    .num-orange { color: #fd7e14; font-weight: 700; text-align: center; }
-
-    /* ── Modales ── */
+    .num-orange { color: #28a745; font-weight: 700; text-align: center; }
     .modal-header-rojo {
-        background-color: #800000;
-        color: #fff;
+        background-color: #ffffff;
+        color: #000000;
     }
-
-    .modal-header-cyan {
-        background-color: #0dcaf0;
-        color: #fff;
-    }
-
-    .modal-header-cyan .btn-close,
     .modal-header-rojo .btn-close {
-        filter: invert(1);
+        filter: none;
+        opacity: 0.8;
     }
-
-    /* ── Tarjetas estadísticas ── */
-    .stat-card {
-        border-radius: 10px;
-        color: #fff;
-        text-align: center;
-        padding: 18px 10px;
-    }
-
+    .modal-header-cyan { background-color: #0dcaf0; color: #fff; }
+    .modal-header-cyan .btn-close, .modal-header-rojo .btn-close { filter: invert(1); }
+    .stat-card { border-radius: 10px; color: #fff; text-align: center; padding: 18px 10px; }
     .stat-card .num   { font-size: 2rem; font-weight: 700; }
     .stat-card .label { font-size: 0.85rem; }
-
-    .stat-blue  { background: #0d6efd; }
+    .stat-blue  { background: #0dcaf0; }
     .stat-red   { background: #dc3545; }
-    .stat-green { background: rgba(253, 126, 20, 0.85); }
-
-    /* ── Visor de documento ── */
+    .stat-green { background: #28a745; }
     #iframeDoc { width: 100%; height: 100%; border: none; }
-
-    #modalDocumento .modal-dialog {
-        max-width: 90%;
-    }
-
-    #modalDocumento .modal-body {
-        height: 80vh;
-        overflow: auto;
-        padding: 0;
-    }
-
-    #modalDocumento .modal-body iframe {
-        width: 100%;
-        height: 100%;
-        border: none;
-    }
-
-    /* ── Formulario labels ── */
-    .form-label {
-        font-size: 0.85rem;
-        font-weight: 600;
-        color: #495057;
-    }
-
+    #modalDocumento .modal-dialog { max-width: 90%; }
+    #modalDocumento .modal-body { height: 80vh; overflow: auto; padding: 0; }
+    #modalDocumento .modal-body iframe { width: 100%; height: 100%; border: none; }
+    .form-label { font-size: 0.85rem; font-weight: 600; color: #495057; }
     #selectAnioEstadisticas { border: 2px solid #0dcaf0; }
-
-    .grafica-anual-container {
-        background-color: #f8f9fa;
-        border-radius: 8px;
-        padding: 15px;
-        margin-top: 20px;
-    }
-
-    /* ── Drag & Drop - igual que Plan de Auditorías ── */
-    .border.rounded.p-4.bg-light,
-    .drag-area {
-        border: 2px dashed #800000 !important;
-        border-radius: 5px;
-        padding: 20px;
-        text-align: center;
-        background: #f8f9fa;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
-
-    .drag-area:hover,
-    .border.rounded.p-4.bg-light:hover {
-        background-color: #fff0f0 !important;
-        border-color: #600000 !important;
-    }
-
+    .grafica-anual-container { background-color: #f8f9fa; border-radius: 8px; padding: 15px; margin-top: 20px; }
+    .border.rounded.p-4.bg-light, .drag-area { border: 2px dashed #800000 !important; border-radius: 5px; padding: 20px; text-align: center; background: #f8f9fa; cursor: pointer; transition: all 0.3s ease; }
+    .drag-area:hover, .border.rounded.p-4.bg-light:hover { background-color: #fff0f0 !important; border-color: #600000 !important; }
     .drag-area i { font-size: 3rem; color: #800000; }
     .drag-area p { margin: 5px 0 0; color: #6c757d; }
-
-    /* ── Form controls focus ── */
-    .form-control:focus,
-    .form-select:focus {
-        border-color: #800000;
-        box-shadow: 0 0 0 0.2rem rgba(128, 0, 0, 0.25);
-        z-index: 1;
-    }
-
-    /* ── Lista checkboxes procesos ── */
-    .procesos-checklist {
-        background-color: #f8f9fa;
-        max-height: 200px;
-        overflow-y: auto;
-        column-count: 2;
-        column-gap: 10px;
-    }
-
-    .procesos-checklist .form-check {
-        break-inside: avoid;
-        padding: 4px 8px;
-        border-radius: 4px;
-        transition: background-color 0.15s;
-    }
-
-    .procesos-checklist .form-check:hover { background-color: #f0e0e2; }
-
-    .procesos-checklist .form-check-input:checked ~ .form-check-label {
-        color: #800000;
-        font-weight: 600;
-    }
-
-    .procesos-checklist .form-check-input:focus {
-        border-color: #800000;
-        box-shadow: 0 0 0 0.2rem rgba(128, 0, 0, 0.25);
-    }
-
-    .procesos-checklist .form-check-input:checked {
-        background-color: #800000;
-        border-color: #800000;
-    }
-
-    /* ── Mensaje de éxito - igual que Plan de Auditorías ── */
-    .alert-exito {
-        background-color: #48b161;
-        color: #ffffff;
-        border-color: #c3e6cb;
-        border-radius: 8px;
-        padding: 12px 20px;
-        margin: 0 auto 20px auto;
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-        position: relative;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        width: 95%;
-        max-width: 1400px;
-        min-width: 300px;
-    }
-
+    .form-control:focus, .form-select:focus { border-color: #737373; box-shadow: 0 0 0 0.3rem #d2e2f9; z-index: 1; }
+    .procesos-checklist { background-color: #f8f9fa; max-height: 200px; overflow-y: auto; column-count: 2; column-gap: 10px; }
+    .procesos-checklist .form-check { break-inside: avoid; padding: 4px 8px; border-radius: 4px; transition: background-color 0.15s; }
+    .procesos-checklist .form-check:hover { background-color: #ffffff; }
+    .procesos-checklist .form-check-input:checked ~ .form-check-label { color: #000000; font-weight: 600; }
+    .procesos-checklist .form-check-input:focus { border-color: #737373; box-shadow: 0 0 0 0.2rem #ffffff; }
+    .procesos-checklist .form-check-input:checked { background-color: #737373; border-color: #737373; }
+    .alert-exito { background-color: #48b161; color: #ffffff; border-color: #c3e6cb; border-radius: 8px; padding: 12px 20px; margin: 0 auto 20px auto; font-weight: 500; display: flex; align-items: center; position: relative; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); width: 95%; max-width: 1400px; min-width: 300px; }
     .alert-exito i { font-size: 1.5rem; margin-right: 15px; }
-
-    .alert-exito .btn-close {
-        position: absolute;
-        right: 20px;
-        top: 50%;
-        transform: translateY(-50%);
-        filter: invert(1);
-    }
-
-    /* ── Botón eliminar proceso ── */
-    .btn-eliminar-proceso {
-        background: none;
-        border: none;
-        color: #dc3545;
-        font-size: 1.1rem;
-        padding: 0 2px;
-        line-height: 1;
-        cursor: pointer;
-        flex-shrink: 0;
-        opacity: 0.6;
-        transition: opacity 0.15s;
-    }
-
+    .alert-exito .btn-close { position: absolute; right: 20px; top: 50%; transform: translateY(-50%); filter: invert(1); }
+    .btn-eliminar-proceso { background: none; border: none; color: #dc3545; font-size: 1.1rem; padding: 0 2px; line-height: 1; cursor: pointer; flex-shrink: 0; opacity: 0.6; transition: opacity 0.15s; }
     .btn-eliminar-proceso:hover { opacity: 1; }
-
-    /* ── Validación ── */
-    .is-invalid {
-        border-color: #dc3545 !important;
-        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
-        background-repeat: no-repeat;
-        background-position: right calc(0.375em + 0.1875rem) center;
-        background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
-    }
-
-    .invalid-feedback {
-        display: none;
-        width: 100%;
-        margin-top: 0.25rem;
-        font-size: 0.875em;
-        color: #dc3545;
-    }
-
-    .was-validated .form-control:invalid,
-    .form-control.is-invalid,
-    .was-validated .form-select:invalid,
-    .form-select.is-invalid {
-        border-color: #dc3545;
-        padding-right: calc(1.5em + 0.75rem);
-        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
-        background-repeat: no-repeat;
-        background-position: right calc(0.375em + 0.1875rem) center;
-        background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
-    }
-
-    .was-validated .form-control:invalid:focus,
-    .form-control.is-invalid:focus,
-    .was-validated .form-select:invalid:focus,
-    .form-select.is-invalid:focus {
-        border-color: #dc3545;
-        box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
-    }
-
-    .invalid-feedback {
-        display: block;
-        color: #dc3545;
-        font-size: 0.875em;
-        margin-top: 0.25rem;
-    }
-
-    .drag-area.is-invalid {
-        border-color: #dc3545 !important;
-        background-color: rgba(220, 53, 69, 0.05);
-    }
-
-    .procesos-checklist.is-invalid {
-        border-color: #dc3545 !important;
-        background-color: rgba(220, 53, 69, 0.02);
-    }
-
-    @keyframes shake {
-        0%, 100% { transform: translateX(0); }
-        10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); }
-        20%, 40%, 60%, 80% { transform: translateX(2px); }
-    }
-
+    .is-invalid { border-color: #dc3545 !important; background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right calc(0.375em + 0.1875rem) center; background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem); }
+    .invalid-feedback { display: none; width: 100%; margin-top: 0.25rem; font-size: 0.875em; color: #dc3545; }
+    .was-validated .form-control:invalid, .form-control.is-invalid, .was-validated .form-select:invalid, .form-select.is-invalid { border-color: #dc3545; padding-right: calc(1.5em + 0.75rem); background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right calc(0.375em + 0.1875rem) center; background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem); }
+    .was-validated .form-control:invalid:focus, .form-control.is-invalid:focus, .was-validated .form-select:invalid:focus, .form-select.is-invalid:focus { border-color: #dc3545; box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25); }
+    .invalid-feedback { display: block; color: #dc3545; font-size: 0.875em; margin-top: 0.25rem; }
+    .drag-area.is-invalid { border-color: #dc3545 !important; background-color: rgba(220, 53, 69, 0.05); }
+    .procesos-checklist.is-invalid { border-color: #dc3545 !important; background-color: rgba(220, 53, 69, 0.02); }
+    @keyframes shake { 0%, 100% { transform: translateX(0); } 10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); } 20%, 40%, 60%, 80% { transform: translateX(2px); } }
     .campo-invalido-shake { animation: shake 0.5s ease-in-out; }
-
-    /* ── SweetAlert2 personalizado ── */
     .swal2-popup  { font-size: 1.2rem !important; }
     .swal2-title  { color: #800000 !important; }
     .swal2-confirm { background-color: #dc3545 !important; }
     .swal2-cancel  { background-color: #6c757d !important; }
-
-    /* Estilo para mostrar el rango de fechas en la tabla */
-    .rango-fechas {
-        background-color: #f8f9fa;
-        padding: 4px 8px;
-        border-radius: 4px;
-        font-size: 0.85rem;
-        display: inline-block;
-        border-left: 3px solid #800000;
-    }
-    .rango-fechas i {
-        color: #800000;
-        margin-right: 5px;
-    }
-    .fecha-detalle {
-        font-size: 0.75rem;
-        color: #6c757d;
-        margin-top: 2px;
-    }
-
-    /* ── Autocomplete procesos custom ── */
-    #autocomplete-procesos {
-        display: none; position: absolute; z-index: 9999;
-        background: #fff; border: 1px solid #dee2e6; border-top: none;
-        border-radius: 0 0 6px 6px; width: 100%; max-height: 200px;
-        overflow-y: auto; box-shadow: 0 4px 12px rgba(0,0,0,0.12);
-        left: 0; top: 100%;
-    }
-    #autocomplete-procesos .ac-item {
-        padding: 8px 12px; cursor: pointer; font-size: 0.88rem;
-        border-bottom: 1px solid #f3f3f3; display: flex; align-items: center; gap: 8px;
-    }
-    #autocomplete-procesos .ac-item:hover,
-    #autocomplete-procesos .ac-item.ac-active { background-color: #fdf0f1; color: #800000; }
+    .rango-fechas { background-color: #f8f9fa; padding: 4px 8px; border-radius: 4px; font-size: 0.85rem; display: inline-block; border-left: 3px solid #800000; }
+    .rango-fechas i { color: #800000; margin-right: 5px; }
+    .fecha-detalle { font-size: 0.75rem; color: #6c757d; margin-top: 2px; }
+    #autocomplete-procesos { display: none; position: absolute; z-index: 9999; background: #fff; border: 1px solid #dee2e6; border-top: none; border-radius: 0 0 6px 6px; width: 100%; max-height: 200px; overflow-y: auto; box-shadow: 0 4px 12px rgba(0,0,0,0.12); left: 0; top: 100%; }
+    #autocomplete-procesos .ac-item { padding: 8px 12px; cursor: pointer; font-size: 0.88rem; border-bottom: 1px solid #f3f3f3; display: flex; align-items: center; gap: 8px; }
+    #autocomplete-procesos .ac-item:hover, #autocomplete-procesos .ac-item.ac-active { background-color: #fdf0f1; color: #800000; }
     #autocomplete-procesos .ac-item i { color: #800000; font-size: 0.8rem; }
+    #tablaNcOmPorProceso { display: none; margin-top: 16px; }
+    #tablaNcOmPorProceso table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+    #tablaNcOmPorProceso thead th { background-color: #800000; color: #fff; padding: 8px 10px; text-align: center; font-weight: 600; border: none; }
+    #tablaNcOmPorProceso thead th:first-child { text-align: left; border-radius: 6px 0 0 0; }
+    #tablaNcOmPorProceso thead th:last-child { border-radius: 0 6px 0 0; }
+    #tablaNcOmPorProceso tbody tr:nth-child(even) { background-color: #ffffff; }
+    #tablaNcOmPorProceso tbody td { padding: 6px 10px; border-bottom: 1px solid #dee2e6; vertical-align: middle; }
+    #tablaNcOmPorProceso tbody td input[type="number"] { width: 80px; text-align: center; border: 1px solid #ced4da; border-radius: 4px; padding: 3px 6px; font-size: 0.88rem; }
+    #tablaNcOmPorProceso tbody td input[type="number"]:focus { border-color: #800000; box-shadow: 0 0 0 0.15rem rgba(128,0,0,0.2); outline: none; }
+    /* Nuevo estilo para el campo de texto de criterio */
+    #tablaNcOmPorProceso tbody td input[type="text"] { width: 180px; border: 1px solid #ced4da; border-radius: 4px; padding: 3px 6px; font-size: 0.88rem; }
+    #tablaNcOmPorProceso tbody td input[type="text"]:focus { border-color: #800000; box-shadow: 0 0 0 0.15rem rgba(128,0,0,0.2); outline: none; }
+    .totales-nc-om { margin-top: 8px; font-size: 0.88rem; display: flex; gap: 20px; justify-content: flex-end; padding-right: 4px; }
+    .totales-nc-om .badge-total-nc { background-color: #dc3545; color: #fff; border-radius: 20px; padding: 3px 12px; font-weight: 600; }
+    .totales-nc-om .badge-total-om { background-color: #28a745; color: #fff; border-radius: 20px; padding: 3px 12px; font-weight: 600; }
+    .filtro-tipo-estadisticas .btn-tipo { border: 2px solid #dee2e6; border-radius: 6px; padding: 5px 18px; font-size: 0.88rem; font-weight: 500; cursor: pointer; background: #fff; color: #495057; transition: all 0.15s; }
+    .filtro-tipo-estadisticas .btn-tipo:hover { border-color: #737373; color: #737373; }
+    .filtro-tipo-estadisticas .btn-tipo.activo-todos { background-color: #0d6efd; border-color: #0d6efd; color: #fff; }
+    .filtro-tipo-estadisticas .btn-tipo.activo-interna { background-color: #28a745; border-color: #28a745; color: #fff; }
+    .filtro-tipo-estadisticas .btn-tipo.activo-externa { background-color: #dc3545; border-color: #dc3545; color: #fff; }
+    [title] { position: relative; cursor: help; }
+    .tooltip { --bs-tooltip-bg: #737373; --bs-tooltip-color: #ffffff; font-size: 0.875rem; }
+    .tooltip .tooltip-inner { background-color: #737373; color: white; padding: 0.5rem 1rem; border-radius: 6px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+    .tooltip.bs-tooltip-top .tooltip-arrow::before { border-top-color: #737373; }
+    .tooltip.bs-tooltip-bottom .tooltip-arrow::before { border-bottom-color: #737373; }
+    .tooltip.bs-tooltip-start .tooltip-arrow::before { border-left-color: #737373; }
+    .tooltip.bs-tooltip-end .tooltip-arrow::before { border-right-color: #737373; }
 
-    /* ── NUEVO: tabla NC/OM por proceso ── */
-    #tablaNcOmPorProceso {
-        display: none;
-        margin-top: 16px;
+    /* Botón "Todos" del modal de estadísticas con color #0dcaf0 cuando está activo */
+    #btnTipoTodos.activo-todos {
+        background-color: #0dcaf0 !important;
+        border-color: #0dcaf0 !important;
+        color: #fff !important;
     }
 
-    #tablaNcOmPorProceso table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 0.88rem;
+    /* Estilo para la columna de criterios: solo el texto, sin proceso */
+    .criterio-item {
+        margin-bottom: 2px;
     }
-
-    #tablaNcOmPorProceso thead th {
-        background-color: #800000;
-        color: #fff;
-        padding: 8px 10px;
-        text-align: center;
-        font-weight: 600;
-        border: none;
-    }
-
-    #tablaNcOmPorProceso thead th:first-child {
-        text-align: left;
-        border-radius: 6px 0 0 0;
-    }
-
-    #tablaNcOmPorProceso thead th:last-child {
-        border-radius: 0 6px 0 0;
-    }
-
-    #tablaNcOmPorProceso tbody tr:nth-child(even) {
-        background-color: #fdf0f1;
-    }
-
-    #tablaNcOmPorProceso tbody td {
-        padding: 6px 10px;
-        border-bottom: 1px solid #dee2e6;
+    .criterio-text {
+        max-width: 250px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: inline-block;
         vertical-align: middle;
-    }
-
-    #tablaNcOmPorProceso tbody td input[type="number"] {
-        width: 80px;
-        text-align: center;
-        border: 1px solid #ced4da;
-        border-radius: 4px;
-        padding: 3px 6px;
-        font-size: 0.88rem;
-    }
-
-    #tablaNcOmPorProceso tbody td input[type="number"]:focus {
-        border-color: #800000;
-        box-shadow: 0 0 0 0.15rem rgba(128,0,0,0.2);
-        outline: none;
-    }
-
-    .totales-nc-om {
-        margin-top: 8px;
-        font-size: 0.88rem;
-        display: flex;
-        gap: 20px;
-        justify-content: flex-end;
-        padding-right: 4px;
-    }
-
-    .totales-nc-om .badge-total-nc {
-        background-color: #dc3545;
-        color: #fff;
-        border-radius: 20px;
-        padding: 3px 12px;
-        font-weight: 600;
-    }
-
-    .totales-nc-om .badge-total-om {
-        background-color: #fd7e14;
-        color: #fff;
-        border-radius: 20px;
-        padding: 3px 12px;
-        font-weight: 600;
-    }
-
-    /* ── NUEVO: filtro tipo en estadísticas ── */
-    .filtro-tipo-estadisticas .btn-tipo {
-        border: 2px solid #dee2e6;
-        border-radius: 6px;
-        padding: 5px 18px;
-        font-size: 0.88rem;
-        font-weight: 500;
-        cursor: pointer;
-        background: #fff;
-        color: #495057;
-        transition: all 0.15s;
-    }
-
-    .filtro-tipo-estadisticas .btn-tipo:hover {
-        border-color: #0dcaf0;
-        color: #0dcaf0;
-    }
-
-    .filtro-tipo-estadisticas .btn-tipo.activo-todos {
-        background-color: #0dcaf0;
-        border-color: #0dcaf0;
-        color: #fff;
-    }
-
-    .filtro-tipo-estadisticas .btn-tipo.activo-interna {
-        background-color: #28a745;
-        border-color: #28a745;
-        color: #fff;
-    }
-
-    .filtro-tipo-estadisticas .btn-tipo.activo-externa {
-        background-color: #dc3545;
-        border-color: #dc3545;
-        color: #fff;
     }
 </style>
 @endpush
@@ -593,8 +181,7 @@
                                style="width: 100%; height: 42px; font-size: 1rem; border-radius: 4px 0 0 4px; border-right: none;"
                                placeholder="Buscar archivos">
                     </div>
-                    <button class="btn btn-outline-secondary d-flex align-items-center justify-content-center"
-                            style="width: 42px; height: 42px; border-radius: 0 4px 4px 0; background-color: white; border-left: none;"
+                    <button class="btn btn-outline-secondary d-flex align-items-center justify-content-center btn-clear-search"
                             id="limpiarBusqueda"
                             onclick="limpiarBuscador()"
                             title="Limpiar búsqueda">
@@ -642,6 +229,11 @@
                     <i class="bi bi-bar-chart-line me-1"></i>Estadísticas
                 </button>
 
+                <!-- ── NUEVO: Histórico Global ── -->
+                <button class="btn" id="btnHistorico" style="background-color: #0d6efd; color: #fff; border: none; height: 42px; padding: 8px 15px; font-weight: 500;">
+                    <i class="bi bi-graph-up me-1"></i>Histórico
+                </button>
+
             </div>
         </div>
     </div>
@@ -660,6 +252,7 @@
                             <th>Periodo Auditoría</th>
                             <th>Año</th>
                             <th>Procesos Auditados</th>
+                            <th>Criterios</th>
                             <th>No Conformidades</th>
                             <th>Oport. Mejora</th>
                             <th>Documento</th>
@@ -672,9 +265,7 @@
                             data-tipo="{{ $inf->tipo_auditoria }}"
                             data-nc-om-por-proceso="{{ json_encode($inf->nc_om_por_proceso ?? []) }}">
                             <td class="fw-bold">{{ $inf->nombre_informe }}</td>
-                            <td>
-                                <span class="badge-{{ strtolower($inf->tipo_auditoria) }}">{{ $inf->tipo_auditoria }}</span>
-                            </td>
+                            <td><span class="badge-{{ strtolower($inf->tipo_auditoria) }}">{{ $inf->tipo_auditoria }}</span></td>
                             <td>{{ $inf->auditor_lider }}</td>
                             <td>{{ $inf->fecha_informe->format('d/m/Y') }}</td>
                             <td>
@@ -687,8 +278,7 @@
                                     <div class="fecha-detalle">({{ \Carbon\Carbon::parse($fi)->diffInDays(\Carbon\Carbon::parse($ff)) + 1 }} días)</div>
                                 @elseif($inf->fecha_auditoria)
                                     {{ $inf->fecha_auditoria->format('d/m/Y') }}
-                                @else
-                                    -
+                                @else -
                                 @endif
                             </td>
                             <td>{{ $inf->anio }}</td>
@@ -698,39 +288,48 @@
                                         @foreach($inf->procesos_auditados as $p)
                                             <span class="tag-proceso">{{ $p }}</span>
                                         @endforeach
-                                    @else
-                                        <span class="text-muted">—</span>
+                                    @else <span class="text-muted">—</span>
                                     @endif
                                 </div>
+                            </td>
+                            <td>
+                                @if($inf->nc_om_por_proceso)
+                                    @foreach($inf->nc_om_por_proceso as $item)
+                                        <div class="criterio-item" title="Proceso: {{ $item['proceso'] }}">
+                                            <span class="criterio-text">{{ $item['criterio'] ?? '—' }}</span>
+                                        </div>
+                                    @endforeach
+                                @else
+                                    <span class="text-muted">—</span>
+                                @endif
                             </td>
                             <td class="num-red">{{ $inf->no_conformidades }}</td>
                             <td class="num-orange">{{ $inf->oportunidades_mejora }}</td>
                             <td>
                                 @if($inf->documento_path)
                                     <span style="color: #212529;"><i class="bi bi-file-earmark-pdf me-1" style="color: #dc3545;"></i>{{ Str::limit($inf->documento_nombre, 20) }}</span>
-                                @else
-                                    <span class="text-muted">—</span>
+                                @else <span class="text-muted">—</span>
                                 @endif
                             </td>
                             <td>
                                 <div class="d-flex justify-content-center gap-1">
                                     @if($inf->documento_path && strtolower(pathinfo($inf->documento_nombre, PATHINFO_EXTENSION)) === 'pdf')
-                                    <button type="button" class="btn btn-sm btn-outline-info" title="Ver Documento"
+                                    <button type="button" class="btn btn-sm btn-outline-info" title="Ver documento"
                                         onclick="verDocumento({{ $inf->id }}, '{{ addslashes($inf->documento_nombre) }}')">
                                         <i class="bi bi-eye"></i>
                                     </button>
                                     @endif
                                     @if($inf->documento_path)
                                     <a href="{{ url('auditorias/informes') }}/{{ $inf->id }}/descargar"
-                                       class="btn btn-sm btn-outline-primary" title="Descargar Documento">
+                                       class="btn btn-sm btn-outline-primary" title="Descargar documento">
                                         <i class="bi bi-download"></i>
                                     </a>
                                     @endif
-                                    <button type="button" class="btn btn-sm btn-outline-secondary" title="Editar"
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" title="Editar informe"
                                         onclick="editarInforme({{ $inf->id }})">
                                         <i class="bi bi-pencil-square"></i>
                                     </button>
-                                    <button type="button" class="btn btn-sm btn-outline-danger" title="Eliminar"
+                                    <button type="button" class="btn btn-sm btn-outline-danger" title="Eliminar informe"
                                         onclick="eliminarInforme({{ $inf->id }}, '{{ addslashes($inf->nombre_informe) }}')">
                                         <i class="bi bi-trash"></i>
                                     </button>
@@ -738,7 +337,7 @@
                             </td>
                         </tr>
                         @empty
-                        <tr><td colspan="11" class="text-center text-muted py-3">No hay informes registrados.</td></tr>
+                        <tr><td colspan="12" class="text-center text-muted py-3">No hay informes registrados.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -751,7 +350,6 @@
         Mostrando registros del {{ $informes->firstItem() ?? 0 }} al {{ $informes->lastItem() ?? 0 }}
         de un total de {{ $informes->total() }} registros
     </div>
-
     <div class="pagination">
         {{ $informes->links('pagination::bootstrap-5') }}
     </div>
@@ -766,7 +364,7 @@
   <div class="modal-dialog modal-lg modal-dialog-scrollable">
     <div class="modal-content">
       <div class="modal-header modal-header-rojo">
-        <h5 class="modal-title"><i class="bi bi-cloud-upload me-2"></i><span id="tituloModalInforme">Subir Informe</span></h5>
+        <h5 class="modal-title"><i class="bi bi-cloud-upload me-2" style="color: #800000"></i><span id="tituloModalInforme">Subir Informe</span></h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
@@ -774,15 +372,12 @@
           @csrf
           <input type="hidden" name="_method" id="formMethod" value="POST">
           <input type="hidden" name="informe_id" id="informeId">
-
           <div class="row g-3">
-            {{-- Nombre del Informe --}}
             <div class="col-md-6">
               <label class="form-label">Nombre del Informe <span class="text-danger">*</span></label>
               <input type="text" class="form-control" name="nombre_informe" id="fNombre" placeholder="Ej. Informe_2024_Q1" required>
               <div class="invalid-feedback" id="fNombre-feedback">El nombre del informe es requerido</div>
             </div>
-            {{-- Tipo de Auditoría --}}
             <div class="col-md-6">
               <label class="form-label">Tipo de Auditoría <span class="text-danger">*</span></label>
               <select class="form-select" name="tipo_auditoria" id="fTipo" required>
@@ -792,13 +387,11 @@
               </select>
               <div class="invalid-feedback" id="fTipo-feedback">El tipo de auditoría es requerido</div>
             </div>
-            {{-- Auditor Líder --}}
             <div class="col-md-6">
               <label class="form-label">Auditor Líder <span class="text-danger">*</span></label>
               <input type="text" class="form-control" name="auditor_lider" id="fAuditor" placeholder="Nombre del auditor" required>
               <div class="invalid-feedback" id="fAuditor-feedback">El nombre del auditor líder es requerido</div>
             </div>
-            {{-- Auditoría Relacionada --}}
             <div class="col-md-6">
               <label class="form-label">Auditoría Relacionada</label>
               <select class="form-select" name="auditoria_relacionada_id" id="fAuditoriaRel">
@@ -813,13 +406,11 @@
               </select>
               <small class="text-muted">Al seleccionar, se copiará el rango de fechas al campo "Periodo de Auditoría"</small>
             </div>
-            {{-- Fecha del Informe --}}
             <div class="col-md-6">
               <label class="form-label">Fecha del Informe <span class="text-danger">*</span></label>
               <input type="date" class="form-control" name="fecha_informe" id="fFechaInforme" required>
               <div class="invalid-feedback" id="fFechaInforme-feedback">La fecha del informe es requerida</div>
             </div>
-            {{-- Periodo de Auditoría --}}
             <div class="col-md-6">
               <label class="form-label">
                 Periodo de Auditoría <span class="text-danger">*</span>
@@ -832,7 +423,6 @@
               <input type="hidden" id="fecha_fin" name="fecha_fin">
               <div class="invalid-feedback" id="rango-fechas-feedback">Debe seleccionar el periodo de auditoría</div>
             </div>
-            {{-- Procesos Auditados --}}
             <div class="col-12">
               <label class="form-label">Procesos Auditados <span class="text-danger">*</span> <small class="text-muted">(puede elegir varios)</small></label>
               <div id="fProcesos" class="procesos-checklist border rounded p-3">
@@ -848,8 +438,6 @@
               </div>
               <div class="invalid-feedback" id="fProcesos-feedback">Debe seleccionar al menos un proceso</div>
             </div>
-
-            {{-- ══ NUEVO: Tabla dinámica NC y OM por proceso ══ --}}
             <div class="col-12" id="tablaNcOmPorProceso">
               <label class="form-label">
                 <i class="bi bi-table me-1" style="color:#800000;"></i>
@@ -859,14 +447,13 @@
                 <table style="width:100%; border-collapse:collapse; font-size:0.88rem;">
                   <thead>
                     <tr>
-                      <th style="background:#800000;color:#fff;padding:8px 12px;text-align:left;font-weight:600;">Proceso</th>
-                      <th style="background:#800000;color:#fff;padding:8px 12px;text-align:center;font-weight:600;width:130px;">No Conformidades</th>
-                      <th style="background:#800000;color:#fff;padding:8px 12px;text-align:center;font-weight:600;width:150px;">Oport. de Mejora</th>
+                      <th style="background:#ffffff;color:#212529;padding:8px 12px;text-align:left;font-weight:600;border-bottom:1px solid #dee2e6;">Proceso</th>
+                      <th style="background:#ffffff;color:#212529;padding:8px 12px;text-align:left;font-weight:600;border-bottom:1px solid #dee2e6;">Criterio de Auditoría</th>
+                      <th style="background:#ffffff;color:#212529;padding:8px 12px;text-align:center;font-weight:600;width:130px;border-bottom:1px solid #dee2e6;">No Conformidades</th>
+                      <th style="background:#ffffff;color:#212529;padding:8px 12px;text-align:center;font-weight:600;width:150px;border-bottom:1px solid #dee2e6;">Oport. de Mejora</th>
                     </tr>
                   </thead>
-                  <tbody id="cuerpoTablaNcOm">
-                    {{-- Filas generadas dinámicamente por JS --}}
-                  </tbody>
+                  <tbody id="cuerpoTablaNcOm"></tbody>
                 </table>
               </div>
               <div class="totales-nc-om mt-2">
@@ -879,13 +466,8 @@
                 Los totales se calculan automáticamente sumando los valores de cada proceso.
               </small>
             </div>
-            {{-- ══ FIN tabla dinámica ══ --}}
-
-            {{-- Campos ocultos para totales (compatibilidad con validación del servidor) --}}
             <input type="hidden" name="no_conformidades" id="fNoConf" value="0">
             <input type="hidden" name="oportunidades_mejora" id="fOport" value="0">
-
-            {{-- Documento --}}
             <div class="col-12">
               <label class="form-label">Documento <span id="docRequerido" class="text-danger">*</span></label>
               <div class="drag-area border rounded p-4 bg-light" onclick="document.getElementById('fDocumento').click()" id="dragArea">
@@ -900,7 +482,6 @@
               <div class="invalid-feedback" id="fDocumento-feedback">El documento es requerido</div>
             </div>
           </div>
-          {{-- Errores --}}
           <div id="erroresForm" class="alert alert-danger mt-3 d-none"></div>
         </form>
       </div>
@@ -926,8 +507,6 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-
-        {{-- ── Fila selectores: Año + Tipo ── --}}
         <div class="row mb-4 align-items-center g-2">
           <div class="col-auto">
             <label class="form-label fw-bold mb-0">Año</label>
@@ -952,8 +531,6 @@
             </button>
           </div>
         </div>
-
-        {{-- ── Tarjetas resumen ── --}}
         <div class="row g-3 mb-4">
           <div class="col-md-4">
             <div class="stat-card stat-blue">
@@ -974,8 +551,6 @@
             </div>
           </div>
         </div>
-
-        {{-- ── Gráfica: NC y OM por proceso ── --}}
         <div class="grafica-anual-container mt-3">
           <h6 class="fw-bold text-muted text-center mb-3">
             <i class="bi bi-diagram-3 me-1"></i>
@@ -989,12 +564,68 @@
             <canvas id="chartPorProceso" height="300"></canvas>
           </div>
         </div>
-
-        {{-- ── Lista procesos ── --}}
         <div class="row mt-4">
           <div class="col-12">
             <h6 class="fw-bold text-muted">Procesos Auditados en el año:</h6>
             <div id="listaProcesosEstadisticas" class="d-flex flex-wrap gap-1 mt-2 p-3 border rounded bg-light"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+{{-- ══════════════════════════════════════════════════════════════
+     MODAL: HISTÓRICO GLOBAL  ← NUEVO
+══════════════════════════════════════════════════════════════ --}}
+<div class="modal fade" id="modalHistorico" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header" style="background-color:#0d6efd; color:#fff;">
+        <h5 class="modal-title"><i class="bi bi-graph-up me-2"></i>Histórico Global — NC y Oport. de Mejora por Año</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" style="filter:invert(1);"></button>
+      </div>
+      <div class="modal-body">
+        <div class="grafica-anual-container">
+          <div class="d-flex justify-content-center mb-3">
+            <div class="filtro-tipo-estadisticas d-flex gap-2">
+              <button type="button" class="btn-tipo activo-todos" id="btnHistTodos" onclick="seleccionarTipoHistorico('todos')">
+                <i class="bi bi-grid me-1"></i>Todos
+              </button>
+              <button type="button" class="btn-tipo" id="btnHistInterna" onclick="seleccionarTipoHistorico('Interna')">
+                <i class="bi bi-check-circle me-1"></i>Interna
+              </button>
+              <button type="button" class="btn-tipo" id="btnHistExterna" onclick="seleccionarTipoHistorico('Externa')">
+                <i class="bi bi-x-circle me-1"></i>Externa
+              </button>
+            </div>
+          </div>
+          <h6 class="fw-bold text-muted text-center mb-3">
+            <i class="bi bi-calendar3 me-1"></i>
+            Totales de No Conformidades y Oportunidades de Mejora por Año
+          </h6>
+          <div id="sinDatosHistoricoMsg" class="text-center text-muted py-4" style="display:none;">
+            <i class="bi bi-info-circle me-1"></i> No hay datos históricos disponibles.
+          </div>
+          <div id="wrapperChartHistorico">
+            <canvas id="chartHistorico" height="260"></canvas>
+          </div>
+        </div>
+        <div class="mt-4">
+          <h6 class="fw-bold text-muted mb-2"><i class="bi bi-table me-1"></i>Resumen por Año</h6>
+          <div class="table-responsive">
+            <table class="table table-bordered" style="font-size:0.9rem;">
+              <thead>
+                <tr>
+                  <th style="background:#0d6efd;color:#fff;text-align:center;border:none;">Año</th>
+                  <th style="background:#0d6efd;color:#fff;text-align:center;border:none;">Total Auditorías</th>
+                  <th style="background:#0d6efd;color:#fff;text-align:center;border:none;">No Conformidades</th>
+                  <th style="background:#0d6efd;color:#fff;text-align:center;border:none;">Oport. de Mejora</th>
+                </tr>
+              </thead>
+              <tbody id="cuerpoTablaHistorico"></tbody>
+            </table>
           </div>
         </div>
       </div>
@@ -1039,7 +670,6 @@
 <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
 
 <script>
-// ── Configuración de rutas ────────────────────────────────────────────────────
 const ROUTES = {
     index       : "{{ route('informes-auditoria.index') }}",
     store       : "{{ route('informes-auditoria.store') }}",
@@ -1054,26 +684,33 @@ const ROUTES = {
 
 const CSRF = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-let chartPorProceso    = null;   // ← NUEVA gráfica
+let chartPorProceso    = null;
+let chartHistorico     = null;
 let tipoSeleccionado   = '';
 let anioSeleccionado   = '';
 let ordenSeleccionado  = '';
-let tipoEstadisticas   = 'todos'; // ← filtro dentro del modal estadísticas
+let tipoEstadisticas   = 'todos';
+let tipoHistorico      = 'todos';
 
-// ── Campo Periodo de Auditoría: solo lectura, se llena desde Auditoría Relacionada ──
-function inicializarDateRangePicker() {
-    // Campo solo lectura — no usa daterangepicker.
-    // El valor se asigna automáticamente al seleccionar una Auditoría Relacionada.
-}
+// Paleta de colores para NC y OM según el tipo de auditoría
+const coloresNCPorTipo = {
+    todos: 'rgba(220, 53, 69, 0.85)',    // rojo original
+    Interna: 'rgba(220, 53, 69, 0.85)', // naranja
+    Externa: 'rgba(220, 53, 69, 0.85)'    // rojo oscuro
+};
+const coloresOMPorTipo = {
+    todos: 'rgba(40, 167, 69, 0.85)',    // verde original
+    Interna: 'rgba(40, 167, 69, 0.85)', // turquesa
+    Externa: 'rgba(40, 167, 69, 0.85)'     // verde oscuro
+};
 
-// Al seleccionar auditoría relacionada → copiar fechas al campo (solo lectura)
+function inicializarDateRangePicker() {}
+
 document.getElementById('fAuditoriaRel').addEventListener('change', function () {
     const selected    = this.options[this.selectedIndex];
     const fechaInicio = selected.dataset.fechaInicio;
     const fechaFin    = selected.dataset.fechaFin;
-
     if (fechaInicio && fechaFin) {
-        // Formatear como DD/MM/YYYY - DD/MM/YYYY para mostrar
         const fmtInicio = fechaInicio.split('-').reverse().join('/');
         const fmtFin    = fechaFin.split('-').reverse().join('/');
         document.getElementById('rango_fechas_auditoria').value = fmtInicio + ' - ' + fmtFin;
@@ -1083,14 +720,12 @@ document.getElementById('fAuditoriaRel').addEventListener('change', function () 
         const fb = document.getElementById('rango-fechas-feedback');
         if (fb) fb.style.display = 'none';
     } else {
-        // Si se deselecciona, limpiar el campo
         document.getElementById('rango_fechas_auditoria').value = '';
         document.getElementById('fecha_inicio').value = '';
         document.getElementById('fecha_fin').value    = '';
     }
 });
 
-// ── Helpers modales ───────────────────────────────────────────────────────────
 function getModalInstance(modalId) {
     const el = document.getElementById(modalId);
     if (!el) return null;
@@ -1141,7 +776,6 @@ function aplicarFiltros() {
     window.location.href = ROUTES.index + (params.toString() ? '?' + params.toString() : '');
 }
 
-// ── Reset formulario ──────────────────────────────────────────────────────────
 function resetForm() {
     const form = document.getElementById('formInforme');
     if (form) form.reset();
@@ -1162,20 +796,15 @@ function resetForm() {
     if (fi) { fi.value = ''; fi.required = true; }
     const dr = document.getElementById('docRequerido');
     if (dr) dr.textContent = '*';
-
-    // Limpiar fechas
     document.getElementById('rango_fechas_auditoria').value = '';
     document.getElementById('fecha_inicio').value = '';
     document.getElementById('fecha_fin').value    = '';
-
-    // ── Limpiar tabla NC/OM ──
     document.getElementById('cuerpoTablaNcOm').innerHTML = '';
     document.getElementById('tablaNcOmPorProceso').style.display = 'none';
     document.getElementById('totalNcDisplay').textContent = '0';
     document.getElementById('totalOmDisplay').textContent = '0';
     document.getElementById('fNoConf').value = '0';
     document.getElementById('fOport').value  = '0';
-
     limpiarErroresValidacion();
 }
 
@@ -1188,7 +817,6 @@ function limpiarErroresValidacion() {
 function validarCamposRequeridos() {
     limpiarErroresValidacion();
     let invalidos = [], primero = null;
-
     const check = (id, fbId) => {
         const el  = document.getElementById(id);
         const val = el.tagName === 'SELECT' ? el.value : el.value.trim();
@@ -1199,26 +827,22 @@ function validarCamposRequeridos() {
             if (!primero) primero = el;
         }
     };
-
     check('fNombre',       'fNombre-feedback');
     check('fTipo',         'fTipo-feedback');
     check('fAuditor',      'fAuditor-feedback');
     check('fFechaInforme', 'fFechaInforme-feedback');
-
     if (!$('#fecha_inicio').val() || !$('#fecha_fin').val()) {
         $('#rango_fechas_auditoria').addClass('is-invalid');
         $('#rango-fechas-feedback').show();
         invalidos.push(document.getElementById('rango_fechas_auditoria'));
         if (!primero) primero = document.getElementById('rango_fechas_auditoria');
     }
-
     if (document.querySelectorAll('.proceso-check:checked').length === 0) {
         document.getElementById('fProcesos').classList.add('is-invalid');
         document.getElementById('fProcesos-feedback').style.display = 'block';
         invalidos.push(document.getElementById('fProcesos'));
         if (!primero) primero = document.getElementById('fProcesos');
     }
-
     const esCreacion = document.getElementById('formMethod').value === 'POST';
     const fd = document.getElementById('fDocumento');
     if (esCreacion && (!fd.files || fd.files.length === 0)) {
@@ -1227,76 +851,47 @@ function validarCamposRequeridos() {
         invalidos.push(document.getElementById('dragArea'));
         if (!primero) primero = document.getElementById('dragArea');
     }
-
     return { valido: invalidos.length === 0, primerCampoInvalido: primero };
 }
 
-// ── Tabla dinámica NC/OM por proceso ─────────────────────────────────────────
-
-/**
- * Reconstruye la tabla de NC/OM cada vez que cambia la selección de procesos.
- * Preserva los valores ya ingresados en filas existentes.
- */
 function reconstruirTablaNcOm() {
-    const procesosSeleccionados = Array.from(document.querySelectorAll('.proceso-check:checked'))
-        .map(cb => cb.value);
-
+    const procesosSeleccionados = Array.from(document.querySelectorAll('.proceso-check:checked')).map(cb => cb.value);
     const tabla = document.getElementById('tablaNcOmPorProceso');
     const tbody = document.getElementById('cuerpoTablaNcOm');
-
-    if (procesosSeleccionados.length === 0) {
-        tabla.style.display = 'none';
-        tbody.innerHTML = '';
-        actualizarTotalesNcOm();
-        return;
-    }
-
+    if (procesosSeleccionados.length === 0) { tabla.style.display = 'none'; tbody.innerHTML = ''; actualizarTotalesNcOm(); return; }
     tabla.style.display = 'block';
-
-    // Guardar valores actuales antes de reconstruir
     const valoresActuales = {};
     tbody.querySelectorAll('tr').forEach(tr => {
         const proc = tr.dataset.proceso;
-        if (proc) {
-            valoresActuales[proc] = {
-                nc: tr.querySelector('.input-nc')?.value ?? '0',
+        if (proc) { 
+            valoresActuales[proc] = { 
+                nc: tr.querySelector('.input-nc')?.value ?? '0', 
                 om: tr.querySelector('.input-om')?.value ?? '0',
-            };
+                criterio: tr.querySelector('.input-criterio')?.value ?? ''
+            }; 
         }
     });
-
     tbody.innerHTML = '';
     procesosSeleccionados.forEach((proc, idx) => {
-        const nc = valoresActuales[proc]?.nc ?? '0';
-        const om = valoresActuales[proc]?.om ?? '0';
-        const bg = idx % 2 === 1 ? 'background:#fdf0f1;' : '';
+        const nc = valoresActuales[proc]?.nc ?? '';
+        const om = valoresActuales[proc]?.om ?? '';
+        const criterio = valoresActuales[proc]?.criterio ?? '';
+        const bg = '';
         const tr = document.createElement('tr');
         tr.dataset.proceso = proc;
         tr.style.cssText = bg;
-        tr.innerHTML = `
-            <td style="padding:6px 12px; border-bottom:1px solid #dee2e6; vertical-align:middle;">
-                <i class="bi bi-diagram-3 me-1" style="color:#800000; font-size:0.8rem;"></i>
-                ${_escHtml(proc)}
-            </td>
-            <td style="padding:6px 12px; border-bottom:1px solid #dee2e6; text-align:center;">
-                <input type="number"
-                       class="form-control form-control-sm input-nc"
-                       name="nc_por_proceso[${_escAttr(proc)}]"
-                       min="0" value="${_escAttr(nc)}"
-                       style="width:80px; margin:0 auto; text-align:center;"
-                       oninput="actualizarTotalesNcOm()">
-            </td>
-            <td style="padding:6px 12px; border-bottom:1px solid #dee2e6; text-align:center;">
-                <input type="number"
-                       class="form-control form-control-sm input-om"
-                       name="om_por_proceso[${_escAttr(proc)}]"
-                       min="0" value="${_escAttr(om)}"
-                       style="width:80px; margin:0 auto; text-align:center;"
-                       oninput="actualizarTotalesNcOm()">
-            </td>`;
+        tr.innerHTML = `<td style="padding:6px 12px; border-bottom:1px solid #dee2e6; vertical-align:middle;"><i class="bi bi-diagram-3 me-1" style="color:#800000; font-size:0.8rem;"></i>${_escHtml(proc)}</td>
+                        <td style="padding:6px 12px; border-bottom:1px solid #dee2e6; vertical-align:middle;">
+                            <input type="text" class="form-control form-control-sm input-criterio" name="criterio_por_proceso[${_escAttr(proc)}]" value="${_escAttr(criterio)}" placeholder="Criterio" style="width:100%;">
+                        </td>
+                        <td style="padding:6px 12px; border-bottom:1px solid #dee2e6; text-align:center;">
+                            <input type="number" class="form-control form-control-sm input-nc" name="nc_por_proceso[${_escAttr(proc)}]" min="0" value="${_escAttr(nc)}" placeholder="Ej:2" style="width:80px; margin:0 auto; text-align:center;" oninput="actualizarTotalesNcOm()">
+                        </td>
+                        <td style="padding:6px 12px; border-bottom:1px solid #dee2e6; text-align:center;">
+                            <input type="number" class="form-control form-control-sm input-om" name="om_por_proceso[${_escAttr(proc)}]" min="0" value="${_escAttr(om)}" placeholder="Ej:2" style="width:80px; margin:0 auto; text-align:center;" oninput="actualizarTotalesNcOm()">
+                        </td>`;
         tbody.appendChild(tr);
     });
-
     actualizarTotalesNcOm();
 }
 
@@ -1306,19 +901,13 @@ function actualizarTotalesNcOm() {
     document.querySelectorAll('#cuerpoTablaNcOm .input-om').forEach(i => { totalOm += Math.max(0, parseInt(i.value) || 0); });
     document.getElementById('totalNcDisplay').textContent = totalNc;
     document.getElementById('totalOmDisplay').textContent = totalOm;
-    // Sincronizar campos ocultos (para compatibilidad con servidor)
     document.getElementById('fNoConf').value = totalNc;
     document.getElementById('fOport').value  = totalOm;
 }
 
-function _escHtml(str) {
-    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-function _escAttr(str) {
-    return String(str).replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-}
+function _escHtml(str) { return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function _escAttr(str) { return String(str).replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 
-// ── Guardar informe ───────────────────────────────────────────────────────────
 document.getElementById('btnNuevoInforme').addEventListener('click', () => {
     resetForm();
     document.getElementById('tituloModalInforme').textContent = 'Subir Informe';
@@ -1411,8 +1000,6 @@ function mostrarMensajeExito(mensaje) {
     if (c) c.insertBefore(a, c.firstChild);
     setTimeout(() => { if (a && a.parentNode) a.remove(); }, 5000);
 }
-
-// ── Editar informe ────────────────────────────────────────────────────────────
 async function editarInforme(id) {
     try {
         resetForm();
@@ -1421,36 +1008,28 @@ async function editarInforme(id) {
         document.getElementById('informeId').value  = id;
         document.getElementById('docRequerido').textContent = '';
         document.getElementById('fDocumento').required = false;
-
         const res  = await fetch(ROUTES.show(id), { headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': CSRF } });
         const data = await res.json();
         const inf  = data.informe;
-
         document.getElementById('fNombre').value       = inf.nombre_informe;
         document.getElementById('fTipo').value         = inf.tipo_auditoria;
         document.getElementById('fAuditor').value      = inf.auditor_lider;
         document.getElementById('fFechaInforme').value = inf.fecha_informe;
-
         if (inf.fecha_inicio && inf.fecha_fin) {
-            // Tiene rango guardado → mostrarlo
             const fmtI = inf.fecha_inicio.split('-').reverse().join('/');
             const fmtF = inf.fecha_fin.split('-').reverse().join('/');
             document.getElementById('rango_fechas_auditoria').value = fmtI + ' - ' + fmtF;
             document.getElementById('fecha_inicio').value = inf.fecha_inicio;
             document.getElementById('fecha_fin').value    = inf.fecha_fin;
         } else if (inf.fecha_auditoria) {
-            // Registro antiguo sin rango → mostrar fecha_auditoria como referencia
             const fmtA = inf.fecha_auditoria.split('-').reverse().join('/');
             document.getElementById('rango_fechas_auditoria').value = fmtA;
             document.getElementById('fecha_inicio').value = inf.fecha_auditoria;
             document.getElementById('fecha_fin').value    = inf.fecha_auditoria;
         }
-
         document.getElementById('fAuditoriaRel').value = inf.auditoria_relacionada_id ?? '';
-        // Los totales se muestran en la tabla, los campos ocultos se actualizan después
         document.getElementById('fNoConf').value = inf.no_conformidades;
         document.getElementById('fOport').value  = inf.oportunidades_mejora;
-
         const procSel = inf.procesos_auditados ?? [];
         document.querySelectorAll('.proceso-check').forEach(cb => { cb.checked = procSel.includes(cb.value); });
         procSel.forEach(proc => {
@@ -1461,42 +1040,37 @@ async function editarInforme(id) {
                 div.className = 'form-check d-flex align-items-center gap-1';
                 div.innerHTML = `<input class="form-check-input proceso-check" type="checkbox" name="procesos_auditados[]" value="${proc}" id="${id_cb}" checked><label class="form-check-label flex-grow-1" for="${id_cb}">${proc}</label><button type="button" class="btn-eliminar-proceso" onclick="this.closest('.form-check').remove(); reconstruirTablaNcOm();" title="Eliminar proceso"><i class="bi bi-x"></i></button>`;
                 document.getElementById('fProcesos').appendChild(div);
-                // Registrar listener en el nuevo checkbox
                 div.querySelector('input').addEventListener('change', () => { reconstruirTablaNcOm(); });
             }
         });
-
-        // ── Construir tabla NC/OM con valores guardados ──
         reconstruirTablaNcOm();
-
-        // Cargar valores guardados en la tabla
+        // Cargar valores de NC, OM y criterio desde el objeto nc_om_por_proceso
         const ncOmGuardado = inf.nc_om_por_proceso ?? [];
         ncOmGuardado.forEach(item => {
             const tr = document.querySelector(`#cuerpoTablaNcOm tr[data-proceso="${CSS.escape(item.proceso)}"]`);
             if (tr) {
                 const inputNc = tr.querySelector('.input-nc');
                 const inputOm = tr.querySelector('.input-om');
+                const inputCriterio = tr.querySelector('.input-criterio');
                 if (inputNc) inputNc.value = item.nc ?? 0;
                 if (inputOm) inputOm.value = item.om ?? 0;
+                if (inputCriterio && item.criterio !== undefined) inputCriterio.value = item.criterio;
             }
         });
         actualizarTotalesNcOm();
-
         if (inf.documento_nombre) document.getElementById('docLabel').textContent = inf.documento_nombre + ' (archivo actual)';
-
         const el = document.getElementById('modalInforme');
         const ex = bootstrap.Modal.getInstance(el);
         if (ex) ex.dispose();
         new bootstrap.Modal(el, { backdrop: true, keyboard: true }).show();
-    } catch (e) {
-        console.error('Error al cargar el informe:', e);
+    } catch (e) {console.error('Error al cargar el informe:', e);
         mostrarErrores({ error: ['Error al cargar los datos del informe'] });
     }
 }
 
 function eliminarInforme(id, nombre) {
     Swal.fire({
-        title: '¿Eliminar archivo?',
+        title: '¿Eliminar informe?',
         text: `¿Estás seguro de eliminar "${nombre}"?`,
         icon: 'warning',
         showCancelButton: true,
@@ -1504,16 +1078,19 @@ function eliminarInforme(id, nombre) {
         cancelButtonColor: '#6c757d',
         confirmButtonText: 'Sí, eliminar',
         cancelButtonText: 'Cancelar'
-    }).then(async (result) => {
+    }).then((result) => {
         if (result.isConfirmed) {
-            try {
-                const res  = await fetch(ROUTES.destroy(id), { method: 'DELETE', headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' } });
-                const data = await res.json();
+            Swal.fire({ title: 'Eliminando...', text: 'Por favor espere', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+            fetch(ROUTES.destroy(id), { method: 'DELETE', headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json', 'Content-Type': 'application/json' } })
+            .then(response => response.json())
+            .then(data => {
                 if (data.success) {
-                    mostrarMensajeExito("Informe eliminado correctamente");
-                    setTimeout(() => location.reload(), 1500);
+                    Swal.fire({ icon: 'success', title: '¡Eliminado!', text: data.message, confirmButtonColor: '#800000', timer: 2000 }).then(() => { location.reload(); });
+                } else {
+                    Swal.fire({ icon: 'error', title: 'Error', text: data.message || 'Error al eliminar', confirmButtonColor: '#800000' });
                 }
-            } catch (e) { console.error('Error al eliminar:', e); alert('Error al eliminar el informe'); }
+            })
+            .catch(error => { console.error('Error:', error); Swal.fire({ icon: 'error', title: 'Error', text: 'Error de conexión', confirmButtonColor: '#800000' }); });
         }
     });
 }
@@ -1541,7 +1118,7 @@ document.getElementById('modalDocumento').addEventListener('hidden.bs.modal', ()
 function obtenerAniosUnicos() {
     const s = new Set();
     document.querySelectorAll('#tablaInformes tbody tr').forEach(f => {
-        const a = f.cells[5]?.textContent.trim();
+        const a = f.cells[5]?.textContent.trim(); // Año está en índice 5
         if (a) s.add(a);
     });
     return Array.from(s).sort();
@@ -1586,37 +1163,22 @@ function inicializarFiltrosDesdeURL() {
 }
 
 // ── Estadísticas ──────────────────────────────────────────────────────────────
-
-/**
- * Recopila datos de la tabla HTML filtrando por año Y tipo.
- * Lee el atributo data-nc-om-por-proceso de cada fila para construir
- * la gráfica por proceso.
- */
 function obtenerDatosFiltrados(anio, tipo) {
     let total = 0, nc = 0, om = 0;
     const procesosSet = new Set();
-    // mapa: proceso → {nc, om}
     const procesosMap = {};
-
     document.querySelectorAll('#tablaInformes tbody tr').forEach(fila => {
-        const anioFila = fila.cells[5]?.textContent.trim();
+        const anioFila = fila.cells[5]?.textContent.trim();          // Año (índice 5)
         const tipoFila = fila.dataset.tipo ?? '';
-
         const coincideAnio = anioFila === anio;
         const coincideTipo = (tipo === 'todos') || (tipoFila === tipo);
-
         if (!coincideAnio || !coincideTipo) return;
-
         total++;
-        nc += parseInt(fila.cells[7]?.textContent.trim()) || 0;
-        om += parseInt(fila.cells[8]?.textContent.trim()) || 0;
-
-        // procesos nombres
-        fila.cells[6]?.querySelectorAll('.tag-proceso').forEach(s => {
-            if (s.textContent.trim()) procesosSet.add(s.textContent.trim());
-        });
-
-        // desglose nc/om por proceso
+        // NC ahora en índice 8, OM en índice 9 (después de la columna Criterios)
+        nc += parseInt(fila.cells[8]?.textContent.trim()) || 0;
+        om += parseInt(fila.cells[9]?.textContent.trim()) || 0;
+        // Procesos en índice 6
+        fila.cells[6]?.querySelectorAll('.tag-proceso').forEach(s => { if (s.textContent.trim()) procesosSet.add(s.textContent.trim()); });
         let ncOmData = [];
         try { ncOmData = JSON.parse(fila.dataset.ncOmPorProceso || '[]'); } catch(e) {}
         ncOmData.forEach(item => {
@@ -1626,14 +1188,7 @@ function obtenerDatosFiltrados(anio, tipo) {
             procesosMap[item.proceso].om += parseInt(item.om) || 0;
         });
     });
-
-    return {
-        totalAuditorias : total,
-        totalNC         : nc,
-        totalOM         : om,
-        procesos        : Array.from(procesosSet),
-        procesosMap     : procesosMap,
-    };
+    return { totalAuditorias: total, totalNC: nc, totalOM: om, procesos: Array.from(procesosSet), procesosMap };
 }
 
 function actualizarTarjetas(t, nc, om) {
@@ -1642,86 +1197,55 @@ function actualizarTarjetas(t, nc, om) {
     document.getElementById('statOM').textContent    = om;
 }
 
-
-/**
- * Gráfica de barras agrupadas NC y OM por proceso.
- */
 function actualizarGraficaPorProceso(procesosMap) {
     const ctx    = document.getElementById('chartPorProceso');
     const msgEl  = document.getElementById('sinDatosProcesoMsg');
     const wrpEl  = document.getElementById('wrapperChartPorProceso');
-
     if (!ctx) return;
     if (chartPorProceso) { chartPorProceso.destroy(); chartPorProceso = null; }
-
     const procesos = Object.keys(procesosMap);
-
-    if (procesos.length === 0) {
-        msgEl.style.display = 'block';
-        wrpEl.style.display = 'none';
-        return;
-    }
-
-    msgEl.style.display = 'none';
-    wrpEl.style.display = 'block';
-
-    const dataNc = procesos.map(p => procesosMap[p].nc);
-    const dataOm = procesos.map(p => procesosMap[p].om);
-
-    // Altura dinámica: mínimo 300, +25px por proceso adicional
+    if (procesos.length === 0) { msgEl.style.display = 'block'; wrpEl.style.display = 'none'; return; }
+    msgEl.style.display = 'none'; wrpEl.style.display = 'block';
     ctx.height = Math.max(300, 200 + procesos.length * 25);
+    
+    // Usar colores según el tipo seleccionado (tipoEstadisticas)
+    const colorNC = coloresNCPorTipo[tipoEstadisticas] || coloresNCPorTipo.todos;
+    const colorOM = coloresOMPorTipo[tipoEstadisticas] || coloresOMPorTipo.todos;
+    const borderColorNC = colorNC.replace('0.85', '1');
+    const borderColorOM = colorOM.replace('0.85', '1');
 
     chartPorProceso = new Chart(ctx.getContext('2d'), {
         type: 'bar',
         data: {
             labels: procesos,
             datasets: [
-                {
-                    label: 'No Conformidades',
-                    data : dataNc,
-                    backgroundColor: 'rgba(220, 53, 69, 0.85)',
-                    borderColor    : '#b02a37',
-                    borderWidth: 1,
-                    borderRadius: 4,
+                { 
+                    label: 'No Conformidades', 
+                    data: procesos.map(p => procesosMap[p].nc), 
+                    backgroundColor: colorNC, 
+                    borderColor: borderColorNC, 
+                    borderWidth: 1, 
+                    borderRadius: 4 
                 },
-                {
-                    label: 'Oport. de Mejora',
-                    data : dataOm,
-                    backgroundColor: 'rgba(253, 126, 20, 0.85)',
-                    borderColor    : '#ca6510',
-                    borderWidth: 1,
-                    borderRadius: 4,
+                { 
+                    label: 'Oport. de Mejora', 
+                    data: procesos.map(p => procesosMap[p].om), 
+                    backgroundColor: colorOM, 
+                    borderColor: borderColorOM, 
+                    borderWidth: 1, 
+                    borderRadius: 4 
                 }
             ]
         },
         options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: true,
-                    position: 'top',
-                    labels: { font: { size: 13 } }
-                },
-                tooltip: {
-                    callbacks: {
-                        label: ctx => `${ctx.dataset.label}: ${ctx.raw}`
-                    }
-                }
+            responsive: true, maintainAspectRatio: false,
+            plugins: { 
+                legend: { display: true, position: 'top', labels: { font: { size: 13 } } }, 
+                tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ${ctx.raw}` } } 
             },
-            scales: {
-                x: {
-                    ticks: {
-                        maxRotation: 35,
-                        minRotation: 0,
-                        font: { size: 11 }
-                    }
-                },
-                y: {
-                    beginAtZero: true,
-                    ticks: { stepSize: 1 },
-                    title: { display: true, text: 'Cantidad' }
-                }
+            scales: { 
+                x: { ticks: { maxRotation: 35, minRotation: 0, font: { size: 11 } } }, 
+                y: { beginAtZero: true, ticks: { stepSize: 1 }, title: { display: true, text: 'Cantidad' } } 
             }
         }
     });
@@ -1731,12 +1255,7 @@ function actualizarListaProcesos(procesos) {
     const div = document.getElementById('listaProcesosEstadisticas');
     div.innerHTML = '';
     if (procesos.length > 0) {
-        procesos.forEach(p => {
-            const s = document.createElement('span');
-            s.className   = 'tag-proceso';
-            s.textContent = p;
-            div.appendChild(s);
-        });
+        procesos.forEach(p => { const s = document.createElement('span'); s.className = 'tag-proceso'; s.textContent = p; div.appendChild(s); });
     } else {
         div.innerHTML = '<span class="text-muted">No hay procesos para los filtros seleccionados</span>';
     }
@@ -1744,43 +1263,31 @@ function actualizarListaProcesos(procesos) {
 
 function refrescarEstadisticas() {
     const anio = document.getElementById('selectAnioEstadisticas').value;
-    if (!anio || anio === '0') {
-        actualizarTarjetas(0, 0, 0);
-        actualizarGraficaPorProceso({});
-        actualizarListaProcesos([]);
-        return;
-    }
+    if (!anio || anio === '0') { actualizarTarjetas(0, 0, 0); actualizarGraficaPorProceso({}); actualizarListaProcesos([]); return; }
     const d = obtenerDatosFiltrados(anio, tipoEstadisticas);
     actualizarTarjetas(d.totalAuditorias, d.totalNC, d.totalOM);
     actualizarGraficaPorProceso(d.procesosMap);
     actualizarListaProcesos(d.procesos);
 }
 
-// ── Filtro tipo dentro del modal de estadísticas ──────────────────────────────
 function seleccionarTipoEstadisticas(tipo) {
     tipoEstadisticas = tipo;
-    // Actualizar botones
     document.getElementById('btnTipoTodos').className    = 'btn-tipo' + (tipo === 'todos'    ? ' activo-todos'    : '');
     document.getElementById('btnTipoInterna').className  = 'btn-tipo' + (tipo === 'Interna'  ? ' activo-interna'  : '');
     document.getElementById('btnTipoExterna').className  = 'btn-tipo' + (tipo === 'Externa'  ? ' activo-externa'  : '');
     refrescarEstadisticas();
 }
 
-// ── Abrir modal estadísticas ──────────────────────────────────────────────────
 document.getElementById('btnEstadisticas').addEventListener('click', () => {
     const anios = obtenerAniosUnicos();
     tipoEstadisticas = 'todos';
-    seleccionarTipoEstadisticas('todos'); // resetear botones
-
+    seleccionarTipoEstadisticas('todos');
     new bootstrap.Modal(document.getElementById('modalEstadisticas')).show();
-
     const sel = document.getElementById('selectAnioEstadisticas');
     sel.innerHTML = '';
     if (anios.length === 0) {
         sel.innerHTML = '<option value="0">Sin años disponibles</option>';
-        actualizarTarjetas(0, 0, 0);
-        actualizarGraficaPorProceso({});
-        actualizarListaProcesos([]);
+        actualizarTarjetas(0, 0, 0); actualizarGraficaPorProceso({}); actualizarListaProcesos([]);
     } else {
         anios.forEach(a => { const o = document.createElement('option'); o.value = a; o.textContent = a; sel.appendChild(o); });
         sel.value = anios[0];
@@ -1788,13 +1295,105 @@ document.getElementById('btnEstadisticas').addEventListener('click', () => {
     }
 });
 
-document.getElementById('selectAnioEstadisticas').addEventListener('change', () => {
-    refrescarEstadisticas();
+document.getElementById('selectAnioEstadisticas').addEventListener('change', () => { refrescarEstadisticas(); });
+
+document.getElementById('modalEstadisticas').addEventListener('hidden.bs.modal', () => {
+    if (chartPorProceso) { chartPorProceso.destroy(); chartPorProceso = null; }
 });
 
-// Destruir gráficas al cerrar modal
-document.getElementById('modalEstadisticas').addEventListener('hidden.bs.modal', () => {
-    if (chartPorProceso)   { chartPorProceso.destroy();  chartPorProceso   = null; }
+// ── NUEVO: Histórico Global ───────────────────────────────────────────────────
+function renderHistorico() {
+    const anios = obtenerAniosUnicos();
+    const msgEl = document.getElementById('sinDatosHistoricoMsg');
+    const wrpEl = document.getElementById('wrapperChartHistorico');
+    const tbody = document.getElementById('cuerpoTablaHistorico');
+    if (chartHistorico) { chartHistorico.destroy(); chartHistorico = null; }
+    if (anios.length === 0) {
+        if (msgEl) msgEl.style.display = 'block';
+        if (wrpEl) wrpEl.style.display = 'none';
+        if (tbody) tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Sin datos</td></tr>';
+        return;
+    }
+    if (msgEl) msgEl.style.display = 'none';
+    if (wrpEl) wrpEl.style.display = 'block';
+    if (tbody) tbody.innerHTML = '';
+    const dataNc = [], dataOm = [];
+    anios.forEach((a, idx) => {
+        const d = obtenerDatosFiltrados(a, tipoHistorico);
+        dataNc.push(d.totalNC);
+        dataOm.push(d.totalOM);
+        if (tbody) {
+            const tr = document.createElement('tr');
+            tr.style.background = idx % 2 === 1 ? '#f8f9fa' : '#fff';
+            tr.innerHTML = `<td style="text-align:center;font-weight:600;">${a}</td><td style="text-align:center;">${d.totalAuditorias}</td><td style="text-align:center;color:#dc3545;font-weight:700;">${d.totalNC}</td><td style="text-align:center;color:#fd7e14;font-weight:700;">${d.totalOM}</td>`;
+            tbody.appendChild(tr);
+        }
+    });
+    const ctx = document.getElementById('chartHistorico');
+    if (!ctx) return;
+
+    // Usar colores según el tipo seleccionado (tipoHistorico)
+    const colorNC = coloresNCPorTipo[tipoHistorico] || coloresNCPorTipo.todos;
+    const colorOM = coloresOMPorTipo[tipoHistorico] || coloresOMPorTipo.todos;
+    const borderColorNC = colorNC.replace('0.85', '1');
+    const borderColorOM = colorOM.replace('0.85', '1');
+
+    chartHistorico = new Chart(ctx.getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: anios,
+            datasets: [
+                { 
+                    label: 'No Conformidades', 
+                    data: dataNc, 
+                    backgroundColor: colorNC, 
+                    borderColor: borderColorNC, 
+                    borderWidth: 1, 
+                    borderRadius: 5, 
+                    barPercentage: 0.6 
+                },
+                { 
+                    label: 'Oport. de Mejora', 
+                    data: dataOm, 
+                    backgroundColor: colorOM, 
+                    borderColor: borderColorOM, 
+                    borderWidth: 1, 
+                    borderRadius: 5, 
+                    barPercentage: 0.6 
+                }
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: true,
+            plugins: { 
+                legend: { display: true, position: 'top', labels: { font: { size: 13 } } }, 
+                tooltip: { callbacks: { label: c => `${c.dataset.label}: ${c.raw}` } } 
+            },
+            scales: { 
+                x: { ticks: { font: { size: 12 } } }, 
+                y: { beginAtZero: true, ticks: { stepSize: 1 }, title: { display: true, text: 'Total' } } 
+            }
+        }
+    });
+}
+
+function seleccionarTipoHistorico(tipo) {
+    tipoHistorico = tipo;
+    document.getElementById('btnHistTodos').className   = 'btn-tipo' + (tipo === 'todos'   ? ' activo-todos'   : '');
+    document.getElementById('btnHistInterna').className = 'btn-tipo' + (tipo === 'Interna' ? ' activo-interna' : '');
+    document.getElementById('btnHistExterna').className = 'btn-tipo' + (tipo === 'Externa' ? ' activo-externa' : '');
+    renderHistorico();
+}
+
+document.getElementById('btnHistorico').addEventListener('click', () => {
+    tipoHistorico = 'todos';
+    seleccionarTipoHistorico('todos');
+    new bootstrap.Modal(document.getElementById('modalHistorico')).show();
+    renderHistorico();
+});
+
+document.getElementById('modalHistorico').addEventListener('hidden.bs.modal', () => {
+    if (chartHistorico) { chartHistorico.destroy(); chartHistorico = null; }
 });
 
 // ── Agregar nuevo proceso ─────────────────────────────────────────────────────
@@ -1811,7 +1410,6 @@ function agregarNuevoProceso() {
                      <label class="form-check-label flex-grow-1" for="${id_cb}">${nombre}</label>
                      <button type="button" class="btn-eliminar-proceso" onclick="this.closest('.form-check').remove(); reconstruirTablaNcOm();" title="Eliminar proceso"><i class="bi bi-x"></i></button>`;
     document.getElementById('fProcesos').appendChild(div);
-    // Registrar listener en el nuevo checkbox
     div.querySelector('input').addEventListener('change', () => { reconstruirTablaNcOm(); });
     input.value = '';
     div.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -1821,7 +1419,7 @@ function agregarNuevoProceso() {
     reconstruirTablaNcOm();
 }
 
-// ── Inicialización ──────────────────────────────────────────────────────────
+// ── Inicialización ────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function() {
     inicializarDateRangePicker();
     cargarAniosEnFiltro();
@@ -1837,9 +1435,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     const mes = document.getElementById('modalEstadisticas');
-    if (mes) mes.addEventListener('hidden.bs.modal', () => {
-            if (chartPorProceso)   { chartPorProceso.destroy();  chartPorProceso   = null; }
-    });
+    if (mes) mes.addEventListener('hidden.bs.modal', () => { if (chartPorProceso) { chartPorProceso.destroy(); chartPorProceso = null; } });
 
     document.querySelectorAll('#formInforme .form-control, #formInforme .form-select').forEach(c => {
         const clear = function() { this.classList.remove('is-invalid'); const el = document.getElementById(this.id + '-feedback'); if (el) el.style.display = 'none'; };
@@ -1847,7 +1443,6 @@ document.addEventListener('DOMContentLoaded', function() {
         c.addEventListener('change', clear);
     });
 
-    // ── Listener checkboxes de procesos → reconstruir tabla NC/OM ──
     document.querySelectorAll('.proceso-check').forEach(cb => {
         cb.addEventListener('change', () => {
             if (document.querySelectorAll('.proceso-check:checked').length > 0) {
@@ -1865,7 +1460,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // ── Autocomplete nuevoProceso ──────────────────────────────────
     const _npInput = document.getElementById('nuevoProceso');
     if (_npInput) {
         _npInput.addEventListener('input', function() { _mostrarDropdown(this.value.trim()); });
@@ -1880,22 +1474,13 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ── Drag & Drop ──────────────────────────────────────────────
     const dragArea = document.getElementById('dragArea');
     if (dragArea) {
         ['dragenter', 'dragover'].forEach(evt => {
-            dragArea.addEventListener(evt, function(e) {
-                e.preventDefault(); e.stopPropagation();
-                dragArea.style.backgroundColor = '#fff0f0';
-                dragArea.style.borderColor     = '#600000';
-            });
+            dragArea.addEventListener(evt, function(e) { e.preventDefault(); e.stopPropagation(); dragArea.style.backgroundColor = '#fff0f0'; dragArea.style.borderColor = '#600000'; });
         });
         ['dragleave', 'drop'].forEach(evt => {
-            dragArea.addEventListener(evt, function(e) {
-                e.preventDefault(); e.stopPropagation();
-                dragArea.style.backgroundColor = '';
-                dragArea.style.borderColor     = '';
-            });
+            dragArea.addEventListener(evt, function(e) { e.preventDefault(); e.stopPropagation(); dragArea.style.backgroundColor = ''; dragArea.style.borderColor = ''; });
         });
         dragArea.addEventListener('drop', function(e) {
             const files = e.dataTransfer.files;

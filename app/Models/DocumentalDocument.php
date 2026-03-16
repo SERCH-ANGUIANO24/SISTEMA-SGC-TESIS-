@@ -29,7 +29,8 @@ class DocumentalDocument extends Model
         'version_procedimiento',
         'estatus',
         'observaciones',
-        'fecha'
+        'fecha',
+        'tipo_documento',
     ];
 
     protected $casts = [

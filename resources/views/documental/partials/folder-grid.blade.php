@@ -32,15 +32,11 @@
                             <i class="bi bi-arrow-right-circle"></i>
                         </button>
                         
-                        <form action="{{ route('documental.folder.destroy', $folder->id) }}" method="POST" class="d-inline" id="delete-form-{{ $folder->id }}">
-                            @csrf
-                            @method('DELETE')
-                            <button type="button" class="btn btn-sm btn-outline-danger" 
-                                    onclick="confirmDelete({{ $folder->id }}, '{{ addslashes($folder->name) }}')"
-                                    title="Eliminar carpeta">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </form>
+                        <button type="button" class="btn btn-sm btn-outline-danger" 
+                                onclick="confirmDelete('{{ $folder->id }}', '{{ addslashes($folder->name) }}')"
+                                title="Eliminar carpeta">
+                            <i class="bi bi-trash"></i>
+                        </button>
                     </div>
                     @endif
                 </div>
@@ -221,43 +217,68 @@
 
     function confirmDelete(folderId, folderName) {
         event.stopPropagation();
-        event.preventDefault();
-        
+
         Swal.fire({
             title: '¿Eliminar carpeta?',
-            html: `
-                <div style="text-align: left;">
-                    <p style="font-size: 1.1rem; margin-bottom: 10px;">
-                        <strong>📁 ${folderName}</strong>
-                    </p>
-                    <p style="color: #dc3545; font-weight: 500;">
-                        ⚠️ Esta acción eliminará permanentemente:
-                    </p>
-                    <ul style="text-align: left; margin-bottom: 15px;">
-                        <li>La carpeta <strong>"${folderName}"</strong></li>
-                        <li>Todas las subcarpetas dentro de ella</li>
-                        <li>Todos los archivos dentro de la carpeta</li>
-                    </ul>
-                    <p style="color: #856404; background-color: #fff3cd; padding: 10px; border-radius: 5px;">
-                        <i class="bi bi-exclamation-triangle-fill"></i>
-                        <strong>¡No podrás recuperar esta información después de eliminarla!</strong>
-                    </p>
-                </div>
-            `,
+            text: `¿Estás seguro de eliminar "${folderName}"?`,
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#dc3545',
             cancelButtonColor: '#6c757d',
-            confirmButtonText: 'Sí, eliminar carpeta',
-            cancelButtonText: 'Cancelar',
-            reverseButtons: true,
-            showLoaderOnConfirm: true,
-            preConfirm: () => {
-                const form = document.getElementById(`delete-form-${folderId}`);
-                form.submit();
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: 'Eliminando...',
+                    text: 'Por favor espere',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                fetch('/documental/folder/' + folderId, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: '¡Eliminado!',
+                            text: data.message,
+                            confirmButtonColor: '#800000',
+                            timer: 2000
+                        }).then(() => {
+                            location.reload();
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: data.message || 'Error al eliminar',
+                            confirmButtonColor: '#800000'
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Error de conexión',
+                        confirmButtonColor: '#800000'
+                    });
+                });
             }
         });
-        
+
         return false;
     }
 </script>

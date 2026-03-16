@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\RegistraHistorialVersiones;
 
 class SolicitudMejora extends Model
 {
-    use HasFactory;
+    use HasFactory, RegistraHistorialVersiones;
 
     protected $table = 'solicitudes_mejora';
 
@@ -20,13 +21,18 @@ class SolicitudMejora extends Model
         'fecha_verificacion',
         'estatus',
         'archivo_nombre',
-        'archivo_ruta'
+        'archivo_ruta',
+        'informe_id',
+        'fecha_informe',
+        'procesos_auditados',
+        'tipo_solicitud',
     ];
 
     protected $casts = [
-        'fecha_solicitud' => 'date',
-        'fecha_aplicacion' => 'date',
-        'fecha_verificacion' => 'date'
+        'fecha_solicitud'   => 'date',
+        'fecha_aplicacion'  => 'date',
+        'fecha_verificacion'=> 'date',
+        'fecha_informe'     => 'date',
     ];
 
     public function getEstatusBadgeClassAttribute()
@@ -47,5 +53,10 @@ class SolicitudMejora extends Model
             'Cerrado'     => '#28a745',
             default       => '#6c757d'
         };
+    }
+
+    public function informe()
+    {
+        return $this->belongsTo(InformeAuditoria::class, 'informe_id');
     }
 }
