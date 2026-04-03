@@ -4,15 +4,17 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Traits\RegistraHistorialVersiones;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Document extends Model
 {
-    use HasFactory, RegistraHistorialVersiones;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'name', 'original_name', 'file_path', 'mime_type', 'size', 'folder_id', 'user_id'
     ];
+
+    protected $dates = ['deleted_at'];
 
     public function folder()
     {

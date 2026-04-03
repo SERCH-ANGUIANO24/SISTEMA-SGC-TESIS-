@@ -1,14 +1,15 @@
 <?php
-// app/Models/DocumentalDocument.php
 
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Traits\RegistraHistorialVersiones;
 
 class DocumentalDocument extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes, RegistraHistorialVersiones;
 
     protected $table = 'documental_documents';
 
@@ -36,7 +37,8 @@ class DocumentalDocument extends Model
     protected $casts = [
         'fecha' => 'date',
         'created_at' => 'datetime',
-        'updated_at' => 'datetime'
+        'updated_at' => 'datetime',
+        'deleted_at' => 'datetime',
     ];
 
     public function folder()

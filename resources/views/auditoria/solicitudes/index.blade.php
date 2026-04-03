@@ -12,8 +12,8 @@
             
             <div class="d-flex align-items-center justify-content-between">
                 <a href="{{ route('auditoria.dashboard') }}" class="text-decoration-none" title="Ir al Dashboard">
-                    <h1 class="h3 mb-0" style="color: #800000; cursor: pointer;">
-                        <i class="bi bi-folder me-2" style="font-size: 2.5rem; vertical-align: middle;"></i>
+                    <h1 class="h3 mb-0" style="color: #dc2626; cursor: pointer;">
+                        <i class="bi-arrow-up-circle me-2" style="font-size: 3rem; vertical-align: middle;"></i>
                         Solicitud de Mejora
                     </h1>
                 </a>
@@ -35,21 +35,24 @@
     @include('auditoria.solicitudes.partials.tabla')
 </div>
 
-<!-- MODAL PARA REGISTRAR/EDITAR SOLICITUD -->
+<!-- MODAL PARA REGISTRAR/EDITAR SOLICITUD (solo admin y superadmin) -->
 @if(in_array(Auth::user()->role, ['admin', 'superadmin']))
 @include('auditoria.solicitudes.modal.modal_solicitud')
 @endif
 
-<!-- MODAL PARA VER ARCHIVOS -->
+<!-- MODAL PARA VER ARCHIVOS (visible para todos) -->
 @include('auditoria.solicitudes.modal.modal_ver_archivo')
 
-<!-- MODAL PARA VER CALENDARIO -->
+<!-- MODAL PARA VER CALENDARIO (visible para todos) -->
 @include('auditoria.solicitudes.modal.modal_calendario')
 
 <!-- CONTENEDOR PARA MODALES DINÁMICOS -->
 <div id="modalesContainer"></div>
-<!-- MODAL GRÁFICAS -->
+
+<!-- MODAL GRÁFICAS (visible para todos) -->
 @include('auditoria.solicitudes.modal.modal_graficas')
+
+<!-- MODAL HISTÓRICO (visible para todos) -->
 @include('auditoria.solicitudes.modal.modal_historico')
 
 @endsection
@@ -174,13 +177,13 @@
     }
     
     .border.rounded.p-4.bg-light {
-        border: 2px dashed #800000 !important;
+        border: 2px dashed #000000 !important;
         transition: all 0.3s ease;
     }
     
     .border.rounded.p-4.bg-light:hover {
-        background-color: #fff0f0 !important;
-        border-color: #600000 !important;
+        background-color: #fff !important;
+        border-color: #000000 !important;
     }
 
     .modal-xl {
@@ -294,7 +297,7 @@
         font-size: 1.2rem !important;
     }
     .swal2-title {
-        color: #800000 !important;
+        color: #000000 !important;
     }
     .swal2-confirm {
         background-color: #dc3545 !important;
@@ -399,6 +402,26 @@
         font-size: 1.1rem;
         margin-bottom: 5px;
     }
+    /* ===== FORZAR TAMAÑO CORRECTO DEL MODAL DE TEMA EN SOLICITUDES ===== */
+    #modalTema .modal-body {
+        height: auto !important;
+        max-height: none !important;
+        overflow: visible !important;
+    }
+
+    #modalTema .modal-dialog {
+        max-width: 380px !important;
+        width: 380px !important;
+    }
+
+    #modalTema .modal-content {
+        max-width: 380px !important;
+    }
+
+    #modalTema {
+        --bs-modal-width: 380px !important;
+    }  
+
 </style>
 @endpush
 
@@ -604,32 +627,32 @@
             if (solicitud.archivo_nombre) {
                 const ext = solicitud.archivo_nombre.split('.').pop().toLowerCase();
                 let icono = 'bi-file-earmark';
-                let color = '#800000';
+                let color = '#000000';
                 
                 if (['pdf'].includes(ext)) {
                     icono = 'bi-file-pdf';
-                    color = '#dc3545';
+                    color = '#000000';
                 } else if (['doc', 'docx'].includes(ext)) {
                     icono = 'bi-file-word';
-                    color = '#2b5797';
+                    color = '#000000';
                 } else if (['xls', 'xlsx'].includes(ext)) {
                     icono = 'bi-file-excel';
-                    color = '#1e7145';
+                    color = '#000000';
                 } else if (['ppt', 'pptx'].includes(ext)) {
                     icono = 'bi-file-ppt';
-                    color = '#d14430';
+                    color = '#000000';
                 } else if (['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp'].includes(ext)) {
                     icono = 'bi-file-image';
-                    color = '#28a745';
+                    color = '#000000';
                 } else if (ext === 'csv') {
                     icono = 'bi-file-spreadsheet';
-                    color = '#217346';
+                    color = '#000000';
                 } else if (['txt'].includes(ext)) {
                     icono = 'bi-file-text';
-                    color = '#6c757d';
+                    color = '#000000';
                 } else {
                     icono = 'bi-file-earmark';
-                    color = '#800000';
+                    color = '#000000';
                 }
                 
                 documentoHtml = `
@@ -677,7 +700,7 @@
                             </a>` : ''}
                         
                         <button type="button" class="btn btn-sm btn-outline-danger" 
-                                onclick="eliminarSolicitud(${solicitud.id}, '${(solicitud.folio_solicitud || '').replace(/'/g, "\'")}')"
+                                onclick="eliminarSolicitud(${solicitud.id}, '${(solicitud.folio_solicitud || '').replace(/'/g, "\\'")}')"
                                 title="Eliminar solicitud">
                             <i class="bi bi-trash"></i>
                         </button>
@@ -701,7 +724,7 @@
                         </button>
                         
                         ${solicitud.archivo_nombre ? 
-                            `<a href="{{ url('auditoria/solicitudes/download') }}/${solicitud.id}" 
+                            `<a href="{{ url('auditoria.solicitudes/download') }}/${solicitud.id}" 
                                class="btn btn-sm btn-outline-primary"
                                title="Descargar archivo">
                                 <i class="bi bi-download"></i>
@@ -733,28 +756,27 @@
         });
     }
 
+    // ===== FUNCIÓN VER ARCHIVO CORREGIDA =====
     function verArchivo(id) {
         const solicitud = solicitudesData.find(s => s.id === id);
         if (!solicitud) return;
 
-        const url = `{{ url('auditoria/solicitudes/ver') }}/${id}`;
-        const downloadUrl = `{{ url('auditoria/solicitudes/download') }}/${id}`;
+        const url = `/auditoria/solicitudes/ver/${id}`;
+        const downloadUrl = `/auditoria/solicitudes/download/${id}`;
         const ext = solicitud.archivo_nombre.split('.').pop().toLowerCase();
         
-        // Verificar si es visualizable (aunque ya pasamos el filtro, por si acaso)
         const visualizable = esArchivoVisualizable(solicitud.archivo_nombre);
         
         let contenidoVisor = '';
         if (visualizable) {
-            // Para PDF y txt se puede usar embed; para imágenes también.
             if (ext === 'pdf') {
-                contenidoVisor = `<embed src="${url}" type="application/pdf" width="100%" height="80vh" />`;
+                contenidoVisor = `<iframe src="${url}" style="width:100%; height:80vh;" frameborder="0"></iframe>`;
             } else if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg'].includes(ext)) {
                 contenidoVisor = `<img src="${url}" style="max-width:100%; max-height:80vh; display:block; margin:auto;" />`;
             } else if (ext === 'txt') {
-                contenidoVisor = `<iframe src="${url}" style="width:100%; height:80vh;"></iframe>`;
+                contenidoVisor = `<iframe src="${url}" style="width:100%; height:80vh;" frameborder="0"></iframe>`;
             } else {
-                contenidoVisor = `<iframe src="${url}" style="width:100%; height:80vh;"></iframe>`;
+                contenidoVisor = `<iframe src="${url}" style="width:100%; height:80vh;" frameborder="0"></iframe>`;
             }
         } else {
             contenidoVisor = `
@@ -771,15 +793,15 @@
                 <div class="modal-dialog modal-xl">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title">Visualizar Archivo: ${solicitud.archivo_nombre}</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            <h5 class="modal-title"> <i class="bi bi-file-earmark-text me-2" style="color: #000000;"></i> ${solicitud.archivo_nombre}</h5>
+                            
                         </div>
                         <div class="modal-body p-0">
                             ${contenidoVisor}
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                            <a href="${downloadUrl}" class="btn text-white" style="background-color:#800000;">Descargar</a>
+                            <a href="${downloadUrl}" class="btn text-white" style="background-color:#800000;"><i class="bi bi-download me-1"></i> Descargar</a>  
                         </div>
                     </div>
                 </div>
@@ -882,7 +904,7 @@
                 if (hoy > dia27MesApli) vencidoPor27 = true;
             }
 
-            if (vencidoPor15Dias || vencidoPor27) {
+            if (solicitud.estatus === 'No Atendida') {
                 const contenidoVencido = `
                     <div class="p-4 text-center">
                         <div style="background-color:#f8f9fa;border:2px solid #dc3545;border-radius:10px;padding:30px;text-align:center;margin:20px 0;box-shadow:0 4px 8px rgba(0,0,0,0.05);">
@@ -1147,7 +1169,7 @@
         });
     }
 
-    // ===== FUNCIÓN ELIMINAR SOLICITUD CORREGIDA =====
+    // ===== FUNCIÓN ELIMINAR SOLICITUD CORREGIDA (SIN BOTÓN OK) =====
     function eliminarSolicitud(id, identificador) {
         event.stopPropagation();
         event.preventDefault();
@@ -1169,7 +1191,9 @@
                     allowOutsideClick: false,
                     didOpen: () => {
                         Swal.showLoading();
-                    }
+                    },
+                    showConfirmButton: false,
+                    timer: null
                 });
 
                 // CORRECCIÓN: Usar la ruta correcta con barra
@@ -1193,7 +1217,7 @@
                             icon: 'success',
                             title: '¡Eliminado!',
                             text: data.message || 'Solicitud eliminada correctamente',
-                            confirmButtonColor: '#800000',
+                            showConfirmButton: false,
                             timer: 2000
                         }).then(() => {
                             cargarSolicitudes();
@@ -1203,7 +1227,8 @@
                             icon: 'error',
                             title: 'Error',
                             text: data.message || 'Error desconocido',
-                            confirmButtonColor: '#800000'
+                            confirmButtonColor: '#800000',
+                            confirmButtonText: 'Cerrar'
                         });
                     }
                 })
@@ -1213,7 +1238,8 @@
                         icon: 'error',
                         title: 'Error',
                         text: 'Error al eliminar la solicitud',
-                        confirmButtonColor: '#800000'
+                        confirmButtonColor: '#800000',
+                        confirmButtonText: 'Cerrar'
                     });
                 });
             }
@@ -1338,5 +1364,25 @@
         if (nombreArchivoActual) nombreArchivoActual.style.display = 'none';
         document.getElementById('modalNuevaSolicitudLabel').textContent = 'Registrar Nueva Solicitud de Mejora';
     }
+
+        // Forzar tamaño del modal de tema
+    document.addEventListener('DOMContentLoaded', function() {
+        const modalTema = document.getElementById('modalTema');
+        if (modalTema) {
+            modalTema.addEventListener('show.bs.modal', function() {
+                const dialog = modalTema.querySelector('.modal-dialog');
+                if (dialog) {
+                    dialog.style.maxWidth = '380px';
+                    dialog.style.width = '380px';
+                }
+                const body = modalTema.querySelector('.modal-body');
+                if (body) {
+                    body.style.height = 'auto';
+                    body.style.maxHeight = 'none';
+                    body.style.overflow = 'visible';
+                }
+            });
+        }
+    });
 </script>
 @endpush

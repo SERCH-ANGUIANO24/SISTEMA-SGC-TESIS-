@@ -9,10 +9,10 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">
-                        <i class="bi bi-file-earmark-text me-2" style="color: #800000;"></i>
+                        <i class="bi bi-file-earmark-text me-2" style="color: #000000;"></i>
                         {{ $doc->name }}.{{ $extension }}
                     </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+
                 </div>
                 <div class="modal-body p-0" style="height: 80vh;">
                     @if(in_array($extension, ['jpg', 'jpeg', 'png', 'gif']))
@@ -53,8 +53,11 @@
 @endforeach
 
 <script>
-function viewDocument(id) {
-    // El modal se abre automáticamente con data-bs-target
-    // Esta función existe para mantener consistencia
+function viewDocumentExternal(id) {
+    const modalElement = document.getElementById(`viewDocumentModal${id}`);
+    if (modalElement) {
+        const modal = new bootstrap.Modal(modalElement);
+        modal.show();
+    }
 }
 </script>

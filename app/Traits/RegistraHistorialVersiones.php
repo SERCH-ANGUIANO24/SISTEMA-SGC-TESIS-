@@ -11,6 +11,15 @@ trait RegistraHistorialVersiones
         static::created(function ($model) {
             if (self::debeRegistrar('crear', $model)) {
                 $modulo = self::getNombreModulo($model);
+                
+                if ($modulo === 'DOCUMENTAL_DOCUMENTS') {
+                    return;
+                }
+                
+                if ($modulo === 'FORMATOS') {
+                    return;
+                }
+                
                 HistorialVersionesHelper::crear($modulo, $model);
             }
         });
@@ -18,8 +27,10 @@ trait RegistraHistorialVersiones
         static::updated(function ($model) {
             if (self::debeRegistrar('editar', $model) && $model->wasChanged()) {
                 $modulo = self::getNombreModulo($model);
-                $cambios = $model->getChanges();
-                HistorialVersionesHelper::editar($modulo, $model, $cambios);
+                $datosAnteriores = $model->getOriginal();
+                $datosNuevos = $model->getAttributes();
+
+                HistorialVersionesHelper::editar($modulo, $model, $datosAnteriores, $datosNuevos);
             }
         });
 
@@ -32,12 +43,41 @@ trait RegistraHistorialVersiones
 
         if (method_exists(static::class, 'restored')) {
             static::restored(function ($model) {
-                if (self::debeRegistrar('restaurar', $model)) {
-                    $modulo = self::getNombreModulo($model);
+                $modulo = self::getNombreModulo($model);
+                
+                // ✅ EXCLUIR FORMATOS COMPLETAMENTE - NO REGISTRAR NADA
+                if ($modulo === 'FORMATOS') {
+                    return;
+                }
+                
+                // ✅ EXCLUIR DOCUMENTAL_DOCUMENTS
+                if ($modulo === 'DOCUMENTAL_DOCUMENTS') {
+                    return;
+                }
+                
+                // ✅ NO REGISTRAR SI ES BULK RESTORING O SI ES FORMATOS
+                if (self::debeRegistrar('restaurar', $model) && !self::isBulkRestoring()) {
+                    // Verificar nuevamente que no sea FORMATOS
+                    $tabla = $model->getTable();
+                    if ($tabla === 'formatos') {
+                        return;
+                    }
                     HistorialVersionesHelper::restaurar($modulo, $model);
                 }
             });
         }
+    }
+
+    protected static $bulkRestoring = false;
+
+    public static function isBulkRestoring()
+    {
+        return self::$bulkRestoring;
+    }
+
+    public static function setBulkRestoring($value)
+    {
+        self::$bulkRestoring = $value;
     }
 
     protected static function getNombreModulo($model)
@@ -45,23 +85,50 @@ trait RegistraHistorialVersiones
         $tabla = $model->getTable();
         $mapa = [
             'anexos' => 'ANEXOS',
-            'auditorias' => 'AUDITORIAS',
-            'audits' => 'AUDITORIAS',
-            'documentos' => 'GESTION_DOCUMENTAL',
-            'gestion_documental' => 'GESTION_DOCUMENTAL',
+            'folders' => 'FOLDERS',
+            'documents' => 'DOCUMENTS',
+            'documental_documents' => 'DOCUMENTAL_DOCUMENTS',
+            'documental_folders' => 'DOCUMENTALFOLDER',
             'matriz' => 'MATRIZ',
-            'matriz_procesos' => 'MATRIZ',
+            'matriz_folders' => 'MatrizFolder',
+            'matriz_documents' => 'MATRICES_DOCUMENTS',
             'formatos' => 'FORMATOS',
+            'auditorias' => 'AUDITORIAS',
+            'solicitudes_mejora' => 'SOLICITUDES_MEJORA',
+            'competencias' => 'COMPETENCIAS',
+            'informes_auditoria' => 'INFORMES_AUDITORIA',
             'users' => 'USUARIOS',
+            'procesos_custom' => 'PROCESOS',
+            'procesos_departamentos' => 'DEPARTAMENTOS',
             'notificaciones' => 'NOTIFICACIONES',
             'avisos' => 'AVISOS',
-            'historial_versiones' => 'HISTORIAL'
+            'historial_versiones' => 'HISTORIAL',
+            'audits' => 'AUDITORIAS',
         ];
         return $mapa[$tabla] ?? strtoupper($tabla);
     }
 
     protected static function debeRegistrar($accion, $model)
     {
+        $excluir = [
+            'historial_versiones',
+            'sessions',
+            'password_resets',
+            'failed_jobs',
+            'personal_access_tokens',
+        ];
+        
+        $tabla = $model->getTable();
+        
+        if (in_array($tabla, $excluir)) {
+            return false;
+        }
+        
+        // ✅ EXCLUIR FORMATOS PARA CUALQUIER ACCIÓN DE RESTAURACIÓN
+        if ($accion === 'restaurar' && $tabla === 'formatos') {
+            return false;
+        }
+        
         return true;
-    }
+    } 
 }

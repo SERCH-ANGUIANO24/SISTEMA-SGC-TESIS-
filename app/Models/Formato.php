@@ -1,13 +1,16 @@
 <?php
+// app/Models/Formato.php
 
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Traits\RegistraHistorialVersiones;
 
 class Formato extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes, RegistraHistorialVersiones;
 
     protected $fillable = [
         'proceso',
@@ -20,6 +23,12 @@ class Formato extends Model
         'extension_archivo',
         'tamanio_archivo',
         'tipo_documento',
+    ];
+
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+        'deleted_at' => 'datetime',
     ];
 
     /**

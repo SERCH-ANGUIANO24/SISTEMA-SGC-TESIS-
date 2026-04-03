@@ -3,255 +3,670 @@
 namespace App\Helpers;
 
 use App\Models\HistorialVersiones;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Request;
 
 class HistorialVersionesHelper
 {
-    public static function registrar($modulo, $accion, $elemento, $descripcionAdicional = null, $datosAnteriores = null, $datosNuevos = null)
+    /**
+     * MAPA DE MÓDULOS PARA NOMBRES AMIGABLES
+     */
+    private static $mapaNombresModulos = [
+        'USUARIOS' => 'Usuarios',
+        'SOLICITUDES_MEJORA' => 'Solicitud de Mejora',
+        'MATRICES_DOCUMENTS' => 'Matriz Documental',
+        'INFORMES_AUDITORIA' => 'Informes de Auditoría',
+        'FORMATOS' => 'Lista Maestra',
+        'FOLDERS' => 'Anexos',
+        'DOCUMENTAL_DOCUMENTS' => 'Gestión Documental',
+        'DOCUMENTALFOLDER' => 'Gestión Documental',
+        'DOCUMENTS' => 'Anexos',
+        'COMPETENCIAS' => 'Competencias',
+        'AUDITORIAS' => 'Plan de Auditoría',
+        'HISTORIAL' => 'Historial de Versiones',
+        'PROCESOS' => 'Procesos',
+        'DEPARTAMENTOS' => 'Departamentos',
+        'NOTIFICACIONES' => 'Notificaciones',
+        'AVISOS' => 'Avisos',
+    ];
+
+    /**
+     * MAPA DE MÓDULOS QUE SON CARPETAS (por defecto)
+     */
+    private static $modulosCarpeta = [
+        'FOLDERS',
+        'DOCUMENTALFOLDER',
+        'MatrizFolder',
+    ];
+
+    /**
+     * MAPA DE MÓDULOS QUE SON DOCUMENTOS (por defecto)
+     */
+    private static $modulosDocumento = [
+        'DOCUMENTS',
+        'MATRICES_DOCUMENTS',
+        'DOCUMENTAL_DOCUMENTS',
+        'FORMATOS',
+        'SOLICITUDES_MEJORA',
+        'INFORMES_AUDITORIA',
+        'AUDITORIAS',
+    ];
+
+    /**
+     * Bandera estática para prevenir recursividad infinita
+     */
+    private static $registrando = false;
+
+    /**
+     * Obtiene el nombre amigable del módulo
+     */
+    private static function nombreModulo($modulo)
     {
-        try {
-            $user = auth()->user();
-            if (!$user) {
-                return null;
+        return self::$mapaNombresModulos[$modulo] ?? ucfirst(strtolower($modulo));
+    }
+
+    /**
+     * Determina si el elemento es una carpeta
+     */
+    private static function esCarpeta($modulo, $elemento)
+    {
+        // Si es COMPETENCIAS, revisar el atributo 'tipo'
+        if ($modulo === 'COMPETENCIAS' && $elemento) {
+            $tipo = null;
+            if (is_object($elemento) && isset($elemento->tipo)) {
+                $tipo = $elemento->tipo;
+            } elseif (is_array($elemento) && isset($elemento['tipo'])) {
+                $tipo = $elemento['tipo'];
             }
+            return $tipo === 'carpeta';
+        }
+        
+        // Si es DOCUMENTALFOLDER (carpetas de gestión documental)
+        if ($modulo === 'DOCUMENTALFOLDER') {
+            return true;
+        }
+        
+        return in_array($modulo, self::$modulosCarpeta);
+    }
 
-            $nombreElemento = self::obtenerNombreElemento($elemento);
-            $descripcion = self::construirDescripcion($accion, $modulo, $nombreElemento, $descripcionAdicional);
-            $nivelImportancia = self::determinarImportancia($accion, $modulo, $elemento);
+    /**
+     * Determina si el elemento es un documento
+     */
+    private static function esDocumento($modulo, $elemento)
+    {
+        // Si es COMPETENCIAS, revisar el atributo 'tipo'
+        if ($modulo === 'COMPETENCIAS' && $elemento) {
+            $tipo = null;
+            if (is_object($elemento) && isset($elemento->tipo)) {
+                $tipo = $elemento->tipo;
+            } elseif (is_array($elemento) && isset($elemento['tipo'])) {
+                $tipo = $elemento['tipo'];
+            }
+            return $tipo === 'documento';
+        }
+        
+        // Si es DOCUMENTAL_DOCUMENTS (documentos de gestión documental)
+        if ($modulo === 'DOCUMENTAL_DOCUMENTS') {
+            return true;
+        }
+        
+        // Si es FORMATOS (Lista Maestra)
+        if ($modulo === 'FORMATOS') {
+            return true;
+        }
+        
+        return in_array($modulo, self::$modulosDocumento);
+    }
 
-            return HistorialVersiones::create([
-                'usuario_nombre' => $user->name ?? 'Sistema',
-                'usuario_id' => $user->id ?? null,
-                'usuario_email' => $user->email ?? null,
-                'usuario_rol' => $user->role ?? 'sistema',
-                'modulo' => strtoupper($modulo),
-                'accion' => strtoupper($accion),
-                'descripcion' => $descripcion,
-                'nivel_importancia' => $nivelImportancia,
-                'datos_anteriores' => $datosAnteriores,
-                'datos_nuevos' => $datosNuevos,
-                'ip_address' => request()->ip(),
-                'user_agent' => request()->userAgent(),
-                'registro_id' => self::obtenerRegistroId($elemento),
-                'tabla_afectada' => self::obtenerTabla($elemento),
-                'elemento_nombre' => $nombreElemento
-            ]);
+    /**
+     * Extrae el nombre del elemento
+     */
+    private static function extraerNombreElemento($elemento)
+    {
+        if (!$elemento) return null;
+        
+        if (is_object($elemento) && get_class($elemento) === 'stdClass') {
+            $elemento = (array) $elemento;
+        }
+        
+        if (is_object($elemento)) {
+            // Para Avisos - Título
+            if (isset($elemento->titulo) && !empty($elemento->titulo)) {
+                return $elemento->titulo;
+            }
+            // Para usuarios
+            if (isset($elemento->name) && !empty($elemento->name)) {
+                return $elemento->name;
+            }
+            // Para carpetas y documentos
+            if (isset($elemento->nombre) && !empty($elemento->nombre)) {
+                return $elemento->nombre;
+            }
+            if (isset($elemento->nombre_archivo) && !empty($elemento->nombre_archivo)) {
+                return $elemento->nombre_archivo;
+            }
+            if (isset($elemento->proceso) && isset($elemento->departamento)) {
+                return $elemento->departamento . ' (' . $elemento->proceso . ')';
+            }
+            if (isset($elemento->archivo_original) && !empty($elemento->archivo_original)) {
+                return $elemento->archivo_original;
+            }
+            if (isset($elemento->documento_nombre) && !empty($elemento->documento_nombre)) {
+                return $elemento->documento_nombre;
+            }
+            if (isset($elemento->original_name) && !empty($elemento->original_name)) {
+                return $elemento->original_name;
+            }
+            if (isset($elemento->nombre_auditoria) && !empty($elemento->nombre_auditoria)) {
+                return $elemento->nombre_auditoria;
+            }
+            if (isset($elemento->folio_solicitud) && !empty($elemento->folio_solicitud)) {
+                return $elemento->folio_solicitud;
+            }
+            if (isset($elemento->id)) {
+                return '#' . $elemento->id;
+            }
+        }
+        
+        if (is_array($elemento)) {
+            // Para Avisos - Título
+            if (isset($elemento['titulo']) && !empty($elemento['titulo'])) {
+                return $elemento['titulo'];
+            }
+            if (isset($elemento['name']) && !empty($elemento['name'])) {
+                return $elemento['name'];
+            }
+            if (isset($elemento['nombre']) && !empty($elemento['nombre'])) {
+                return $elemento['nombre'];
+            }
+            if (isset($elemento['nombre_archivo']) && !empty($elemento['nombre_archivo'])) {
+                return $elemento['nombre_archivo'];
+            }
+            if (isset($elemento['proceso']) && isset($elemento['departamento'])) {
+                return $elemento['departamento'] . ' (' . $elemento['proceso'] . ')';
+            }
+            if (isset($elemento['archivo_original']) && !empty($elemento['archivo_original'])) {
+                return $elemento['archivo_original'];
+            }
+            if (isset($elemento['documento_nombre']) && !empty($elemento['documento_nombre'])) {
+                return $elemento['documento_nombre'];
+            }
+            if (isset($elemento['original_name']) && !empty($elemento['original_name'])) {
+                return $elemento['original_name'];
+            }
+            if (isset($elemento['nombre_auditoria']) && !empty($elemento['nombre_auditoria'])) {
+                return $elemento['nombre_auditoria'];
+            }
+            if (isset($elemento['folio_solicitud']) && !empty($elemento['folio_solicitud'])) {
+                return $elemento['folio_solicitud'];
+            }
+            if (isset($elemento['id'])) {
+                return '#' . $elemento['id'];
+            }
+        }
+        
+        return null;
+    }
+
+    /**
+     * Verifica si ya existe un registro reciente para evitar duplicados
+     * SOLO PARA GESTIÓN DOCUMENTAL
+     */
+    private static function yaRegistradoRecientemente($modulo, $accion, $registroId, $segundos = 3)
+    {
+        // SOLO aplicar para Gestión Documental
+        $modulosGestionDocumental = ['DOCUMENTALFOLDER', 'DOCUMENTAL_DOCUMENTS'];
+        
+        if (!in_array($modulo, $modulosGestionDocumental)) {
+            return false; // No aplicar para otros módulos
+        }
+        
+        if (!$registroId) {
+            return false;
+        }
+        
+        try {
+            return HistorialVersiones::where('modulo', $modulo)
+                ->where('accion', $accion)
+                ->where('registro_id', $registroId)
+                ->where('created_at', '>=', now()->subSeconds($segundos))
+                ->exists();
         } catch (\Exception $e) {
-            Log::error('Error registrando en historial: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Registra una acción de VISUALIZACIÓN
+     */
+    public static function ver($modulo, $elemento = null, $contexto = null)
+    {
+        if (self::$registrando) return null;
+        self::$registrando = true;
+        
+        try {
+            $nombreModulo = self::nombreModulo($modulo);
+            
+            if ($contexto === 'dashboard') {
+                $descripcion = "Accedió al Dashboard del Sistema";
+            } elseif ($elemento) {
+                $nombre = self::extraerNombreElemento($elemento) ?: 'desconocido';
+                $descripcion = "Visualizó '{$nombre}' en {$nombreModulo}";
+            } else {
+                $descripcion = "Accedió al módulo de {$nombreModulo}";
+            }
+            
+            $resultado = self::registrar($modulo, 'VER', $descripcion, $elemento);
+            self::$registrando = false;
+            return $resultado;
+        } catch (\Exception $e) {
+            self::$registrando = false;
+            throw $e;
+        }
+    }
+
+    /**
+     * Registra una acción de CREACIÓN
+     */
+    public static function crear($modulo, $elemento, $datos = [])
+    {
+        if (self::$registrando || $modulo === 'HISTORIAL') return null;
+        self::$registrando = true;
+        
+        try {
+            $nombreModulo = self::nombreModulo($modulo);
+            $nombre = self::extraerNombreElemento($elemento) ?: 'desconocido';
+            
+            if (self::esCarpeta($modulo, $elemento)) {
+                $descripcion = "Se creó la carpeta '{$nombre}' en {$nombreModulo}";
+            } elseif (self::esDocumento($modulo, $elemento)) {
+                $descripcion = "Se subió el documento '{$nombre}' en {$nombreModulo}";
+            } elseif ($modulo === 'USUARIOS') {
+                $descripcion = "Se creó el usuario '{$nombre}' en {$nombreModulo}";
+            } elseif ($modulo === 'PROCESOS') {
+                $descripcion = "Se creó el proceso '{$nombre}' en {$nombreModulo}";
+            } elseif ($modulo === 'DEPARTAMENTOS') {
+                $descripcion = "Se creó el departamento '{$nombre}' en {$nombreModulo}";
+            } elseif ($modulo === 'SOLICITUDES_MEJORA') {
+                $descripcion = "Se creó la solicitud de mejora '{$nombre}' en {$nombreModulo}";
+            } elseif ($modulo === 'FORMATOS') {
+                $descripcion = "Se agregó el documento '{$nombre}' a la Lista Maestra";
+            } elseif ($modulo === 'AVISOS') {
+                $descripcion = "Se creó el aviso '{$nombre}' en {$nombreModulo}";
+            } else {
+                $descripcion = "Se creó '{$nombre}' en {$nombreModulo}";
+            }
+            
+            $resultado = self::registrar($modulo, 'CREAR', $descripcion, $elemento, $datos);
+            self::$registrando = false;
+            return $resultado;
+        } catch (\Exception $e) {
+            self::$registrando = false;
+            throw $e;
+        }
+    }
+
+    /**
+     * Registra una acción de SUBIR (documentos)
+     */
+    public static function subir($modulo, $elemento, $datos = [], $esEnvio = false)
+    {
+        if (self::$registrando || $modulo === 'HISTORIAL') return null;
+        self::$registrando = true;
+        
+        try {
+            $nombreModulo = self::nombreModulo($modulo);
+            $nombre = self::extraerNombreElemento($elemento) ?: 'desconocido';
+            
+            if ($modulo === 'FORMATOS' && $esEnvio) {
+                $descripcion = "Se envió el documento '{$nombre}' a la Lista Maestra";
+            } elseif ($modulo === 'FORMATOS') {
+                $descripcion = "Se subió el documento '{$nombre}' a la Lista Maestra";
+            } else {
+                $descripcion = "Se subió el documento '{$nombre}' en {$nombreModulo}";
+            }
+            
+            $resultado = self::registrar($modulo, 'SUBIR', $descripcion, $elemento, $datos);
+            self::$registrando = false;
+            return $resultado;
+        } catch (\Exception $e) {
+            self::$registrando = false;
+            throw $e;
+        }
+    }
+
+    /**
+     * Registra una acción de EDICIÓN
+     */
+    public static function editar($modulo, $elemento, $datosAnteriores, $datosNuevos)
+    {
+        if (self::$registrando || $modulo === 'HISTORIAL') return null;
+        self::$registrando = true;
+        
+        try {
+            $nombreModulo = self::nombreModulo($modulo);
+            $nombre = self::extraerNombreElemento($elemento) ?: 'desconocido';
+            
+            $nombreAnterior = 
+                $datosAnteriores['titulo'] ??
+                $datosAnteriores['name'] ?? 
+                $datosAnteriores['nombre'] ?? 
+                $datosAnteriores['nombre_archivo'] ?? 
+                $datosAnteriores['archivo_original'] ?? 
+                $datosAnteriores['documento_nombre'] ?? 
+                $datosAnteriores['archivo_nombre'] ?? 
+                $datosAnteriores['original_name'] ?? 
+                $datosAnteriores['nombre_auditoria'] ?? 
+                $datosAnteriores['proceso'] ?? 
+                $datosAnteriores['departamento'] ?? 
+                $datosAnteriores['folio_solicitud'] ??
+                'desconocido';
+            
+            $nombreNuevo = 
+                $datosNuevos['titulo'] ??
+                $datosNuevos['name'] ?? 
+                $datosNuevos['nombre'] ?? 
+                $datosNuevos['nombre_archivo'] ?? 
+                $datosNuevos['archivo_original'] ?? 
+                $datosNuevos['documento_nombre'] ?? 
+                $datosNuevos['archivo_nombre'] ?? 
+                $datosNuevos['original_name'] ?? 
+                $datosNuevos['nombre_auditoria'] ?? 
+                $datosNuevos['proceso'] ?? 
+                $datosNuevos['departamento'] ?? 
+                $datosNuevos['folio_solicitud'] ??
+                $nombre;
+            
+            if ($modulo === 'USUARIOS') {
+                $estadoAnterior = $datosAnteriores['is_active'] ?? null;
+                $estadoNuevo = $datosNuevos['is_active'] ?? null;
+                
+                if ($estadoAnterior !== $estadoNuevo) {
+                    $estadoTexto = $estadoNuevo ? 'activó' : 'desactivó';
+                    $descripcion = "Se {$estadoTexto} el usuario '{$nombre}' en {$nombreModulo}";
+                } elseif ($nombreAnterior !== $nombreNuevo) {
+                    $descripcion = "Se renombró el usuario de '{$nombreAnterior}' a '{$nombreNuevo}' en {$nombreModulo}";
+                } else {
+                    $descripcion = "Se editó el usuario '{$nombre}' en {$nombreModulo}";
+                }
+            }
+            elseif ($modulo === 'AVISOS') {
+                if ($nombreAnterior !== $nombreNuevo) {
+                    $descripcion = "Se renombró el aviso de '{$nombreAnterior}' a '{$nombreNuevo}' en {$nombreModulo}";
+                } else {
+                    $descripcion = "Se editó el aviso '{$nombre}' en {$nombreModulo}";
+                }
+            }
+            elseif (self::esCarpeta($modulo, $elemento)) {
+                if ($nombreAnterior !== $nombreNuevo) {
+                    $descripcion = "Se renombró carpeta de '{$nombreAnterior}' a '{$nombreNuevo}' en {$nombreModulo}";
+                } else {
+                    $descripcion = "Se editó la carpeta '{$nombre}' en {$nombreModulo}";
+                }
+            } elseif (self::esDocumento($modulo, $elemento)) {
+                if ($nombreAnterior !== $nombreNuevo) {
+                    $descripcion = "Se renombró documento de '{$nombreAnterior}' a '{$nombreNuevo}' en {$nombreModulo}";
+                } else {
+                    $descripcion = "Se editó el documento '{$nombre}' en {$nombreModulo}";
+                }
+            } elseif ($modulo === 'PROCESOS') {
+                if ($nombreAnterior !== $nombreNuevo) {
+                    $descripcion = "Se renombró el proceso de '{$nombreAnterior}' a '{$nombreNuevo}' en {$nombreModulo}";
+                } else {
+                    $descripcion = "Se editó el proceso '{$nombre}' en {$nombreModulo}";
+                }
+            } elseif ($modulo === 'DEPARTAMENTOS') {
+                $proceso = $datosAnteriores['proceso'] ?? $datosNuevos['proceso'] ?? '';
+                if ($nombreAnterior !== $nombreNuevo) {
+                    $descripcion = "Se renombró el departamento de '{$nombreAnterior}' a '{$nombreNuevo}' en el proceso '{$proceso}' en {$nombreModulo}";
+                } else {
+                    $descripcion = "Se editó el departamento '{$nombre}' del proceso '{$proceso}' en {$nombreModulo}";
+                }
+            } elseif ($modulo === 'SOLICITUDES_MEJORA') {
+                if ($nombreAnterior !== $nombreNuevo) {
+                    $descripcion = "Se editó la solicitud de mejora de '{$nombreAnterior}' a '{$nombreNuevo}' en {$nombreModulo}";
+                } else {
+                    $descripcion = "Se editó la solicitud de mejora '{$nombre}' en {$nombreModulo}";
+                }
+            } elseif ($modulo === 'FORMATOS') {
+                if ($nombreAnterior !== $nombreNuevo) {
+                    $descripcion = "Se editó el documento de '{$nombreAnterior}' a '{$nombreNuevo}' en la Lista Maestra";
+                } else {
+                    $descripcion = "Se editó el documento '{$nombre}' en la Lista Maestra";
+                }
+            } else {
+                if ($nombreAnterior !== $nombreNuevo) {
+                    $descripcion = "Se renombró de '{$nombreAnterior}' a '{$nombreNuevo}' en {$nombreModulo}";
+                } else {
+                    $descripcion = "Se editó '{$nombre}' en {$nombreModulo}";
+                }
+            }
+            
+            $resultado = self::registrar($modulo, 'EDITAR', $descripcion, $elemento, $datosNuevos, $datosAnteriores);
+            self::$registrando = false;
+            return $resultado;
+        } catch (\Exception $e) {
+            self::$registrando = false;
+            throw $e;
+        }
+    }
+
+    /**
+     * Registra una acción de ELIMINACIÓN
+     */
+    public static function eliminar($modulo, $elemento, $datos = [])
+    {
+        if (self::$registrando || $modulo === 'HISTORIAL') return null;
+        self::$registrando = true;
+        
+        try {
+            $nombreModulo = self::nombreModulo($modulo);
+            $nombre = self::extraerNombreElemento($elemento) ?: 'desconocido';
+            
+            if (self::esCarpeta($modulo, $elemento)) {
+                $descripcion = "Se eliminó la carpeta '{$nombre}' en {$nombreModulo}";
+            } elseif (self::esDocumento($modulo, $elemento)) {
+                $descripcion = "Se eliminó el documento '{$nombre}' en {$nombreModulo}";
+            } elseif ($modulo === 'USUARIOS') {
+                $descripcion = "Se eliminó el usuario '{$nombre}' en {$nombreModulo}";
+            } elseif ($modulo === 'PROCESOS') {
+                $descripcion = "Se eliminó el proceso '{$nombre}' en {$nombreModulo}";
+            } elseif ($modulo === 'DEPARTAMENTOS') {
+                $proceso = $datos['proceso'] ?? (is_object($elemento) ? $elemento->proceso ?? '' : '');
+                $descripcion = "Se eliminó el departamento '{$nombre}' del proceso '{$proceso}' en {$nombreModulo}";
+            } elseif ($modulo === 'SOLICITUDES_MEJORA') {
+                $descripcion = "Se eliminó la solicitud de mejora '{$nombre}' en {$nombreModulo}";
+            } elseif ($modulo === 'FORMATOS') {
+                $descripcion = "Se eliminó el documento '{$nombre}' de la Lista Maestra";
+            } elseif ($modulo === 'AVISOS') {
+                $descripcion = "Se eliminó el aviso '{$nombre}' en {$nombreModulo}";
+            } else {
+                $descripcion = "Se eliminó '{$nombre}' en {$nombreModulo}";
+            }
+            
+            $datosParaGuardar = $datos;
+            
+            if (empty($datosParaGuardar) && $elemento) {
+                if (is_object($elemento)) {
+                    if (method_exists($elemento, 'toArray')) {
+                        $datosParaGuardar = $elemento->toArray();
+                    } else {
+                        $datosParaGuardar = (array) $elemento;
+                    }
+                } elseif (is_array($elemento)) {
+                    $datosParaGuardar = $elemento;
+                }
+            }
+            
+            $resultado = self::registrar($modulo, 'ELIMINAR', $descripcion, $elemento, [], $datosParaGuardar);
+            self::$registrando = false;
+            return $resultado;
+        } catch (\Exception $e) {
+            self::$registrando = false;
+            throw $e;
+        }
+    }
+
+    /**
+     * Registra una acción de RESTAURACIÓN - CORREGIDO
+     */
+    public static function restaurar($modulo, $elemento, $datos = [])
+    {
+        // EXCLUIR FORMATOS COMPLETAMENTE
+        if ($modulo === 'FORMATOS') {
             return null;
         }
-    }
-
-    public static function crear($modulo, $elemento, $descripcionAdicional = null)
-    {
-        return self::registrar(
-            $modulo,
-            'CREAR',
-            $elemento,
-            $descripcionAdicional,
-            null,
-            self::convertirAArray($elemento)
-        );
-    }
-
-    public static function editar($modulo, $elemento, $cambios = null, $descripcionAdicional = null)
-    {
-        $datosAnteriores = self::convertirAArray($elemento, true);
-        $datosNuevos = $cambios ?? self::convertirAArray($elemento);
-
-        return self::registrar(
-            $modulo,
-            'EDITAR',
-            $elemento,
-            $descripcionAdicional,
-            $datosAnteriores,
-            $datosNuevos
-        );
-    }
-
-    public static function eliminar($modulo, $elemento, $descripcionAdicional = null)
-    {
-        return self::registrar(
-            $modulo,
-            'ELIMINAR',
-            $elemento,
-            $descripcionAdicional,
-            self::convertirAArray($elemento),
-            null
-        );
-    }
-
-    public static function restaurar($modulo, $elemento, $descripcionAdicional = null)
-    {
-        return self::registrar(
-            $modulo,
-            'RESTAURAR',
-            $elemento,
-            $descripcionAdicional,
-            null,
-            self::convertirAArray($elemento)
-        );
-    }
-
-    public static function ver($modulo, $elemento = null, $tipoVista = 'listado')
-    {
-        return self::registrar(
-            $modulo,
-            'VER',
-            $elemento ?? $tipoVista,
-            "Visualizó: $tipoVista"
-        );
-    }
-
-    public static function descargar($modulo, $archivo, $tipo = 'documento')
-    {
-        return self::registrar(
-            $modulo,
-            'DESCARGAR',
-            $archivo,
-            "Descargó $tipo"
-        );
-    }
-
-    public static function login($user)
-    {
-        return self::registrar(
-            'SISTEMA',
-            'LOGIN',
-            $user,
-            'Inicio de sesión en el sistema'
-        );
-    }
-
-    public static function logout($user)
-    {
-        return self::registrar(
-            'SISTEMA',
-            'LOGOUT',
-            $user,
-            'Cierre de sesión en el sistema'
-        );
-    }
-
-    private static function obtenerNombreElemento($elemento)
-    {
-        if (is_object($elemento)) {
-            $camposPosibles = ['nombre', 'titulo', 'name', 'codigo', 'descripcion', 'email', 'id'];
-            foreach ($camposPosibles as $campo) {
-                if (isset($elemento->$campo)) {
-                    $valor = (string) $elemento->$campo;
-                    // Si el valor es muy largo o parece una frase repetida, lo limitamos
-                    return self::limpiarTexto($valor);
-                }
+        
+        // Prevenir recursividad
+        if (self::$registrando) {
+            return null;
+        }
+        
+        self::$registrando = true;
+        
+        try {
+            $nombreModulo = self::nombreModulo($modulo);
+            $nombre = self::extraerNombreElemento($elemento) ?: 'desconocido';
+            
+            if (self::esCarpeta($modulo, $elemento)) {
+                $descripcion = "Se restauró la carpeta '{$nombre}' en {$nombreModulo}";
+            } elseif (self::esDocumento($modulo, $elemento)) {
+                $descripcion = "Se restauró el documento '{$nombre}' en {$nombreModulo}";
+            } elseif ($modulo === 'USUARIOS') {
+                $descripcion = "Se restauró el usuario '{$nombre}' en {$nombreModulo}";
+            } elseif ($modulo === 'PROCESOS') {
+                $descripcion = "Se restauró el proceso '{$nombre}' en {$nombreModulo}";
+            } elseif ($modulo === 'DEPARTAMENTOS') {
+                $proceso = $datos['proceso'] ?? (is_object($elemento) ? $elemento->proceso ?? '' : '');
+                $descripcion = "Se restauró el departamento '{$nombre}' del proceso '{$proceso}' en {$nombreModulo}";
+            } elseif ($modulo === 'SOLICITUDES_MEJORA') {
+                $descripcion = "Se restauró la solicitud de mejora '{$nombre}' en {$nombreModulo}";
+            } elseif ($modulo === 'AVISOS') {
+                $descripcion = "Se restauró el aviso '{$nombre}' en {$nombreModulo}";
+            } else {
+                $descripcion = "Se restauró '{$nombre}' en {$nombreModulo}";
             }
-            if (method_exists($elemento, 'getNombreDescriptivo')) {
-                return self::limpiarTexto($elemento->getNombreDescriptivo());
-            }
-            return "ID: " . ($elemento->id ?? 'N/A');
+            
+            $resultado = self::registrar($modulo, 'RESTAURAR', $descripcion, $elemento, $datos);
+            self::$registrando = false;
+            return $resultado;
+        } catch (\Exception $e) {
+            self::$registrando = false;
+            throw $e;
         }
-        if (is_array($elemento)) {
-            foreach (['nombre', 'titulo', 'name', 'codigo', 'descripcion', 'email'] as $campo) {
-                if (isset($elemento[$campo])) {
-                    return self::limpiarTexto((string) $elemento[$campo]);
-                }
-            }
-            return "ID: " . ($elemento['id'] ?? 'N/A');
-        }
-        return self::limpiarTexto((string) $elemento);
     }
 
-    private static function limpiarTexto($texto)
+    /**
+     * Registra una acción de MOVIMIENTO
+     */
+    public static function mover($modulo, $elemento, $origen, $destino)
     {
-        // Si el texto contiene repeticiones de la misma palabra más de 3 veces, lo truncamos
-        $palabras = explode(' ', $texto);
-        $conteo = array_count_values($palabras);
-        foreach ($conteo as $palabra => $cantidad) {
-            if ($cantidad > 3 && strlen($palabra) > 3) {
-                // Probablemente es una repetición, devolvemos solo las primeras 5 palabras
-                return implode(' ', array_slice($palabras, 0, 5)) . '...';
+        if (self::$registrando || $modulo === 'HISTORIAL') return null;
+        self::$registrando = true;
+        
+        try {
+            $nombreModulo = self::nombreModulo($modulo);
+            $nombre = self::extraerNombreElemento($elemento) ?: 'desconocido';
+            
+            $nombreOrigen = $origen ? ($origen->name ?? $origen->nombre ?? 'Raíz') : 'Raíz';
+            $nombreDestino = $destino ? ($destino->name ?? $destino->nombre ?? 'Raíz') : 'Raíz';
+            
+            if (self::esCarpeta($modulo, $elemento)) {
+                $descripcion = "Se movió la carpeta '{$nombre}' de '{$nombreOrigen}' a '{$nombreDestino}' en {$nombreModulo}";
+            } elseif (self::esDocumento($modulo, $elemento)) {
+                $descripcion = "Se movió el documento '{$nombre}' de '{$nombreOrigen}' a '{$nombreDestino}' en {$nombreModulo}";
+            } else {
+                $descripcion = "Se movió '{$nombre}' de '{$nombreOrigen}' a '{$nombreDestino}' en {$nombreModulo}";
             }
+            
+            $resultado = self::registrar($modulo, 'MOVER', $descripcion, $elemento);
+            self::$registrando = false;
+            return $resultado;
+        } catch (\Exception $e) {
+            self::$registrando = false;
+            throw $e;
         }
-        return $texto;
     }
 
-    private static function obtenerRegistroId($elemento)
+    /**
+     * Registra una acción de DESCARGA
+     */
+    public static function descargar($modulo, $elemento)
     {
-        if (is_object($elemento) && isset($elemento->id)) {
-            return $elemento->id;
-        }
-        if (is_array($elemento) && isset($elemento['id'])) {
-            return $elemento['id'];
-        }
-        return null;
-    }
-
-    private static function obtenerTabla($elemento)
-    {
-        if (is_object($elemento) && method_exists($elemento, 'getTable')) {
-            return $elemento->getTable();
-        }
-        return null;
-    }
-
-    private static function convertirAArray($elemento, $original = false)
-    {
-        if (is_object($elemento)) {
-            if ($original && method_exists($elemento, 'getOriginal')) {
-                return $elemento->getOriginal();
+        if (self::$registrando) return null;
+        self::$registrando = true;
+        
+        try {
+            $nombreModulo = self::nombreModulo($modulo);
+            $nombre = self::extraerNombreElemento($elemento) ?: 'desconocido';
+            
+            if ($modulo === 'FORMATOS') {
+                $descripcion = "Se descargó el documento '{$nombre}' de la Lista Maestra";
+            } elseif ($modulo === 'AVISOS') {
+                $descripcion = "Se descargó el documento '{$nombre}' del aviso en {$nombreModulo}";
+            } else {
+                $descripcion = "Se descargó el documento '{$nombre}' en {$nombreModulo}";
             }
-            if (method_exists($elemento, 'toArray')) {
-                return $elemento->toArray();
-            }
-            return json_decode(json_encode($elemento), true);
+            
+            $resultado = self::registrar($modulo, 'DESCARGAR', $descripcion, $elemento);
+            self::$registrando = false;
+            return $resultado;
+        } catch (\Exception $e) {
+            self::$registrando = false;
+            throw $e;
         }
-        if (is_array($elemento)) {
-            return $elemento;
-        }
-        return ['valor' => $elemento];
     }
 
-    private static function construirDescripcion($accion, $modulo, $nombreElemento, $descripcionAdicional)
+    /**
+     * Método base para registrar en la base de datos
+     */
+    private static function registrar($modulo, $accion, $descripcion, $elemento = null, $datosNuevos = [], $datosAnteriores = [])
     {
-        $verbos = [
-            'CREAR' => 'creó',
-            'EDITAR' => 'editó',
-            'ELIMINAR' => 'eliminó',
-            'RESTAURAR' => 'restauró',
-            'VER' => 'visualizó',
-            'DESCARGAR' => 'descargó',
-            'LOGIN' => 'inició sesión',
-            'LOGOUT' => 'cerró sesión'
+        $user = Auth::user();
+        
+        $nivelImportancia = match($accion) {
+            'ELIMINAR' => 'alto',
+            'RESTAURAR' => 'alto',
+            'EDITAR' => 'normal',
+            'CREAR' => 'normal',
+            'SUBIR' => 'normal',
+            'MOVER' => 'normal',
+            default => 'bajo'
+        };
+        
+        $datos = [
+            'modulo' => $modulo,
+            'accion' => $accion,
+            'descripcion' => $descripcion,
+            'nivel_importancia' => $nivelImportancia,
+            'datos_anteriores' => !empty($datosAnteriores) ? json_encode($datosAnteriores) : null,
+            'datos_nuevos' => !empty($datosNuevos) ? json_encode($datosNuevos) : null,
+            'tabla_afectada' => $elemento && method_exists($elemento, 'getTable') ? $elemento->getTable() : strtolower($modulo),
+            'registro_id' => $elemento->id ?? null,
+            'elemento_nombre' => self::extraerNombreElemento($elemento),
         ];
-        $verbo = $verbos[$accion] ?? strtolower($accion);
-        $moduloFormateado = ucfirst(strtolower($modulo));
-
-        if (in_array($accion, ['LOGIN', 'LOGOUT'])) {
-            $descripcion = "El usuario {$nombreElemento} {$verbo}";
-        } else {
-            $descripcion = "Se {$verbo} {$nombreElemento} en {$moduloFormateado}";
+        
+        if ($modulo === 'HISTORIAL') {
+            $datos['datos_anteriores'] = null;
+            $datos['datos_nuevos'] = null;
         }
-
-        if ($descripcionAdicional) {
-            $descripcion .= " - {$descripcionAdicional}";
-        }
-
-        return $descripcion;
-    }
-
-    private static function determinarImportancia($accion, $modulo, $elemento)
-    {
-        if (in_array($accion, ['ELIMINAR'])) {
-            return 'critico';
-        }
-        if ($accion === 'EDITAR' && $modulo === 'USUARIOS') {
-            return 'alto';
-        }
-        if ($accion === 'CREAR' && in_array($modulo, ['USUARIOS', 'AUDITORIAS'])) {
-            return 'alto';
-        }
-        if (in_array($accion, ['CREAR', 'EDITAR', 'RESTAURAR'])) {
-            return 'normal';
-        }
-        return 'bajo';
+        
+        return HistorialVersiones::create([
+            'usuario_nombre' => $user->name ?? 'Sistema',
+            'usuario_id' => $user->id ?? null,
+            'usuario_email' => $user->email ?? null,
+            'usuario_rol' => $user->role ?? 'sistema',
+            'modulo' => $datos['modulo'],
+            'accion' => $datos['accion'],
+            'descripcion' => $datos['descripcion'],
+            'nivel_importancia' => $datos['nivel_importancia'],
+            'datos_anteriores' => $datos['datos_anteriores'],
+            'datos_nuevos' => $datos['datos_nuevos'],
+            'ip_address' => Request::ip(),
+            'user_agent' => Request::userAgent(),
+            'tabla_afectada' => $datos['tabla_afectada'],
+            'registro_id' => $datos['registro_id'],
+            'elemento_nombre' => $datos['elemento_nombre'],
+        ]);
     }
 }

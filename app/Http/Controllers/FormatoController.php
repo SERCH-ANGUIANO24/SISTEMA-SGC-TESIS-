@@ -8,64 +8,51 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use App\Helpers\HistorialVersionesHelper;
 
 class FormatoController extends Controller
 {
-    /**
-     * Muestra el dashboard principal del módulo de formatos.
-     */
     public function index(Request $request)
     {
         $query = Formato::query();
 
-        // Filtro por nombre de archivo
         if ($request->filled('nombre')) {
             $query->where('nombre_archivo', 'like', '%' . $request->nombre . '%');
         }
 
-        // Filtro por versión (coincidencia exacta desde select)
         if ($request->filled('version')) {
             $query->where('version_procedimiento', $request->version);
         }
 
-        // Filtro por código de procedimiento (coincidencia exacta desde select)
         if ($request->filled('codigo')) {
             $query->where('codigo_procedimiento', $request->codigo);
         }
 
-        // Filtro por clave de formato (coincidencia exacta desde select)
         if ($request->filled('clave')) {
             $query->where('clave_formato', $request->clave);
         }
 
-        // Filtro por proceso (coincidencia exacta desde select)
         if ($request->filled('proceso')) {
             $query->where('proceso', $request->proceso);
         }
 
-        // Filtro por departamento (coincidencia exacta desde select)
         if ($request->filled('departamento')) {
             $query->where('departamento', $request->departamento);
         }
         
-        // Filtro por tipo de documento
         if ($request->filled('tipo_documento')) {
             $query->where('tipo_documento', $request->tipo_documento);
         }
- 
 
         $formatos = $query->orderBy('created_at', 'desc')->get();
 
-        // Combina estáticos del modelo + dinámicos de la BD
         $procesosYDepartamentos = ProcesosDepartamento::mapa();
 
-        // Lista de procesos solo de la BD (para marcarlos con ✎ en el select)
         $procesosDinamicos = ProcesosDepartamento::select('proceso')
             ->distinct()
             ->pluck('proceso')
             ->toArray();
 
-        // Listas únicas para los selects de filtros (siempre del total, no filtrado)
         $versionesUnicas = Formato::orderBy('version_procedimiento')
             ->distinct()
             ->pluck('version_procedimiento')
@@ -108,9 +95,6 @@ class FormatoController extends Controller
         ));
     }
 
-    /**
-     * Almacena un nuevo formato. — SOLO SUPERADMIN/ADMIN
-     */
     public function store(Request $request)
     {
         $user = Auth::user();
@@ -149,6 +133,8 @@ class FormatoController extends Controller
             'tipo_documento'        => 'Formato',
         ]);
 
+        HistorialVersionesHelper::subir('FORMATOS', $formato);
+
         if ($claveRepetida) {
             return redirect()->route('formatos.index')
                 ->with('warning', 'Archivo subido correctamente, pero LA CLAVE DE FORMATO ESTÁ REPETIDA, MODIFÍCALA.')
@@ -159,9 +145,6 @@ class FormatoController extends Controller
             ->with('success', 'Formato subido correctamente.');
     }
 
-    /**
-     * Actualiza la información de un formato existente. — SOLO SUPERADMIN/ADMIN
-     */
     public function update(Request $request, Formato $formato)
     {
         $user = Auth::user();
@@ -198,7 +181,9 @@ class FormatoController extends Controller
         }
 
         if ($request->hasFile('archivo')) {
-            Storage::disk('public')->delete($formato->ruta_archivo);
+            if (Storage::disk('public')->exists($formato->ruta_archivo)) {
+                Storage::disk('public')->delete($formato->ruta_archivo);
+            }
 
             $archivo        = $request->file('archivo');
             $nombreOriginal = $archivo->getClientOriginalName();
@@ -221,30 +206,51 @@ class FormatoController extends Controller
         }
 
         return redirect()->route('formatos.index')
-            ->with('success', 'Formato actualizado correctamente. Nombre: ' . ($datos['nombre_archivo'] ?? $formato->nombre_archivo));
+            ->with('success', 'Formato actualizado correctamente.');
     }
 
-    /**
-     * Elimina un formato y su archivo asociado. — SOLO SUPERADMIN/ADMIN
-     */
     public function destroy(Formato $formato)
     {
         $user = Auth::user();
 
         if (!in_array($user->role, ['superadmin', 'admin'])) {
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No tienes permiso para eliminar archivos.'
+                ], 403);
+            }
             abort(403, 'No tienes permiso para eliminar archivos.');
         }
 
-        Storage::disk('public')->delete($formato->ruta_archivo);
-        $formato->delete();
+        try {
+            $nombreArchivo = $formato->nombre_archivo;
+            $formato->delete();
 
-        return redirect()->route('formatos.index')
-            ->with('success', 'Formato eliminado correctamente.');
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Formato eliminado correctamente.',
+                    'nombre' => $nombreArchivo
+                ]);
+            }
+
+            return redirect()->route('formatos.index')
+                ->with('success', 'Formato eliminado correctamente.');
+                
+        } catch (\Exception $e) {
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error al eliminar el formato: ' . $e->getMessage()
+                ], 500);
+            }
+            
+            return redirect()->route('formatos.index')
+                ->with('error', 'Error al eliminar el formato: ' . $e->getMessage());
+        }
     }
 
-    /**
-     * Descarga el archivo de un formato. — TODOS los roles
-     */
     public function download(Formato $formato)
     {
         $rutaCompleta = storage_path('app/public/' . $formato->ruta_archivo);
@@ -253,12 +259,11 @@ class FormatoController extends Controller
             return back()->with('error', 'El archivo no existe en el servidor.');
         }
 
+        HistorialVersionesHelper::descargar('FORMATOS', $formato);
+
         return response()->download($rutaCompleta, $formato->nombre_archivo);
     }
 
-    /**
-     * Muestra/previsualiza el archivo de un formato. — TODOS los roles
-     */
     public function show(Formato $formato)
     {
         $rutaCompleta = storage_path('app/public/' . $formato->ruta_archivo);
@@ -266,6 +271,8 @@ class FormatoController extends Controller
         if (!file_exists($rutaCompleta)) {
             return back()->with('error', 'El archivo no existe en el servidor.');
         }
+
+        HistorialVersionesHelper::ver('FORMATOS', $formato, 'ver_archivo');
 
         $tipo = self::tipoArchivo($formato->extension_archivo);
 
@@ -280,9 +287,6 @@ class FormatoController extends Controller
         return response()->download($rutaCompleta, $formato->nombre_archivo);
     }
 
-    /**
-     * Retorna los departamentos de un proceso (para AJAX).
-     */
     public function departamentos(Request $request)
     {
         $proceso = $request->get('proceso');
@@ -291,9 +295,6 @@ class FormatoController extends Controller
         return response()->json($deps);
     }
 
-    /**
-     * Clasifica la extensión del archivo en un tipo semántico.
-     */
     public static function tipoArchivo(?string $extension): string
     {
         $ext = strtoupper((string) $extension);

@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class InformeAuditoria extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $table = 'informes_auditoria';
 
@@ -17,6 +18,8 @@ class InformeAuditoria extends Model
         'auditor_lider',
         'fecha_informe',
         'fecha_auditoria',
+        'fecha_inicio',
+        'fecha_fin',
         'auditoria_relacionada_id',
         'procesos_auditados',
         'no_conformidades',
@@ -29,10 +32,13 @@ class InformeAuditoria extends Model
     protected $casts = [
         'fecha_informe'        => 'date',
         'fecha_auditoria'      => 'date',
+        'fecha_inicio'         => 'date',
+        'fecha_fin'            => 'date',
         'procesos_auditados'   => 'array',
         'no_conformidades'     => 'integer',
         'oportunidades_mejora' => 'integer',
         'nc_om_por_proceso'    => 'array',
+        'deleted_at'           => 'datetime',
     ];
 
     public function auditoriaRelacionada()

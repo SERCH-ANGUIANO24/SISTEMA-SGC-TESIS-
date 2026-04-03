@@ -6,10 +6,9 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">
-                        <i class="bi bi-upload me-2" style="color: #800000;"></i>
+                        <i class="bi bi-upload me-2" style="color: #000000;"></i>
                         Subir Archivo
                     </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
 
@@ -35,7 +34,7 @@
                     {{-- SECCIÓN FORMATO --}}
                     <div id="upload_seccion_formato" style="display:none;">
                         <hr>
-                        <p class="fw-bold mb-2" style="color:#800000; font-size:0.9rem;">
+                        <p class="fw-bold mb-2" style="color:#000000; font-size:0.9rem;">
                             <i class="bi bi-file-earmark-check me-1"></i>
                             Información del formato
                             <small class="text-muted fw-normal ms-1">(opcional)</small>
@@ -71,7 +70,7 @@
                     {{-- SECCIÓN PROCEDIMIENTO --}}
                     <div id="upload_seccion_procedimiento" style="display:none;">
                         <hr>
-                        <p class="fw-bold mb-2" style="color:#800000; font-size:0.9rem;">
+                        <p class="fw-bold mb-2" style="color:#000000; font-size:0.9rem;">
                             <i class="bi bi-file-earmark-ruled me-1"></i>
                             Información del procedimiento
                             <small class="text-muted fw-normal ms-1">(opcional)</small>
@@ -296,4 +295,5 @@ function submitUploadForm() {
 
     document.getElementById('uploadFileForm').submit();
 }
+
 </script>

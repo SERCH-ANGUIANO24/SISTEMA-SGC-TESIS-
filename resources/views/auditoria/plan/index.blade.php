@@ -7,17 +7,12 @@
     <!-- Header -->
     <div class="row mb-4">
         <div class="col-12">
-            @if(session('success'))
-                <div class="alert alert-success alert-dismissible fade show mb-3" role="alert">
-                    <i class="bi bi-check-circle me-2"></i> {{ session('success') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            @endif
+            
 
             <div class="d-flex align-items-center justify-content-between">
                 <a href="{{ route('auditoria.dashboard') }}" class="text-decoration-none">
-                    <h1 class="h3 mb-0" style="color: #800000;">
-                        <i class="bi bi-folder me-2" style="font-size: 2.5rem; vertical-align: middle;"></i>
+                    <h1 class="h3 mb-0" style="color: #4f46e5;">
+                        <i class="bi-calendar-check me-2" style="font-size: 3rem; vertical-align: middle;"></i>
                         Plan de Auditorías
                     </h1>
                 </a>
@@ -127,10 +122,10 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="modalNuevaAuditoriaLabel">
-                    <i class="bi bi-pencil-square me-2" style="color: #800000;"></i>
+                    <i class="bi bi-plus-circle me-2" style="color: #000000;"></i>
                     Registrar Nueva Auditoría
                 </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+
             </div>
             <form id="formAuditoria" enctype="multipart/form-data">
                 @csrf
@@ -140,7 +135,7 @@
                     <!-- DATOS DE LA AUDITORÍA -->
                     <div class="row mb-4">
                         <div class="col-12">
-                            <h6 class="fw-bold mb-3" style="color: #800000;">DATOS DE LA AUDITORÍA</h6>
+                            <h6 class="fw-bold mb-3" style="color: #000000;">DATOS DE LA AUDITORÍA</h6>
                         </div>
 
                         <div class="col-md-6 mb-3">
@@ -190,10 +185,10 @@
                     <!-- PLAN DE AUDITORÍA (ARCHIVO) -->
                     <div class="row mb-4">
                         <div class="col-12">
-                            <h6 class="fw-bold mb-3" style="color: #800000;">PLAN DE AUDITORÍA</h6>
+                            <h6 class="fw-bold mb-3" style="color: #000000;">PLAN DE AUDITORÍA</h6>
                             <div class="border rounded p-4 bg-light">
                                 <div class="text-center mb-3">
-                                    <i class="bi bi-cloud-upload" style="font-size: 3rem; color: #800000;"></i>
+                                    <i class="bi bi-cloud-upload" style="font-size: 3rem; color: #000000;"></i>
                                     <p class="mt-2 mb-1"><strong>Arrastra tu archivo aquí o haz clic para seleccionar</strong></p>
                                     <p class="text-muted small">Imágenes, PDF, Word, Excel, CSV y más - Max. 20 MB</p>
                                 </div>
@@ -274,12 +269,12 @@
         font-size: 0.8rem;
     }
     .border.rounded.p-4.bg-light {
-        border: 2px dashed #800000 !important;
+        border: 2px dashed #000000 !important;
         transition: all 0.3s ease;
     }
     .border.rounded.p-4.bg-light:hover {
-        background-color: #fff0f0 !important;
-        border-color: #600000 !important;
+        background-color: #fff !important;
+        border-color: #000000 !important;
     }
     /* ESTILO PARA MENSAJE DE ÉXITO */
     .alert-success {
@@ -357,7 +352,7 @@
         font-size: 1.2rem !important;
     }
     .swal2-title {
-        color: #800000 !important;
+        color: #000000 !important;
     }
     .swal2-confirm {
         background-color: #dc3545 !important;
@@ -383,6 +378,37 @@
     }
     .btn-clear-search:hover i {
         color: white !important;
+    }
+
+    /* ===== NUEVOS ESTILOS PARA LOS BOTONES DEL MODAL ===== */
+    /* El botón Cerrar (btn-secondary) NO debe cambiar de color al hacer hover */
+    .modal-footer .btn-secondary {
+        background-color: #6c757d !important;
+        border-color: #6c757d !important;
+        color: white !important;
+    }
+    
+    .modal-footer .btn-secondary:hover {
+        background-color: #6c757d !important;  /* Mismo color que el estado normal */
+        border-color: #6c757d !important;
+        color: white !important;
+        opacity: 0.9;  /* Solo un pequeño efecto visual sin cambiar el color */
+    }
+
+    /* El botón Descargar (color guinda) SÍ debe cambiar de color al hacer hover */
+    .modal-footer .btn-download-guinda {
+        background-color: #800000 !important;
+        border-color: #800000 !important;
+        color: white !important;
+        transition: all 0.3s ease;
+    }
+    
+    .modal-footer .btn-download-guinda:hover {
+        background-color: #a00000 !important;  /* Color más claro al hacer hover */
+        border-color: #a00000 !important;
+        color: white !important;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(128, 0, 0, 0.3);
     }
 </style>
 @endpush
@@ -411,6 +437,15 @@
         $('#modalNuevaAuditoria').on('hidden.bs.modal', function () {
             resetForm();
             limpiarErrores();
+        });
+        
+        // Actualizar el título del modal cuando se abre para edición
+        $('#modalNuevaAuditoria').on('show.bs.modal', function () {
+            if ($('#auditoria_id').val()) {
+                $('#modalNuevaAuditoriaLabel').html('<i class="bi bi-pencil-square me-2" style="color: #000000;"></i> Editar Auditoría');
+            } else {
+                $('#modalNuevaAuditoriaLabel').html('<i class="bi bi-plus-circle me-2" style="color: #000000;"></i> Registrar Nueva Auditoría');
+            }
         });
     });
 
@@ -459,7 +494,7 @@
             filtrarPorBusqueda('');
         });
 
-        // Validación en tiempo real (opcional)
+        // Validación en tiempo real
         $('#nombre_auditoria, #tipo_auditoria, #auditor_lider, #anio, #auditores').on('input change', function() {
             const id = $(this).attr('id');
             if ($(this).val().trim()) {
@@ -557,7 +592,7 @@
             @if(in_array(Auth::user()->role, ['admin', 'superadmin']))
                 {{-- Admin y superadmin tienen todas las acciones --}}
                 acciones = `
-                    <div class="d-flex justify-content-end gap-1">
+                    <div class="d-flex justify-content-end gap-1"> 
                         ${tieneVista ? '<button class="btn btn-sm btn-outline-info" onclick="verArchivo('+auditoria.id+')" title="Ver"><i class="bi bi-eye"></i></button>' : ''}
                         <button class="btn btn-sm btn-outline-secondary" onclick="editarAuditoria(${auditoria.id})" title="Editar"><i class="bi bi-pencil-square"></i></button>
                         <a href="{{ url('auditoria/plan/download') }}/${auditoria.id}" class="btn btn-sm btn-outline-primary" title="Descargar"><i class="bi bi-download"></i></a>
@@ -568,7 +603,7 @@
                 {{-- Usuario normal solo puede ver y descargar --}}
                 acciones = `
                     <div class="d-flex justify-content-end gap-1">
-                        ${tieneVista ? '<button class="btn btn-sm btn-outline-info" onclick="verArchivo('+auditoria.id+')" title="Ver"><i class="bi bi-eye"></i></button>' : ''}
+                        ${tieneVista ? '<button class="btn btn-sm btn-outline-info" onclick="verArchivo('+auditoria.id+')"  title="Ver"><i class="bi bi-eye"></i></button>' : ''}
                         <a href="{{ url('auditoria/plan/download') }}/${auditoria.id}" class="btn btn-sm btn-outline-primary" title="Descargar"><i class="bi bi-download"></i></a>
                     </div>
                 `;
@@ -579,7 +614,7 @@
             if (auditoria.archivo_nombre) {
                 archivoMostrar = `
                     <div style="display: flex; align-items: center; gap: 5px;">
-                        <i class="bi ${iconoArchivo}" style="color: #800000; font-size: 1.2rem;"></i>
+                        <i class="bi ${iconoArchivo}" style="color: #000000; font-size: 1.2rem;"></i>     
                         <span class="nombre-archivo" title="${auditoria.archivo_nombre}">${auditoria.archivo_nombre}</span>
                     </div>
                 `;
@@ -600,7 +635,6 @@
             tbody.append(row);
         });
     }
-
     function generarModalVisualizador(auditoria) {
         if (!auditoria.archivo_nombre) return '';
         const extension = auditoria.archivo_nombre.split('.').pop().toLowerCase();
@@ -632,13 +666,15 @@
                 <div class="modal-dialog modal-xl">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title">${auditoria.archivo_nombre}</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            <h5 class="modal-title">
+                                <i class="bi bi-file-earmark-text me-2" style="color: #000000;"></i>
+                                ${auditoria.archivo_nombre}
+                            </h5>
                         </div>
                         <div class="modal-body p-0" style="height:70vh;">${contenido}</div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                            <a href="${downloadUrl}" class="btn text-white" style="background-color:#800000;" download>Descargar</a>
+                            <a href="${downloadUrl}" class="btn text-white" style="background-color:#800000;" download> <i class="bi bi-download me-1"></i> Descargar</a>
                         </div>
                     </div>
                 </div>
@@ -777,7 +813,6 @@
             $('#nombreArchivoActual').hide();
         }
 
-        $('#modalNuevaAuditoria .modal-title').text('Editar Auditoría');
         $('#modalNuevaAuditoria').modal('show');
     }
 
@@ -799,7 +834,9 @@
                     allowOutsideClick: false,
                     didOpen: () => {
                         Swal.showLoading();
-                    }
+                    },
+                    showConfirmButton: false,
+                    timer: null
                 });
 
                 fetch(`{{ url('auditoria/plan') }}/${id}`, {
@@ -817,7 +854,7 @@
                             icon: 'success',
                             title: '¡Eliminado!',
                             text: data.message,
-                            confirmButtonColor: '#800000',
+                            showConfirmButton: false,
                             timer: 2000
                         }).then(() => {
                             location.reload();
@@ -827,7 +864,8 @@
                             icon: 'error',
                             title: 'Error',
                             text: data.message || 'Error al eliminar',
-                            confirmButtonColor: '#800000'
+                            confirmButtonColor: '#800000',
+                            confirmButtonText: 'Cerrar'
                         });
                     }
                 })
@@ -837,7 +875,8 @@
                         icon: 'error',
                         title: 'Error',
                         text: 'Error de conexión',
-                        confirmButtonColor: '#800000'
+                        confirmButtonColor: '#800000',
+                        confirmButtonText: 'Cerrar'
                     });
                 });
             }

@@ -17,7 +17,7 @@
         justify-content: center;
         align-items: center;
         min-height: 100vh;
-        background-color: #f8f9fa;
+        background-color: #f8faf8;
         padding: 20px;
     }
 
@@ -25,7 +25,7 @@
     .auth-card {
         background-color: #ffffff;
         border-radius: 10px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 4px 15px rgba(0, 0, 0);
         padding: 40px;
         width: 100%;
         max-width: 400px;
@@ -34,7 +34,7 @@
 
     /* Estilos del logo/título principal */
     .auth-logo h1 {
-        color: var(--guinda-base);
+        color: #000000; /* Cambiado a negro */
         font-size: 2.2rem;
         margin-bottom: 25px;
         font-weight: 700;
@@ -123,8 +123,8 @@
     }
 
     .auth-form-control:focus {
-        border-color: var(--guinda-base);
-        box-shadow: 0 0 0 0.25rem rgba(128, 0, 0, 0.25);
+        border-color: #b8c9da;
+        box-shadow: 0 0 0 0.25rem #b8c9da;
         outline: none;
     }
 
@@ -187,7 +187,7 @@
     }
 
     .auth-link {
-        color: var(--guinda-base);
+        color: #000000; /* Cambiado a negro */
         text-decoration: none;
         font-weight: 500;
         transition: color 0.2s ease;
@@ -197,16 +197,16 @@
 
     .auth-link .bi {
         margin-right: 5px;
-        color: var(--guinda-darker);
+        color: #000000; /* Cambiado a negro */
         transition: color 0.2s ease;
     }
 
     .auth-link:hover {
-        color: var(--guinda-darker);
+        color: #000000; /* Gris oscuro para hover */
     }
 
     .auth-link:hover .bi {
-        color: var(--guinda-darker);
+        color: #333333; /* Gris oscuro para hover */
     }
 
     /* Texto de ayuda/alternativa */
@@ -291,7 +291,7 @@
                 <p class="auth-help-text">
                     <span>¿O regresar a </span>
                     <a href="{{ route('login') }}" class="auth-link">
-                        {{ __('iniciar sesión') }}
+                        iniciar sesión
                     </a>
                     <span>?</span>
                 </p>

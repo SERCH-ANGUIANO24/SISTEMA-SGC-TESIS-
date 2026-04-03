@@ -143,7 +143,7 @@
         background: #faf8f8;
     }
 
-    .search-box input:focus { border-color: #800000; background: #fff; }
+    .search-box input:focus { border-color: #737373; background: #fff; }
 
     .search-box .bi-search {
         position: absolute;
@@ -167,7 +167,7 @@
         transition: border-color 0.2s;
     }
 
-    .filter-select:focus { border-color: #800000; }
+    .filter-select:focus { border-color: #737373; }
 
     .table-usuarios {
         width: 100%;
@@ -190,7 +190,7 @@
         transition: background 0.15s;
     }
 
-    .table-usuarios tbody tr:hover { background: #fdf5f5; }
+    .table-usuarios tbody tr:hover { background: #ffff; }
 
     .table-usuarios tbody td {
         padding: 0.9rem 1.25rem;
@@ -199,8 +199,8 @@
     }
 
     .badge-proceso {
-        background: #fdeaea;
-        color: #800000;
+        background: #fff;
+        color: #000000;
         border-radius: 20px;
         padding: 0.3rem 0.75rem;
         font-size: 0.8rem;
@@ -210,8 +210,8 @@
     }
 
     .badge-depto {
-        background: #f0f0f0;
-        color: #444;
+        background: #fff;
+        color: #000;
         border-radius: 20px;
         padding: 0.3rem 0.75rem;
         font-size: 0.8rem;
@@ -224,7 +224,7 @@
         width: 36px;
         height: 36px;
         border-radius: 50%;
-        background: linear-gradient(135deg, #800000, #c0392b);
+        background: linear-gradient(135deg, #737373, #737373);
         color: #fff;
         display: inline-flex;
         align-items: center;
@@ -284,9 +284,9 @@
     }
 
     .btn-desactivar:hover {
-        background: #800000;
-        color: #fff;
-        border-color: #800000;
+        background: #fff0f0;
+        color: #800000;
+        border-color: #f5c6cb;
     }
 
     .btn-activar {
@@ -301,7 +301,6 @@
         border-color: #28a745;
     }
 
-    /* botón editar (solo admin) */
     .btn-editar {
         background: #f0f4ff;
         color: #1a3acc;
@@ -310,9 +309,9 @@
     }
 
     .btn-editar:hover {
-        background: #1a3acc;
-        color: #fff;
-        border-color: #1a3acc;
+        background: #f0f4ff;
+        color: #1a3acc;
+        border-color: #c0ccf5;
     }
 
     .empty-state {
@@ -330,7 +329,7 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        color: #9a7070;
+        color: #737373;
         font-size: 0.85rem;
     }
 
@@ -343,8 +342,8 @@
     }
 
     .modal-header {
-        background: #800000;
-        color: #fff;
+        background: #ffffff;
+        color: #000000;
         border-radius: 16px 16px 0 0;
         padding: 1.25rem 1.5rem;
         border-bottom: none;
@@ -378,7 +377,7 @@
         outline: none;
     }
 
-    .modal-input:focus, .modal-select:focus { border-color: #800000; background: #fff; }
+    .modal-input:focus, .modal-select:focus { border-color: #737373; background: #fff; }
     .modal-input.is-invalid, .modal-select.is-invalid { border-color: #dc3545; }
     .field-err { color: #dc3545; font-size: 0.8rem; margin-top: 0.3rem; }
 
@@ -390,8 +389,8 @@
 
     .btn-modal-cancel {
         border: 1.5px solid #ddd;
-        background: #fff;
-        color: #555;
+        background: #737373;
+        color: #fff;
         border-radius: 9px;
         padding: 0.65rem 1.25rem;
         font-family: 'DM Sans', sans-serif;
@@ -400,7 +399,7 @@
         transition: all 0.2s;
     }
 
-    .btn-modal-cancel:hover { border-color: #aaa; color: #333; }
+    .btn-modal-cancel:hover { border-color: #aaa; color: #fff; }
 
     .btn-modal-submit {
         background: #800000;
@@ -417,7 +416,7 @@
         transition: background 0.2s, box-shadow 0.2s;
     }
 
-    .btn-modal-submit:hover { background: #5b0000; box-shadow: 0 4px 14px rgba(128,0,0,.3); }
+    .btn-modal-submit:hover { background: #800000; box-shadow: 0 4px 14px rgba(128,0,0,.3); }
 
     @media (max-width: 768px) {
         .usuarios-wrapper { padding: 1.5rem 1rem; }
@@ -428,7 +427,7 @@
         .table-usuarios tbody td::before { content: attr(data-label); font-weight: 600; color: #800000; font-size: 0.8rem; }
     }
 
-    /* ── Gestión de Procesos (agregado) ── */
+    /* Gestión de Procesos */
     .btn-gestionar-procesos {
         background: #737373;
         color: #fff;
@@ -452,15 +451,43 @@
         box-shadow: 0 8px 20px #737373;
         color: #fff;
     }
-    .pg-overlay-panel {
-        background: #fff; border-radius: 18px; width: 92%; max-width: 660px;
-        max-height: 88vh; display: flex; flex-direction: column;
-        box-shadow: 0 20px 60px rgba(0,0,0,.2); animation: zoomIn .18s ease; overflow: hidden;
+    
+    /* OVERLAY DE PROCESOS - Z-INDEX CORREGIDO */
+    #overlayProcesos {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,.55);
+        align-items: center;
+        justify-content: center;
+        z-index: 1008;
     }
+    
+    .pg-overlay-panel {
+        background: #fff;
+        border-radius: 18px;
+        width: 92%;
+        max-width: 660px;
+        max-height: 88vh;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 20px 60px rgba(0,0,0,.2);
+        animation: zoomIn .18s ease;
+        overflow: hidden;
+        position: relative;
+        z-index: 9999;
+    }
+    
     .pg-header {
-        background: #800000; color: #fff; padding: 1.25rem 1.5rem;
-        display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+        background: #ffffff; 
+        color: #000000; 
+        padding: 1.25rem 1.5rem;
+        display: flex; 
+        align-items: center; 
+        justify-content: space-between; 
+        flex-shrink: 0;
         font-family: 'DM Serif Display', serif;
+        border-bottom: 1px solid #b5b2b2
     }
     .pg-body { overflow-y: auto; padding: 1.25rem 1.5rem; flex: 1; }
     .pg-grupo {
@@ -481,7 +508,7 @@
     }
     .pg-add-form {
         display: none; margin-top: .6rem; padding: .65rem;
-        background: #fdf5f5; border: 1.5px dashed #f0c0c0; border-radius: 9px;
+        background: #fff; border: 1.5px dashed #f0c0c0; border-radius: 9px;
         gap: .5rem; align-items: center;
     }
     .pg-add-form.open { display: flex; }
@@ -489,38 +516,42 @@
         flex: 1; padding: .5rem .85rem; border: 1.5px solid #e0d4d4; border-radius: 7px;
         font-family: 'DM Sans', sans-serif; font-size: .88rem; outline: none; color: #333;
     }
-    .pg-add-form input:focus { border-color: #800000; }
+    .pg-add-form input:focus { border-color: #000000; }
     .pg-chevron { transition: transform .2s; color: #a08080; font-size: .85rem; }
     .pg-chevron.open { transform: rotate(180deg); }
+    
 </style>
 @endpush
 
 @section('content')
 <div class="usuarios-wrapper">
 
-    @if(session('success'))
-        <div class="alert-usuarios alert-success-u" id="successAlert">
-            <i class="bi bi-check-circle-fill"></i> {{ session('success') }}
-        </div>
+    {{-- SOLO DATOS OCULTOS PARA SWEETALERT (activar/desactivar y procesos) --}}
+    @if(session('estado_success'))
+        <div id="estado-success" data-message="{{ session('estado_success') }}" style="display: none;"></div>
+    @endif
+    @if(session('estado_error'))
+        <div id="estado-error" data-message="{{ session('estado_error') }}" style="display: none;"></div>
+    @endif
+    @if(session('proceso_success'))
+        <div id="proceso-success" data-message="{{ session('proceso_success') }}" style="display: none;"></div>
+    @endif
+    @if(session('proceso_error'))
+        <div id="proceso-error" data-message="{{ session('proceso_error') }}" style="display: none;"></div>
     @endif
 
-    @if(session('error'))
-        <div class="alert-usuarios alert-danger-u" id="errorAlert">
-            <i class="bi bi-exclamation-triangle-fill"></i> {{ session('error') }}
-        </div>
-    @endif
+    {{-- NO HAY MENSAJES DE BOOTSTRAP AQUÍ --}}
 
     <div class="usuarios-header">
         <div class="usuarios-heading">
             <a href="{{ route('dashboard') }}" class="text-decoration-none" title="Ir al Dashboard">
-                <h1 class="h3 mb-2" style="color: #800000; cursor: pointer;">
+                <h1 class="h3 mb-2" style="color: #7c3aed; cursor: pointer;">
                     <i class="bi bi-people-fill me-2" style="font-size: 3rem; vertical-align: middle;"></i>
                     Usuarios
                 </h1>
             </a>
         </div>
 
-        {{-- AGREGADO: botón Gestionar Procesos (solo superadmin) + botón Registrar original --}}
         <div style="display:flex;gap:.75rem;flex-wrap:wrap;align-items:center;">
             @if(auth()->user()->isSuperAdmin() || auth()->user()->role === 'admin')
             <button class="btn-gestionar-procesos" onclick="abrirOverlayProcesos()">
@@ -534,7 +565,6 @@
     </div>
 
     <div class="card-usuarios">
-
         <div class="card-toolbar">
             <div class="search-box">
                 <i class="bi bi-search"></i>
@@ -673,7 +703,7 @@
 
 </div>
 
-{{-- OVERLAY EDITAR (original sin cambios) --}}
+{{-- OVERLAY EDITAR --}}
 <div id="overlayEditarAdmin" onclick="if(event.target===this)cerrarOverlayEditar()" style="
     display:none; position:fixed; inset:0;
     background:rgba(0,0,0,.55); z-index:9999;
@@ -686,8 +716,8 @@
         animation:zoomIn .18s ease;
     ">
         <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1.5rem;">
-            <div style="width:48px;height:48px;border-radius:50%;background:#f0f4ff;color:#1a3acc;display:flex;align-items:center;justify-content:center;font-size:1.4rem;">
-                <i class="bi bi-pencil-square"></i>
+            <div style="width:48px;height:48px;border-radius:50%;background:#fff;color:#1a3acc;display:flex;align-items:center;justify-content:center;font-size:1.4rem;">
+                <i class="bi bi-pencil"></i>
             </div>
             <div>
                 <h5 style="font-family:'DM Serif Display',serif;font-size:1.3rem;margin:0;" id="editAdminTitle">Editar Usuario</h5>
@@ -736,29 +766,32 @@
     </div>
 </div>
 
-{{-- MODAL: Registrar Usuario (original sin cambios, solo fix en select proceso) --}}
+{{-- MODAL: Registrar Usuario --}}
 <div class="modal fade" id="modalRegistrar" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" style="max-width:520px;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title"><i class="bi bi-person-plus-fill me-2"></i> Nuevo Usuario</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+       <div class="modal-content">
+            <div class="modal-header" style="border-bottom: 1px solid #b5b2b2;">
+                <h5 class="modal-title"><i class="bi bi-person-plus-fill me-2" style="color: #000000;"></i> Nuevo Usuario</h5>
             </div>
-            <form method="POST" action="{{ route('register') }}">
+
+            <form method="POST" action="{{ route('admin.usuarios.store') }}">
                 @csrf
                 <div class="modal-body">
 
                     @if($errors->any())
-                    <div class="alert-usuarios alert-danger-u mb-3">
-                        <i class="bi bi-exclamation-triangle-fill"></i>
-                        <div>@foreach($errors->all() as $err)<div>{{ $err }}</div>@endforeach</div>
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert" style="border-left: 4px solid #dc3545; border-radius: 8px;">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        @foreach($errors->all() as $err)
+                            <div>{{ $err }}</div>
+                        @endforeach
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                     @endif
 
                     <div class="modal-form-group">
                         <label class="modal-label"><i class="bi bi-person"></i> Nombre Completo</label>
                         <input type="text" name="name" class="modal-input @error('name') is-invalid @enderror"
-                            value="{{ old('name') }}" placeholder="Ej. Juan Napoleón" required>
+                            value="{{ old('name') }}" placeholder="Ej. Juan Pérez" required>
                         @error('name')<div class="field-err">{{ $message }}</div>@enderror
                     </div>
 
@@ -771,55 +804,51 @@
 
                     <div class="modal-form-group">
                         <label class="modal-label"><i class="bi bi-gear"></i> Proceso</label>
-                        {{-- FIX: agrupado por proceso (una opción por proceso, deptos como JSON) --}}
                         <select name="proceso" id="modalProceso" class="modal-select @error('proceso') is-invalid @enderror" required>
                             <option value="">Selecciona un proceso</option>
-                            <option value="Planeación" {{ old('proceso')=='Planeación'?'selected':'' }}>Planeación</option>
-                            <option value="Preinscripción" {{ old('proceso')=='Preinscripción'?'selected':'' }}>Preinscripción</option>
-                            <option value="Inscripción" {{ old('proceso')=='Inscripción'?'selected':'' }}>Inscripción</option>
-                            <option value="Reinscripción" {{ old('proceso')=='Reinscripción'?'selected':'' }}>Reinscripción</option>
-                            <option value="Titulación" {{ old('proceso')=='Titulación'?'selected':'' }}>Titulación</option>
-                            <option value="Enseñanza/Aprendizaje" {{ old('proceso')=='Enseñanza/Aprendizaje'?'selected':'' }}>Enseñanza/Aprendizaje</option>
-                            <option value="Contratación o Control de Personal" {{ old('proceso')=='Contratación o Control de Personal'?'selected':'' }}>Contratación o Control de Personal</option>
-                            <option value="Vinculación" {{ old('proceso')=='Vinculación'?'selected':'' }}>Vinculación</option>
-                            <option value="TI" {{ old('proceso')=='TI'?'selected':'' }}>TI</option>
-                            <option value="Gestión de Recursos" {{ old('proceso')=='Gestión de Recursos'?'selected':'' }}>Gestión de Recursos</option>
-                            <option value="Laboratorios y Talleres" {{ old('proceso')=='Laboratorios y Talleres'?'selected':'' }}>Laboratorios y Talleres</option>
-                            <option value="Centro de Información" {{ old('proceso')=='Centro de Información'?'selected':'' }}>Centro de Información</option>
-                            {{-- Procesos custom: UNA opción por proceso, deptos como JSON --}}
+                            <option value="Planeación">Planeación</option>
+                            <option value="Preinscripción">Preinscripción</option>
+                            <option value="Inscripción">Inscripción</option>
+                            <option value="Reinscripción">Reinscripción</option>
+                            <option value="Titulación">Titulación</option>
+                            <option value="Enseñanza/Aprendizaje">Enseñanza/Aprendizaje</option>
+                            <option value="Contratación o Control de Personal">Contratación o Control de Personal</option>
+                            <option value="Vinculación">Vinculación</option>
+                            <option value="TI">TI</option>
+                            <option value="Gestión de Recursos">Gestión de Recursos</option>
+                            <option value="Laboratorios y Talleres">Laboratorios y Talleres</option>
+                            <option value="Centro de Información">Centro de Información</option>
                             @isset($procesosCustom)
                                 @php $pgrouped = $procesosCustom->groupBy('proceso'); @endphp
                                 @if($pgrouped->count())
                                     <option disabled style="color:#aaa;font-size:.8rem;">── Procesos personalizados ──</option>
                                     @foreach($pgrouped as $pnombre => $pdeptos)
                                         <option value="{{ $pnombre }}"
-                                            data-deptos-json="{{ json_encode($pdeptos->pluck('departamento')->values()) }}"
-                                            {{ old('proceso')==$pnombre?'selected':'' }}>
+                                            data-deptos-json="{{ json_encode($pdeptos->pluck('departamento')->values()) }}">
                                             {{ $pnombre }}
                                         </option>
                                     @endforeach
                                 @endif
                             @endisset
-                            <option value="__otro__" {{ old('proceso')=='__otro__'?'selected':'' }}>➕ Otro (nuevo proceso)</option>
+                            <option value="__otro__">➕ Otro (nuevo proceso)</option>
                         </select>
                         @error('proceso')<div class="field-err">{{ $message }}</div>@enderror
 
                         <div id="nuevoProcesoWrap" style="display:none; margin-top:.75rem;">
                             <div class="modal-form-group" style="margin-bottom:.75rem;">
                                 <label class="modal-label"><i class="bi bi-plus-circle"></i> Nombre del nuevo proceso</label>
-                                <input type="text" name="nuevo_proceso" id="nuevoProceso" class="modal-input"
-                                    placeholder="Ej. Archivo y Correspondencia">
+                                <input type="text" name="nuevo_proceso" id="nuevoProceso" class="modal-input">
                             </div>
                             <div class="modal-form-group" style="margin-bottom:0;">
-                                <label class="modal-label"><i class="bi bi-building-add"></i> Departamento de este proceso</label>
-                                <input type="text" name="nuevo_departamento" id="nuevoDepartamento" class="modal-input"
-                                    placeholder="Ej. Coordinación de Archivo">
+                                <label class="modal-label"><i class="bi bi-building-add"></i> Departamento</label>
+                                <input type="text" name="nuevo_departamento" id="nuevoDepartamento" class="modal-input">
                             </div>
                         </div>
                     </div>
 
                     <div class="modal-form-group">
                         <label class="modal-label"><i class="bi bi-building"></i> Departamento</label>
+                        {{-- CAMBIO 1: Se agregaron data-proceso a cada option y procesosCustom --}}
                         <select name="departamento" id="modalDepartamento" class="modal-select @error('departamento') is-invalid @enderror" required>
                             <option value="">Selecciona un departamento</option>
                             <option value="Rectoría" data-proceso="Planeación" {{ old('departamento')=='Rectoría'?'selected':'' }}>Rectoría</option>
@@ -833,7 +862,6 @@
                             <option value="Almacén" data-proceso="Gestión de Recursos" {{ old('departamento')=='Almacén'?'selected':'' }}>Almacén</option>
                             <option value="Encargado/a de Laboratorios" data-proceso="Laboratorios y Talleres" {{ old('departamento')=='Encargado/a de Laboratorios'?'selected':'' }}>Encargado/a de Laboratorios</option>
                             <option value="Biblioteca" data-proceso="Centro de Información" {{ old('departamento')=='Biblioteca'?'selected':'' }}>Biblioteca</option>
-                            {{-- Deptos de procesos custom (cada uno con su data-proceso) --}}
                             @isset($procesosCustom)
                                 @foreach($procesosCustom as $pc)
                                     <option value="{{ $pc->departamento }}"
@@ -869,7 +897,7 @@
                             <i class="bi bi-eye" id="toggleModalPwdConfirm"
                                 style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;color:#a08080;"></i>
                         </div>
-                        <div class="strength-label" id="modalMatchText" style="color:#888;">Las contraseñas deben coincidir</div>
+                        <div class="strength-label" id="modalMatchText">Las contraseñas deben coincidir</div>
                     </div>
 
                 </div>
@@ -884,33 +912,26 @@
     </div>
 </div>
 
-{{-- OVERLAY: GESTIÓN DE PROCESOS (solo superadmin) --}}
+{{-- OVERLAY: GESTIÓN DE PROCESOS --}}
 @if(auth()->user()->isSuperAdmin() || auth()->user()->role === 'admin')
 <div id="overlayProcesos"
     onclick="if(event.target===this)cerrarOverlayProcesos()"
-    style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9998;align-items:center;justify-content:center;">
-
+    style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);align-items:center;justify-content:center;">
     <div class="pg-overlay-panel">
-
         <div class="pg-header">
             <div style="display:flex;align-items:center;gap:.75rem;">
                 <i class="bi bi-diagram-3-fill" style="font-size:1.3rem;"></i>
                 <div>
                     <div style="font-size:1.2rem;">Gestión de Procesos</div>
-                    <small style="opacity:.8;font-size:.8rem;font-family:'DM Sans',sans-serif;">Procesos personalizados</small>
+                    <small style="opacity:.8;font-size:.8rem;">Procesos personalizados</small>
                 </div>
             </div>
-            <button onclick="cerrarOverlayProcesos()"
-                style="background:rgba(255,255,255,.2);border:none;color:#fff;width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;">
-                <i class="bi bi-x-lg"></i>
-            </button>
         </div>
-
         <div class="pg-body">
             @isset($procesosCustom)
                 @php $pgAgrup = $procesosCustom->groupBy('proceso'); @endphp
                 @if($pgAgrup->count())
-                    <p style="font-size:.82rem;color:#9a7070;margin-bottom:1rem;">
+                    <p style="font-size:.82rem;color:#000;margin-bottom:1rem;">
                         <i class="bi bi-info-circle"></i> Haz clic en un proceso para ver sus departamentos.
                     </p>
                     @foreach($pgAgrup as $pgNombre => $pgDeptos)
@@ -919,25 +940,24 @@
                             <div style="display:flex;align-items:center;gap:.5rem;flex:1;">
                                 <i class="bi bi-diagram-3"></i>
                                 {{ $pgNombre }}
-                                <span style="background:#fdeaea;color:#800000;border-radius:20px;padding:.1rem .5rem;font-size:.72rem;font-family:'DM Sans',sans-serif;font-weight:700;">
+                                <span style="background:#737373;color:#fff;border-radius:20px;padding:.1rem .5rem;font-size:.72rem;font-weight:300;">
                                     {{ $pgDeptos->count() }} depto{{ $pgDeptos->count()!=1?'s':'' }}
                                 </span>
                             </div>
                             <div style="display:flex;align-items:center;gap:.4rem;" onclick="event.stopPropagation()">
-                                {{-- Agregar departamento --}}
                                 <button type="button"
-                                    style="background:#737373;color:#ffffff;border:1.5px solid #d7c6f5;border-radius:7px;padding:.3rem .65rem;font-size:.78rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;display:inline-flex;align-items:center;gap:.3rem;"
+                                    style="background:#737373;color:#fff;border:none;border-radius:7px;padding:.3rem .65rem;font-size:.78rem;cursor:pointer;"
                                     onclick="pgToggleAdd('pg-add-{{ $loop->index }}','pg-{{ $loop->index }}')">
                                     <i class="bi bi-plus-circle"></i> Agregar depto
                                 </button>
-                                {{-- Eliminar proceso completo --}}
                                 <form method="POST" action="{{ route('admin.procesos.destroyProceso') }}"
-                                    onsubmit="return confirm('¿Eliminar «{{ addslashes($pgNombre) }}» y TODOS sus departamentos?')" style="margin:0;">
+                                    onsubmit="return confirmarEliminarProceso(event, '{{ addslashes($pgNombre) }}')" 
+                                    style="margin:0;" id="form-delete-proceso-{{ $loop->index }}">
                                     @csrf @method('DELETE')
                                     <input type="hidden" name="proceso" value="{{ $pgNombre }}">
                                     <button type="submit"
-                                        style="background:#737373;color:#ffffff;border:1.5px solid #f5c6cb;border-radius:7px;padding:.3rem .65rem;font-size:.78rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;display:inline-flex;align-items:center;gap:.3rem;">
-                                        <i class="bi bi-trash3"></i> Eliminar proceso
+                                        style="background:#dc3545;color:#fff;border:none;border-radius:7px;padding:.3rem .65rem;font-size:.78rem;cursor:pointer;">
+                                        <i class="bi bi-trash3"></i> Eliminar
                                     </button>
                                 </form>
                                 <i class="bi bi-chevron-down pg-chevron" id="pgicon-{{ $loop->index }}"></i>
@@ -947,52 +967,46 @@
                         <div class="pg-deptos" id="pg-{{ $loop->index }}">
                             @foreach($pgDeptos as $pgD)
                             <div class="pg-depto-item">
-                                <span style="font-size:.88rem;color:#3a2a2a;font-weight:500;display:flex;align-items:center;gap:.4rem;">
-                                    <i class="bi bi-building" style="color:#800000;font-size:.78rem;"></i>
+                                <span style="font-size:.88rem;color:#3a2a2a;">
+                                    <i class="bi bi-building" style="color:#000000;"></i>
                                     {{ $pgD->departamento }}
                                 </span>
                                 <form method="POST" action="{{ route('admin.procesos.destroy', $pgD->id) }}"
-                                    onsubmit="return confirm('¿Eliminar el departamento «{{ addslashes($pgD->departamento) }}»?')" style="margin:0;">
+                                    onsubmit="return confirmarEliminarDepartamento(event, '{{ addslashes($pgD->departamento) }}', '{{ $pgD->id }}')" 
+                                    style="margin:0;" id="form-delete-depto-{{ $pgD->id }}">
                                     @csrf @method('DELETE')
-                                    <button type="submit"
-                                        style="background:none;border:none;color:#cc5500;cursor:pointer;font-size:.85rem;padding:.2rem .4rem;border-radius:5px;">
+                                    <button type="submit" style="background:none;border:none;color:#dc3545; cursor:pointer;">
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </form>
                             </div>
                             @endforeach
 
-                            {{-- Form agregar departamento --}}
                             <form method="POST" action="{{ route('admin.procesos.addDepartamento') }}"
                                 class="pg-add-form" id="pg-add-{{ $loop->index }}">
                                 @csrf
                                 <input type="hidden" name="proceso" value="{{ $pgNombre }}">
-                                <input type="text" name="departamento" placeholder="Nombre del nuevo departamento…" required autocomplete="off">
-                                <button type="submit"
-                                    style="background:#800000;color:#fff;border:none;border-radius:7px;padding:.48rem .85rem;font-size:.85rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;">
-                                    <i class="bi bi-check-lg"></i> Agregar
+                                <input type="text" name="departamento" placeholder="Nuevo departamento…" required>
+                                <button type="submit" style="background:#dc3545;color:#fff;border:none;border-radius:7px;padding:.3rem .65rem;">
+                                    Agregar
                                 </button>
-                                <button type="button"
-                                    style="background:#f3f3f3;color:#555;border:none;border-radius:7px;padding:.48rem .7rem;font-size:.85rem;cursor:pointer;font-family:'DM Sans',sans-serif;"
+                                <button type="button" style="background:#6c757d;color:#fff;border:none;border-radius:7px;padding:.3rem .65rem;"
                                     onclick="pgToggleAdd('pg-add-{{ $loop->index }}',null)">Cancelar</button>
                             </form>
                         </div>
                     </div>
                     @endforeach
                 @else
-                    <div style="text-align:center;padding:3rem 1rem;color:#c0a0a0;">
+                    <div style="text-align:center;padding:3rem 1rem;color:#666;">
                         <i class="bi bi-diagram-3" style="font-size:2.5rem;display:block;margin-bottom:.75rem;opacity:.5;"></i>
-                        <p style="margin:0;font-size:.95rem;">No hay procesos personalizados.</p>
-                        <p style="font-size:.82rem;color:#c0b0b0;margin-top:.3rem;">Crea uno desde "Registrar Usuario" eligiendo "Otro".</p>
+                        <p>No hay procesos personalizados.</p>
                     </div>
                 @endif
             @endisset
         </div>
-
-        <div style="padding:1rem 1.5rem;border-top:1px solid #f0e8e8;display:flex;justify-content:flex-end;background:#fafafa;flex-shrink:0;">
+        <div style="padding:1rem 1.5rem;border-top:1px solid #f0e8e8;display:flex;justify-content:flex-end;">
             <button onclick="cerrarOverlayProcesos()" class="btn-modal-cancel">Cerrar</button>
         </div>
-
     </div>
 </div>
 @endif
@@ -1000,250 +1014,459 @@
 @endsection
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-
-    // Auto-ocultar alertas después de 5 segundos
-    const successAlert = document.getElementById('successAlert');
-    const errorAlert = document.getElementById('errorAlert');
-    function autoHide(el) {
-        if (!el) return;
-        setTimeout(() => {
-            el.classList.add('alert-fade-out');
-            setTimeout(() => el.remove(), 500);
-        }, 5000);
+    
+    // SWEETALERT - Para mensajes de activar/desactivar
+    const estadoSuccess = document.getElementById('estado-success');
+    if (estadoSuccess && estadoSuccess.getAttribute('data-message')) {
+        Swal.fire({
+            title: '¡Éxito!',
+            text: estadoSuccess.getAttribute('data-message'),
+            icon: 'success',
+            iconHtml: '<i class="bi bi-check-circle-fill" style="font-size: 4rem; color: #28a745;"></i>',
+            width: '600px',
+            padding: '2rem',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true
+        });
     }
-    autoHide(successAlert);
-    autoHide(errorAlert);
 
-    // Abrir modal registro si hay errores de validación
+    const estadoError = document.getElementById('estado-error');
+    if (estadoError && estadoError.getAttribute('data-message')) {
+        Swal.fire({
+            title: '¡Error!',
+            text: estadoError.getAttribute('data-message'),
+            icon: 'error',
+            iconHtml: '<i class="bi bi-exclamation-triangle-fill" style="font-size: 4rem; color: #dc3545;"></i>',
+            width: '600px',
+            padding: '2rem',
+            confirmButtonColor: '#800000',
+            confirmButtonText: 'Aceptar',
+            timer: 3000,
+            timerProgressBar: true
+        });
+    }
+
+    // SWEETALERT - Para mensajes de procesos
+    const procesoSuccess = document.getElementById('proceso-success');
+    if (procesoSuccess && procesoSuccess.getAttribute('data-message')) {
+        Swal.fire({
+            title: '¡Éxito!',
+            text: procesoSuccess.getAttribute('data-message'),
+            icon: 'success',
+            iconHtml: '<i class="bi bi-check-circle-fill" style="font-size: 4rem; color: #28a745;"></i>',
+            width: '600px',
+            padding: '2rem',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true
+        });
+    }
+
+    const procesoError = document.getElementById('proceso-error');
+    if (procesoError && procesoError.getAttribute('data-message')) {
+        Swal.fire({
+            title: '¡Error!',
+            text: procesoError.getAttribute('data-message'),
+            icon: 'error',
+            iconHtml: '<i class="bi bi-exclamation-triangle-fill" style="font-size: 4rem; color: #dc3545;"></i>',
+            width: '600px',
+            padding: '2rem',
+            confirmButtonColor: '#800000',
+            confirmButtonText: 'Aceptar',
+            timer: 3000,
+            timerProgressBar: true
+        });
+    }
+
     @if($errors->any())
         bootstrap.Modal.getOrCreateInstance(document.getElementById('modalRegistrar')).show();
     @endif
 
-    // Filtro proceso → departamento
+    // Mostrar/ocultar campo de nuevo proceso
     const modalProceso = document.getElementById('modalProceso');
-    const modalDepto   = document.getElementById('modalDepartamento');
+    const nuevoProcesoWrap = document.getElementById('nuevoProcesoWrap');
+    const modalDepartamento = document.getElementById('modalDepartamento');
+    const deptoGroup = modalDepartamento.closest('.modal-form-group');
 
-    function filterModalDepto() {
-        const sel    = modalProceso.value;
-        const esOtro = sel === '__otro__';
-
-        // Mostrar/ocultar campos de nuevo proceso
-        document.getElementById('nuevoProcesoWrap').style.display = esOtro ? 'block' : 'none';
-        document.getElementById('nuevoProceso').required      = esOtro;
-        document.getElementById('nuevoDepartamento').required = esOtro;
-
-        // Mostrar/ocultar select de departamento
-        const deptoGroup = modalDepto.closest('.modal-form-group');
-        deptoGroup.style.display = esOtro ? 'none' : 'block';
-        modalDepto.required = !esOtro;
-
-        if (!esOtro) {
-            const selectedOpt = modalProceso.options[modalProceso.selectedIndex];
-            // data-deptos-json contiene JSON con todos los deptos del proceso custom
-            const deptosJsonRaw = selectedOpt ? selectedOpt.getAttribute('data-deptos-json') : null;
-            const deptosJson    = deptosJsonRaw ? JSON.parse(deptosJsonRaw) : null;
-
-            modalDepto.value = '';
-            modalDepto.querySelectorAll('option').forEach(opt => {
-                if (!opt.value) { opt.style.display = ''; return; }
-
-                if (deptosJson) {
-                    // Proceso custom: mostrar solo sus departamentos
-                    opt.style.display = deptosJson.includes(opt.value) ? '' : 'none';
-                } else {
-                    // Proceso estándar: filtrar por data-proceso
-                    const allowed = (opt.getAttribute('data-proceso') || '').split(',');
-                    opt.style.display = (!sel || allowed.includes(sel)) ? '' : 'none';
-                }
-            });
-
-            // Si solo hay 1 departamento, preseleccionarlo
-            if (deptosJson && deptosJson.length === 1) {
-                modalDepto.value = deptosJson[0];
-            }
+    function toggleNuevoProceso() {
+        if (modalProceso.value === '__otro__') {
+            nuevoProcesoWrap.style.display = 'block';
+            deptoGroup.style.display = 'none';
+            document.getElementById('nuevoProceso').required = true;
+            document.getElementById('nuevoDepartamento').required = true;
+            modalDepartamento.required = false;
+        } else {
+            nuevoProcesoWrap.style.display = 'none';
+            deptoGroup.style.display = 'block';
+            document.getElementById('nuevoProceso').required = false;
+            document.getElementById('nuevoDepartamento').required = false;
+            modalDepartamento.required = true;
         }
     }
+
+    modalProceso.addEventListener('change', toggleNuevoProceso);
+    toggleNuevoProceso();
+
+    // CAMBIO 2: Filtrar departamentos según proceso seleccionado usando data-proceso
+    function filterModalDepto() {
+        const sel = modalProceso.value;
+        if (sel === '__otro__' || !sel) return;
+        
+        const selectedOpt = modalProceso.options[modalProceso.selectedIndex];
+        const deptosJsonRaw = selectedOpt ? selectedOpt.getAttribute('data-deptos-json') : null;
+        const deptosJson = deptosJsonRaw ? JSON.parse(deptosJsonRaw) : null;
+
+        // Limpiar selección actual
+        modalDepartamento.value = '';
+        
+        modalDepartamento.querySelectorAll('option').forEach(opt => {
+            if (!opt.value) return;
+            
+            if (deptosJson) {
+                // Si es un proceso personalizado, mostrar solo sus departamentos
+                opt.style.display = deptosJson.includes(opt.value) ? '' : 'none';
+            } else {
+                // Si es un proceso estándar, filtrar por data-proceso
+                const allowed = (opt.getAttribute('data-proceso') || '').split(',');
+                opt.style.display = (!sel || allowed.includes(sel)) ? '' : 'none';
+            }
+        });
+
+        // Si solo hay un departamento disponible, seleccionarlo automáticamente
+        const opcionesVisibles = Array.from(modalDepartamento.options).filter(opt => opt.value && opt.style.display !== 'none');
+        if (opcionesVisibles.length === 1) {
+            modalDepartamento.value = opcionesVisibles[0].value;
+        }
+    }
+
     modalProceso.addEventListener('change', filterModalDepto);
-    if (modalProceso.value) filterModalDepto();
+    
+    // Ejecutar filtro al cargar si hay un proceso seleccionado
+    if (modalProceso.value && modalProceso.value !== '__otro__') {
+        filterModalDepto();
+    }
 
     // Toggle contraseñas
-    function togglePwd(inputId, iconId) {
+    function togglePassword(inputId, iconId) {
         const input = document.getElementById(inputId);
-        const icon  = document.getElementById(iconId);
-        icon.addEventListener('click', () => {
-            const show = input.type === 'password';
-            input.type = show ? 'text' : 'password';
-            icon.className = show ? 'bi bi-eye-slash' : 'bi bi-eye';
-            icon.style.cssText = 'position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;color:#a08080;';
+        const icon = document.getElementById(iconId);
+        if (input && icon) {
+            icon.addEventListener('click', function() {
+                const type = input.type === 'password' ? 'text' : 'password';
+                input.type = type;
+                icon.classList.toggle('bi-eye');
+                icon.classList.toggle('bi-eye-slash');
+            });
+        }
+    }
+
+    togglePassword('modalPassword', 'toggleModalPwd');
+    togglePassword('modalPasswordConfirm', 'toggleModalPwdConfirm');
+    togglePassword('editAdminPwd', 'toggleEditPwd');
+    togglePassword('editAdminPwdConf', 'toggleEditPwdConf');
+
+    // Medidor de seguridad de contraseña
+    const pwdInput = document.getElementById('modalPassword');
+    const pwdConfirm = document.getElementById('modalPasswordConfirm');
+    const strengthFill = document.getElementById('modalStrengthFill');
+    const strengthText = document.getElementById('modalStrengthText');
+    const matchText = document.getElementById('modalMatchText');
+
+    if (pwdInput) {
+        pwdInput.addEventListener('input', function() {
+            const pwd = this.value;
+            let strength = 0;
+            
+            if (pwd.length >= 8) strength++;
+            if (pwd.length >= 12) strength++;
+            if (/[a-z]/.test(pwd)) strength++;
+            if (/[A-Z]/.test(pwd)) strength++;
+            if (/[0-9]/.test(pwd)) strength++;
+            if (/[^a-zA-Z0-9]/.test(pwd)) strength++;
+
+            const strengthMap = {
+                0: { width: 5, color: '#dc3545', text: 'Muy débil' },
+                1: { width: 15, color: '#dc3545', text: 'Débil' },
+                2: { width: 35, color: '#ffc107', text: 'Regular' },
+                3: { width: 55, color: '#ffc107', text: 'Regular' },
+                4: { width: 75, color: '#28a745', text: 'Buena' },
+                5: { width: 90, color: '#28a745', text: 'Fuerte' },
+                6: { width: 100, color: '#28a745', text: 'Muy fuerte' }
+            };
+
+            const s = Math.min(strength, 6);
+            strengthFill.style.width = strengthMap[s].width + '%';
+            strengthFill.style.backgroundColor = strengthMap[s].color;
+            strengthText.textContent = strengthMap[s].text;
+            strengthText.style.color = strengthMap[s].color;
+            
+            if (pwdConfirm) checkPasswordMatch();
         });
     }
-    togglePwd('modalPassword', 'toggleModalPwd');
-    togglePwd('modalPasswordConfirm', 'toggleModalPwdConfirm');
 
-    // Fortaleza contraseña
-    const pwdInput = document.getElementById('modalPassword');
-    const pwdConf  = document.getElementById('modalPasswordConfirm');
-    const fillEl   = document.getElementById('modalStrengthFill');
-    const textEl   = document.getElementById('modalStrengthText');
-    const matchEl  = document.getElementById('modalMatchText');
+    if (pwdConfirm) {
+        pwdConfirm.addEventListener('input', checkPasswordMatch);
+    }
 
-    pwdInput.addEventListener('input', () => {
-        const p = pwdInput.value; let s = 0;
-        if (p.length >= 8) s++; if (p.length >= 12) s++;
-        if (/[a-z]/.test(p)) s++; if (/[A-Z]/.test(p)) s++;
-        if (/[0-9]/.test(p)) s++; if (/[^A-Za-z0-9]/.test(p)) s++;
-        const map = {
-            0:[5,'#dc3545','Muy débil'],  1:[15,'#dc3545','Débil'],
-            2:[35,'#ffc107','Regular'],   3:[55,'#ffc107','Regular'],
-            4:[75,'#28a745','Buena'],     5:[90,'#28a745','Fuerte'],
-            6:[100,'#28a745','Muy fuerte']
-        };
-        const [w,c,t] = map[Math.min(s,6)];
-        fillEl.style.width = w+'%'; fillEl.style.background = c;
-        textEl.textContent = t; textEl.style.color = c;
-        checkMatch();
-    });
-
-    pwdConf.addEventListener('input', checkMatch);
-
-    function checkMatch() {
-        if (!pwdConf.value) { matchEl.textContent='Las contraseñas deben coincidir'; matchEl.style.color='#888'; return; }
-        if (pwdInput.value === pwdConf.value) { matchEl.textContent='✓ Las contraseñas coinciden'; matchEl.style.color='#28a745'; }
-        else { matchEl.textContent='✗ Las contraseñas no coinciden'; matchEl.style.color='#dc3545'; }
+    function checkPasswordMatch() {
+        if (!pwdConfirm || !pwdInput) return;
+        
+        if (!pwdConfirm.value) {
+            matchText.textContent = 'Las contraseñas deben coincidir';
+            matchText.style.color = '#888';
+        } else if (pwdInput.value === pwdConfirm.value) {
+            matchText.textContent = '✓ Las contraseñas coinciden';
+            matchText.style.color = '#28a745';
+        } else {
+            matchText.textContent = '✗ Las contraseñas no coinciden';
+            matchText.style.color = '#dc3545';
+        }
     }
 
     // Filtros de búsqueda
-    const searchInput   = document.getElementById('searchInput');
+    const searchInput = document.getElementById('searchInput');
     const filterProceso = document.getElementById('filterProceso');
-    const filterEstado  = document.getElementById('filterEstado');
-    const tbody         = document.getElementById('tbodyUsuarios');
-    const countLabel    = document.getElementById('countLabel');
+    const filterEstado = document.getElementById('filterEstado');
+    const tbody = document.getElementById('tbodyUsuarios');
+    const countLabel = document.getElementById('countLabel');
 
-    function applyFilters() {
-        const q  = searchInput.value.toLowerCase().trim();
-        const pr = filterProceso.value;
-        const es = filterEstado.value;
-        let visible = 0;
+    function aplicarFiltros() {
+        if (!tbody) return;
+        
+        const busqueda = searchInput ? searchInput.value.toLowerCase().trim() : '';
+        const proceso = filterProceso ? filterProceso.value : '';
+        const estado = filterEstado ? filterEstado.value : '';
+        let visibles = 0;
 
         tbody.querySelectorAll('tr[data-nombre]').forEach(row => {
-            const ok = (!q  || [row.dataset.nombre, row.dataset.email, row.dataset.depto].some(v => v.includes(q)))
-                    && (!pr || row.dataset.proceso === pr)
-                    && (!es || row.dataset.estado  === es);
-            row.style.display = ok ? '' : 'none';
-            if (ok) visible++;
+            const nombre = row.dataset.nombre || '';
+            const email = row.dataset.email || '';
+            const depto = row.dataset.depto || '';
+            
+            const coincideBusqueda = !busqueda || 
+                nombre.includes(busqueda) || 
+                email.includes(busqueda) || 
+                depto.includes(busqueda);
+            
+            const coincideProceso = !proceso || row.dataset.proceso === proceso;
+            const coincideEstado = !estado || row.dataset.estado === estado;
+            
+            const visible = coincideBusqueda && coincideProceso && coincideEstado;
+            row.style.display = visible ? '' : 'none';
+            if (visible) visibles++;
         });
 
-        countLabel.innerHTML = `Mostrando <strong>${visible}</strong> usuario(s)`;
+        if (countLabel) {
+            countLabel.innerHTML = `Mostrando <strong>${visibles}</strong> usuario(s)`;
+        }
 
-        let emptyRow = document.getElementById('noResultsRow');
-        if (visible === 0) {
-            if (!emptyRow) {
-                emptyRow = document.createElement('tr');
-                emptyRow.id = 'noResultsRow';
-                emptyRow.innerHTML = `<td colspan="5"><div class="empty-state">
-                    <i class="bi bi-search"></i><p>No se encontraron usuarios.</p></div></td>`;
-                tbody.appendChild(emptyRow);
+        const emptyRow = document.getElementById('noResultsRow');
+        if (visibles === 0) {
+            if (!emptyRow && tbody) {
+                const newEmptyRow = document.createElement('tr');
+                newEmptyRow.id = 'noResultsRow';
+                newEmptyRow.innerHTML = `<td colspan="5"><div class="empty-state">
+                    <i class="bi bi-search"></i><p>No se encontraron usuarios.</p></div>`;
+                tbody.appendChild(newEmptyRow);
             }
-        } else {
-            if (emptyRow) emptyRow.remove();
+        } else if (emptyRow) {
+            emptyRow.remove();
         }
     }
 
-    searchInput.addEventListener('input', applyFilters);
-    filterProceso.addEventListener('change', applyFilters);
-    filterEstado.addEventListener('change', applyFilters);
+    if (searchInput) searchInput.addEventListener('input', aplicarFiltros);
+    if (filterProceso) filterProceso.addEventListener('change', aplicarFiltros);
+    if (filterEstado) filterEstado.addEventListener('change', aplicarFiltros);
 
-});
+    // Editar usuario
+    const tbodyUsuarios = document.getElementById('tbodyUsuarios');
+    if (tbodyUsuarios) {
+        tbodyUsuarios.addEventListener('click', function(e) {
+            const btn = e.target.closest('.btn-editar');
+            if (!btn) return;
 
-// ── Overlay editar (original sin cambios) ──────────────────────────────────
-function cerrarOverlayEditar() {
-    document.getElementById('overlayEditarAdmin').style.display = 'none';
-    document.body.style.overflow = '';
-}
+            document.getElementById('editAdminTitle').textContent = 'Editar Usuario';
+            document.getElementById('editAdminSubtitle').textContent = btn.dataset.nombre;
+            document.getElementById('editAdminNombre').value = btn.dataset.nombre;
+            document.getElementById('editAdminEmail').value = btn.dataset.email;
+            document.getElementById('editAdminPwd').value = '';
+            document.getElementById('editAdminPwdConf').value = '';
+            document.getElementById('editMatchText').textContent = 'Las contraseñas deben coincidir';
+            document.getElementById('editMatchText').style.color = '#888';
+            document.getElementById('formEditarAdmin').action = btn.dataset.url;
 
-document.getElementById('tbodyUsuarios').addEventListener('click', function(e) {
-    const btn = e.target.closest('.btn-editar');
-    if (!btn) return;
+            document.getElementById('overlayEditarAdmin').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        });
+    }
 
-    const rolLabel = btn.dataset.role === 'admin' ? 'Editar Administrador' : 'Cuenta de ' + btn.dataset.nombre;
-    document.getElementById('editAdminTitle').textContent     = rolLabel;
-    document.getElementById('editAdminSubtitle').textContent  = btn.dataset.nombre;
-    document.getElementById('editAdminNombre').value          = btn.dataset.nombre;
-    document.getElementById('editAdminEmail').value           = btn.dataset.email;
-    document.getElementById('editAdminPwd').value             = '';
-    document.getElementById('editAdminPwdConf').value         = '';
-    document.getElementById('editMatchText').textContent      = 'Las contraseñas deben coincidir';
-    document.getElementById('editMatchText').style.color      = '#888';
-    document.getElementById('formEditarAdmin').action         = btn.dataset.url;
+    const editPwdConf = document.getElementById('editAdminPwdConf');
+    if (editPwdConf) {
+        editPwdConf.addEventListener('input', function() {
+            const pwd = document.getElementById('editAdminPwd').value;
+            const conf = this.value;
+            const el = document.getElementById('editMatchText');
+            
+            if (!conf) {
+                el.textContent = 'Las contraseñas deben coincidir';
+                el.style.color = '#888';
+            } else if (pwd === conf) {
+                el.textContent = '✓ Las contraseñas coinciden';
+                el.style.color = '#28a745';
+            } else {
+                el.textContent = '✗ Las contraseñas no coinciden';
+                el.style.color = '#dc3545';
+            }
+        });
+    }
 
-    document.getElementById('overlayEditarAdmin').style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-});
-
-function toggleEditPwd(inputId, iconId) {
-    const input = document.getElementById(inputId);
-    const icon  = document.getElementById(iconId);
-    icon.addEventListener('click', () => {
-        const show = input.type === 'password';
-        input.type = show ? 'text' : 'password';
-        icon.className = show ? 'bi bi-eye-slash' : 'bi bi-eye';
-        icon.style.cssText = 'position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;color:#a08080;';
+    // Cerrar overlays con Escape
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            cerrarOverlayEditar();
+            cerrarOverlayProcesos();
+        }
     });
-}
-toggleEditPwd('editAdminPwd', 'toggleEditPwd');
-toggleEditPwd('editAdminPwdConf', 'toggleEditPwdConf');
 
-document.getElementById('editAdminPwdConf').addEventListener('input', function() {
-    const pwd  = document.getElementById('editAdminPwd').value;
-    const conf = this.value;
-    const el   = document.getElementById('editMatchText');
-    if (!conf) { el.textContent = 'Las contraseñas deben coincidir'; el.style.color = '#888'; return; }
-    if (pwd === conf) { el.textContent = '✓ Las contraseñas coinciden'; el.style.color = '#28a745'; }
-    else              { el.textContent = '✗ Las contraseñas no coinciden'; el.style.color = '#dc3545'; }
 });
 
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-        cerrarOverlayEditar();
-        cerrarOverlayProcesos();
+// Función para cerrar overlay de editar
+function cerrarOverlayEditar() {
+    const el = document.getElementById('overlayEditarAdmin');
+    if (el) {
+        el.style.display = 'none';
+        document.body.style.overflow = '';
     }
-});
-
-function confirmarAccion(event, nombre, accion) {
-    const mensaje = accion === 'desactivar'
-        ? `¿Desactivar la cuenta de ${nombre}?\n\nEl usuario no podrá iniciar sesión.`
-        : `¿Activar la cuenta de ${nombre}?\n\nEl usuario podrá iniciar sesión nuevamente.`;
-    if (!confirm(mensaje)) {
-        event.preventDefault();
-        return false;
-    }
-    return true;
 }
 
-// ── Overlay Gestión de Procesos ──────────────────────────────────
-function abrirOverlayProcesos() {
-    const el = document.getElementById('overlayProcesos');
-    if (!el) return;
-    el.style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-}
-
+// Función para cerrar overlay de procesos
 function cerrarOverlayProcesos() {
     const el = document.getElementById('overlayProcesos');
-    if (!el) return;
-    el.style.display = 'none';
-    document.body.style.overflow = '';
+    if (el) {
+        el.style.display = 'none';
+        document.body.style.overflow = '';
+    }
 }
 
+// Función para abrir overlay de procesos
+function abrirOverlayProcesos() {
+    const el = document.getElementById('overlayProcesos');
+    if (el) {
+        el.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+// SWEETALERT - Confirmación para activar/desactivar usuario
+function confirmarAccion(event, nombre, accion) {
+    event.preventDefault();
+    const form = event.target;
+    
+    const config = accion === 'desactivar' 
+        ? {
+            title: '¿Desactivar usuario?',
+            text: `El usuario "${nombre}" no podrá iniciar sesión.`,
+            icon: 'warning',
+            iconHtml: '<i class="bi bi-exclamation-triangle-fill" style="font-size: 4rem; color: #dc3545;"></i>',
+            confirmButtonColor: '#dc3545',
+            confirmButtonText: 'Sí, desactivar'
+        }
+        : {
+            title: '¿Activar usuario?',
+            text: `El usuario "${nombre}" podrá iniciar sesión nuevamente.`,
+            icon: 'question',
+            iconHtml: '<i class="bi bi-question-circle-fill" style="font-size: 4rem; color: #28a745;"></i>',
+            confirmButtonColor: '#28a745',
+            confirmButtonText: 'Sí, activar'
+        };
+
+    Swal.fire({
+        title: config.title,
+        text: config.text,
+        icon: config.icon,
+        iconHtml: config.iconHtml,
+        width: '650px',
+        padding: '3rem',
+        showCancelButton: true,
+        confirmButtonColor: config.confirmButtonColor,
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: config.confirmButtonText,
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            form.submit();
+        }
+    });
+    
+    return false;
+}
+
+// SWEETALERT - Confirmación para eliminar departamento
+function confirmarEliminarDepartamento(event, nombre, id) {
+    event.preventDefault();
+    const form = document.getElementById('form-delete-depto-' + id);
+    
+    Swal.fire({
+        title: '¿Eliminar departamento?',
+        text: `El departamento "${nombre}" será eliminado permanentemente.`,
+        icon: 'warning',
+        iconHtml: '<i class="bi bi-exclamation-triangle-fill" style="font-size: 4rem; color: #dc3545;"></i>',
+        width: '650px',
+        padding: '3rem',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            form.submit();
+        }
+    });
+    
+    return false;
+}
+
+// SWEETALERT - Confirmación para eliminar proceso completo
+function confirmarEliminarProceso(event, nombre) {
+    event.preventDefault();
+    const form = event.target;
+    
+    Swal.fire({
+        title: '¿Eliminar proceso?',
+        text: `El proceso "${nombre}" y TODOS sus departamentos serán eliminados permanentemente.`,
+        icon: 'warning',
+        iconHtml: '<i class="bi bi-exclamation-triangle-fill" style="font-size: 4rem; color: #dc3545;"></i>',
+        width: '650px',
+        padding: '3rem',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Sí, eliminar todo',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            form.submit();
+        }
+    });
+    
+    return false;
+}
+
+// Funciones para gestión de procesos
 function pgToggle(grupoId) {
     const lista = document.getElementById(grupoId);
-    const icon  = document.getElementById('pgicon-' + grupoId.replace('pg-',''));
+    const icon = document.getElementById('pgicon-' + grupoId.replace('pg-',''));
     if (!lista) return;
+    
     const isOpen = lista.classList.contains('open');
     document.querySelectorAll('.pg-deptos').forEach(el => el.classList.remove('open'));
     document.querySelectorAll('.pg-chevron').forEach(el => el.classList.remove('open'));
+    
     if (!isOpen) {
         lista.classList.add('open');
         if (icon) icon.classList.add('open');
@@ -1253,12 +1476,18 @@ function pgToggle(grupoId) {
 function pgToggleAdd(formId, grupoId) {
     const form = document.getElementById(formId);
     if (!form) return;
+    
     const isOpen = form.classList.contains('open');
+    
     if (grupoId && !isOpen) {
         const lista = document.getElementById(grupoId);
-        if (lista && !lista.classList.contains('open')) pgToggle(grupoId);
+        if (lista && !lista.classList.contains('open')) {
+            pgToggle(grupoId);
+        }
     }
+    
     form.classList.toggle('open');
+    
     if (form.classList.contains('open')) {
         const inp = form.querySelector('input[name="departamento"]');
         if (inp) setTimeout(() => inp.focus(), 50);

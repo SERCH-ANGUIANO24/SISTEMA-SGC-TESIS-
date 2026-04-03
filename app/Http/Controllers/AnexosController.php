@@ -23,19 +23,25 @@ class AnexosController extends Controller
         if ($folderId) {
             $currentFolder = Folder::with('parent')->findOrFail($folderId);
             
-            // DENTRO DE UNA CARPETA: TODOS ven TODAS las carpetas y archivos
+            // Registrar visualización de carpeta
+            \App\Helpers\HistorialVersionesHelper::ver('FOLDERS', $currentFolder, 'explorar');
+            
             $folders = Folder::where('parent_id', $folderId)
                              ->orderBy('name')
                              ->get();
             $documents = Document::where('folder_id', $folderId)
+                                 ->whereNull('deleted_at')
                                  ->orderBy('name')
                                  ->get();
         } else {
-            // RAÍZ: TODOS ven TODAS las carpetas raíz
+            // Registrar visualización de raíz
+            \App\Helpers\HistorialVersionesHelper::ver('FOLDERS', null, 'raiz');
+            
             $folders = Folder::whereNull('parent_id')
                              ->orderBy('name')
                              ->get();
             $documents = Document::whereNull('folder_id')
+                                 ->whereNull('deleted_at')
                                  ->orderBy('name')
                                  ->get();
         }
@@ -69,6 +75,8 @@ class AnexosController extends Controller
             'user_id' => $user->id
         ]);
 
+        \App\Helpers\HistorialVersionesHelper::crear('FOLDERS', $folder);
+
         return redirect()->route('anexos.index', ['folder' => $request->parent_id])
                          ->with('success', 'Carpeta creada correctamente.');
     }
@@ -97,7 +105,7 @@ class AnexosController extends Controller
         $fileName = Str::uuid() . '.' . $file->getClientOriginalExtension();
         $path = $file->storeAs('anexos/' . $user->id, $fileName, 'public');
 
-        Document::create([
+        $document = Document::create([
             'name' => pathinfo($originalName, PATHINFO_FILENAME),
             'original_name' => $originalName,
             'file_path' => $path,
@@ -107,12 +115,14 @@ class AnexosController extends Controller
             'user_id' => $user->id
         ]);
 
+        \App\Helpers\HistorialVersionesHelper::subir('DOCUMENTS', $document);
+
         return redirect()->route('anexos.index', ['folder' => $request->folder_id])
                          ->with('success', 'Archivo subido correctamente.');
     }
 
     /**
-     * Eliminar carpeta - SOLO SUPERADMIN/ADMIN
+     * Eliminar carpeta - SOLO SUPERADMIN/ADMIN (SOFT DELETE)
      */
     public function destroyFolder($id)
     {
@@ -129,14 +139,21 @@ class AnexosController extends Controller
             $folder = Folder::findOrFail($id);
             $parentId = $folder->parent_id;
 
-            // Eliminar documentos y archivos físicos
+            // Guardar los datos ANTES de eliminar
+            $folderData = $folder->toArray();
+
+            // Soft delete todos los documentos de la carpeta
             foreach ($folder->documents as $doc) {
-                Storage::disk('public')->delete($doc->file_path);
                 $doc->delete();
             }
 
-            $this->recursiveDeleteFiles($folder);
+            // Soft delete subcarpetas recursivamente
+            $this->recursiveDeleteFolders($folder);
+            
+            // Soft delete la carpeta
             $folder->delete();
+
+            \App\Helpers\HistorialVersionesHelper::eliminar('FOLDERS', $folder, $folderData);
 
             return response()->json([
                 'success' => true,
@@ -152,7 +169,7 @@ class AnexosController extends Controller
     }
 
     /**
-     * Eliminar documento - SOLO SUPERADMIN/ADMIN
+     * Eliminar documento - SOLO SUPERADMIN/ADMIN (SOFT DELETE)
      */
     public function destroyDocument($id)
     {
@@ -169,8 +186,13 @@ class AnexosController extends Controller
             $document = Document::findOrFail($id);
             $folderId = $document->folder_id;
 
-            Storage::disk('public')->delete($document->file_path);
+            // Guardar los datos ANTES de eliminar
+            $documentData = $document->toArray();
+
+            // Soft delete - NO elimina el archivo físico
             $document->delete();
+
+            \App\Helpers\HistorialVersionesHelper::eliminar('DOCUMENTS', $document, $documentData);
 
             return response()->json([
                 'success' => true,
@@ -190,11 +212,13 @@ class AnexosController extends Controller
      */
     public function downloadDocument($id)
     {
-        $document = Document::findOrFail($id);
+        $document = Document::withTrashed()->findOrFail($id);
         
         if (!Storage::disk('public')->exists($document->file_path)) {
             abort(404, 'El archivo no existe en el servidor.');
         }
+
+        \App\Helpers\HistorialVersionesHelper::descargar('DOCUMENTS', $document);
 
         return Storage::disk('public')->download($document->file_path, $document->original_name);
     }
@@ -204,14 +228,14 @@ class AnexosController extends Controller
      */
     public function viewDocument($id)
     {
-        $document = Document::findOrFail($id);
+        $document = Document::withTrashed()->findOrFail($id);
+        
+        \App\Helpers\HistorialVersionesHelper::ver('DOCUMENTS', $document, 'visualizar');
         
         $extension = strtolower(pathinfo($document->original_name, PATHINFO_EXTENSION));
         
-        // Lista de extensiones que SÍ se pueden ver en el navegador
         $viewableExtensions = ['pdf', 'jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg', 'webp', 'txt'];
         
-        // Si la extensión NO está en la lista de visibles, forzar descarga
         if (!in_array($extension, $viewableExtensions)) {
             return $this->downloadDocument($id);
         }
@@ -258,8 +282,13 @@ class AnexosController extends Controller
         ]);
 
         $folder = Folder::findOrFail($id);
+        
+        $datosAnteriores = $folder->toArray();
+        
         $folder->name = $request->name;
         $folder->save();
+
+        \App\Helpers\HistorialVersionesHelper::editar('FOLDERS', $folder, $datosAnteriores, $folder->toArray());
 
         return redirect()->route('anexos.index', ['folder' => $folder->parent_id])
                          ->with('success', 'Carpeta renombrada correctamente.');
@@ -286,6 +315,9 @@ class AnexosController extends Controller
             return back()->with('error', 'No puedes mover una carpeta a sí misma.');
         }
         
+        $origen = $folder->parent_id ? Folder::find($folder->parent_id) : (object)['name' => 'Raíz'];
+        $destino = $request->destination_id ? Folder::find($request->destination_id) : (object)['name' => 'Raíz'];
+        
         if ($request->destination_id) {
             $destination = Folder::find($request->destination_id);
             $isSubfolder = $this->isSubfolder($folder->id, $destination);
@@ -296,6 +328,8 @@ class AnexosController extends Controller
         
         $folder->parent_id = $request->destination_id;
         $folder->save();
+
+        \App\Helpers\HistorialVersionesHelper::mover('FOLDERS', $folder, $origen, $destino);
 
         return redirect()->route('anexos.index', ['folder' => $request->destination_id])
                         ->with('success', 'Carpeta movida correctamente.');
@@ -374,10 +408,14 @@ class AnexosController extends Controller
 
         $document = Document::findOrFail($id);
         
+        $datosAnteriores = $document->toArray();
+        
         $extension = pathinfo($document->original_name, PATHINFO_EXTENSION);
         $document->name = $request->name;
         $document->original_name = $request->name . '.' . $extension;
         $document->save();
+
+        \App\Helpers\HistorialVersionesHelper::editar('DOCUMENTS', $document, $datosAnteriores, $document->toArray());
 
         return redirect()->back()->with('success', 'Documento renombrado correctamente.');
     }
@@ -398,8 +436,14 @@ class AnexosController extends Controller
         ]);
 
         $document = Document::findOrFail($id);
+        
+        $origen = $document->folder_id ? Folder::find($document->folder_id) : (object)['name' => 'Raíz'];
+        $destino = $request->destination_id ? Folder::find($request->destination_id) : (object)['name' => 'Raíz'];
+        
         $document->folder_id = $request->destination_id;
         $document->save();
+
+        \App\Helpers\HistorialVersionesHelper::mover('DOCUMENTS', $document, $origen, $destino);
 
         return redirect()->back()->with('success', 'Documento movido correctamente.');
     }
@@ -415,13 +459,15 @@ class AnexosController extends Controller
         return $breadcrumbs;
     }
 
-    private function recursiveDeleteFiles(Folder $folder)
+    private function recursiveDeleteFolders(Folder $folder)
     {
         foreach ($folder->subfolders as $subfolder) {
-            $this->recursiveDeleteFiles($subfolder);
-        }
-        foreach ($folder->documents as $doc) {
-            Storage::disk('public')->delete($doc->file_path);
+            // Soft delete documentos de la subcarpeta
+            foreach ($subfolder->documents as $doc) {
+                $doc->delete();
+            }
+            $this->recursiveDeleteFolders($subfolder);
+            $subfolder->delete();
         }
     }
 }

@@ -9,7 +9,7 @@
                         <i class="bi bi-pencil-square me-2" style="color: #800000;"></i>
                         Renombrar Documento
                     </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+
                 </div>
                 <div class="modal-body">
 

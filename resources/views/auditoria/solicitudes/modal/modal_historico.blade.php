@@ -2,11 +2,10 @@
 <div class="modal fade" id="modalHistorico" tabindex="-1" aria-labelledby="modalHistoricoLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
-            <div class="modal-header" style="background-color: #800000;">
+            <div class="modal-header" style="background-color: #0d6efd;">
                 <h5 class="modal-title text-white" id="modalHistoricoLabel">
                     <i class="bi bi-bar-chart-line-fill me-2"></i> Histórico de Solicitudes de Mejora
                 </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
 
@@ -23,7 +22,7 @@
                 <div class="row justify-content-center mb-4">
                     <div class="col-md-4 mb-4">
                         <div class="card border-0 shadow-sm h-100">
-                            <div class="card-header text-white fw-bold text-center" style="background-color:#800000;">
+                            <div class="card-header text-white fw-bold text-center" style="background-color:#737373;">
                                 <i class="bi bi-pie-chart me-1"></i> Todas las Solicitudes
                             </div>
                             <div class="card-body d-flex flex-column align-items-center justify-content-center">
@@ -34,7 +33,7 @@
                     </div>
                     <div class="col-md-4 mb-4">
                         <div class="card border-0 shadow-sm h-100">
-                            <div class="card-header fw-bold text-center text-white" style="background-color:#c0392b;">
+                            <div class="card-header fw-bold text-center text-white" style="background-color:#dc3545;">
                                 <i class="bi bi-x-circle me-1"></i> No Conformidades
                             </div>
                             <div class="card-body d-flex flex-column align-items-center justify-content-center">
@@ -45,7 +44,7 @@
                     </div>
                     <div class="col-md-4 mb-4">
                         <div class="card border-0 shadow-sm h-100">
-                            <div class="card-header fw-bold text-center text-white" style="background-color:#1a5276;">
+                            <div class="card-header fw-bold text-center text-white" style="background-color:#28a745;">
                                 <i class="bi bi-arrow-up-circle me-1"></i> Oportunidades de Mejora
                             </div>
                             <div class="card-body d-flex flex-column align-items-center justify-content-center">
@@ -60,7 +59,7 @@
                 <div class="row">
                     <div class="col-12 mb-4">
                         <div class="card border-0 shadow-sm">
-                            <div class="card-header fw-bold text-center" style="background-color:#f8f9fa;color:#800000;">
+                            <div class="card-header fw-bold text-center" style="background-color:#fff;color:#000000;">
                                 <i class="bi bi-table me-1"></i> Detalle por Año
                             </div>
                             <div class="card-body p-0">
@@ -164,7 +163,7 @@
         .then(function(r) { return r.json(); })
         .then(function(data) {
             document.getElementById('resumenHistorico').innerHTML =
-                '<div class="col-12"><div class="alert text-center fw-bold" style="background-color:#fdf3f3;border:1px solid #e8c0c0;color:#800000;">' +
+                '<div class="col-12"><div class="alert text-center fw-bold" style="background-color:#fff;border:1px solid #bab2b2;color:#000000;">' +
                 '<i class="bi bi-clipboard-data me-2"></i>' +
                 'Total histórico: <span style="font-size:1.2rem;">' + data.total + '</span> solicitudes' +
                 ' &nbsp;|&nbsp; <span style="color:#fd7e14;">No Atendidas: ' + data.totales['No Atendida'] + '</span>' +
@@ -190,7 +189,7 @@
                 'graficaHistoricaOM', 'leyendaHistoricaOM', chartHistoricoOM,
                 ['No Atendida', 'En Proceso', 'Cerrado'],
                 [data.totales_om['No Atendida'], data.totales_om['En Proceso'], data.totales_om['Cerrado']],
-                ['#fd7e14', '#ffc107', '#1a5276']
+                ['#fd7e14', '#ffc107', '#dc3545']
             );
 
             var tbodyHTML = '';

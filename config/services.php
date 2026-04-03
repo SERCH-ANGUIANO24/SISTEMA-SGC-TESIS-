@@ -35,4 +35,11 @@ return [
         ],
     ],
 
+        //REGISTRAMOS LA API DE BREVO EN ESTE ARCHIVO PARA QUE EL SERVICIO DE ENVIO DE CORREOS SEA POSIBLE Y ASIGNAMOS VARIABLES PARA QUE ESTAS SE CONECTEN CON LAS QUE ESTAN EN EL ARCHIVO .env 
+    'brevo' => [
+    'key'       => env('BREVO_API_KEY'),
+    'from_email'=> env('BREVO_FROM_EMAIL'),
+    'from_name' => env('BREVO_FROM_NAME'),
+    ]
+
 ];

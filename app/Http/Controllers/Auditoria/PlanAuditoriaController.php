@@ -1,5 +1,5 @@
 <?php
-// app/Http/Controllers/Auditoria/PlanAuditoriaController.php
+
 namespace App\Http\Controllers\Auditoria;
 
 use App\Http\Controllers\Controller;
@@ -11,7 +11,12 @@ class PlanAuditoriaController extends Controller
 {
     public function index()
     {
-        $anios = Auditoria::select('anio')->distinct()->orderBy('anio', 'desc')->pluck('anio');
+        // Cambiar a: sin soft deletes
+        $anios = Auditoria::select('anio')
+            ->distinct()
+            ->orderBy('anio', 'desc')
+            ->pluck('anio');
+            
         $userRole = Auth::user()->role;
         
         return view('auditoria.plan.index', compact('anios', 'userRole'));

@@ -14,7 +14,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                <a href="#" id="btnDescargarArchivo" class="btn text-white" style="background-color: #800000;">
+                <a id="btnDescargarDocumento" href="#" class="btn text-white btn-download-tema" style="background-color: #800000;">
                     <i class="bi bi-download me-1"></i> Descargar
                 </a>
             </div>

@@ -1,0 +1,35 @@
+######################################################  MODULO DE AUDITORIAS ####################################################
+
+1. PLAN DE AUDITORIA: TODO BIEN ***
+2. INFORMES: CAMBIO EN EL FORMULARIO, NO SE JALARON TODOS LOS PROCESOS "PROCESOS AUDITADOS", DE PROCESOS DE AUDITORIA NO SE VA A RELACIONAR CON NO CONFORMIDADES, OP POR PROCESO, QUE SOLO AGREGE OTRO CAMPO LLAMADO CRITERIOS DE AUDITORIA Y QUE SE DEJE ESCRIBIR EN ESE CAMPO.
+3. SOLICITUD DE MEJORA: SERGIO PENDIENTE
+4. COMPETENCIAS: TODO BIEN ***
+
+######################################################  MODULO DE GESTIÓN ########################################################
+1. ANEXOS: TODO BIEN ***
+
+2. GESTIÓN DOCUMENTAL: CHECAR CON NUESTRA ASESORA
+3. MATRIZ: CHECAR CON NUESTRA ASESORA
+4. FORMATOS: CHECAR CON NUESTRA ASESORA
+5. USUARIOS:TODO BIEN
+6. HISTORIAL DE VERSIONES:
+7. NOTIFICACIONES:
+8. AVISOS:
+
+##################################################################################################################################
+
+							HISTORIAL DE VERSIONES
+
+##################################################################################################################################
+1. ANEXOS:LISTO
+2. AUDITORIAS
+	-PLAN: LISTO
+	-INFORMES:
+	-SOLICITUD DE MEJORA:
+	-COMPETENCIAS:LISTO
+3. GESTION DOCUMENTAL:
+4. LISTA MAESTRA:
+5. USUARIOS:
+6. HISTORIAL DE VERSIONES:LISTO
+7. NOTIFICACIONES:
+8. AVISOS

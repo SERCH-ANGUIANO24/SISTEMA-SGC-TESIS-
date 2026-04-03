@@ -3,23 +3,23 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Traits\RegistraHistorialVersiones;
 
 class ProcesosDepartamento extends Model
 {
-    protected $table    = 'procesos_departamentos';
-    protected $fillable = ['proceso', 'departamento'];
+    protected $table = 'procesos_departamentos';
 
-    /**
-     * Devuelve el mapa proceso => [departamentos]
-     * combinando los datos del modelo estático y los de la BD.
-     */
+    protected $fillable = [
+        'proceso',
+        'departamento',
+    ];
+
     public static function mapa(): array
     {
-        // Base estática del modelo Formato
-        $base = Formato::procesosYDepartamentos();
+        $base = [];
+        if (class_exists(\App\Models\Formato::class) && method_exists(\App\Models\Formato::class, 'procesosYDepartamentos')) {
+            $base = \App\Models\Formato::procesosYDepartamentos();
+        }
 
-        // Datos dinámicos de la BD
         $rows = static::orderBy('proceso')->orderBy('departamento')->get();
 
         foreach ($rows as $row) {

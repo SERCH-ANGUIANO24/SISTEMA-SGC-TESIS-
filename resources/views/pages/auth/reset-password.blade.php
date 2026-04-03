@@ -2,8 +2,8 @@
     <style>
         /* Definir una variable para el color Guinda base y el Guinda oscuro */
         :root {
-            --guinda-base: #800000;
-            --guinda-darker: #5b0000;
+            --color-base: #800000;
+            --guinda-darker: #800000; /* Cambiado para que el hover sea igual */
             --guinda-light: #ac3939;
         }
 
@@ -30,7 +30,7 @@
 
         /* Logo/título */
         .auth-logo h1 {
-            color: var(--guinda-base);
+            color: #000000;
             font-size: 2.2rem;
             margin-bottom: 25px;
             font-weight: 700;
@@ -119,8 +119,8 @@
         }
 
         .auth-form-control:focus {
-            border-color: var(--guinda-base);
-            box-shadow: 0 0 0 0.25rem rgba(128, 0, 0, 0.25);
+            border-color: #b8c9da;
+            box-shadow: 0 0 0 0.25rem #b8c9da;
             outline: none;
         }
 
@@ -168,9 +168,9 @@
             width: 100%;
         }
 
-        /* Botón principal */
+        /* Botón principal - MODIFICADO para que sea guinda #800000 siempre */
         .auth-btn-primary {
-            background-color: var(--guinda-base);
+            background-color: #800000; /* Guinda fijo */
             color: white;
             border: none;
             border-radius: 8px;
@@ -179,7 +179,7 @@
             font-size: 1.1rem;
             font-weight: 600;
             cursor: pointer;
-            transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -191,13 +191,14 @@
         }
 
         .auth-btn-primary:hover {
-            background-color: var(--guinda-darker);
+            background-color: #800000; /* Mismo guinda, sin cambio de color */
             transform: translateY(-2px);
             box-shadow: 0 6px 15px rgba(128, 0, 0, 0.3);
         }
 
         .auth-btn-primary:disabled {
-            background-color: #a87e7e;
+            background-color: #800000; /* Mismo guinda */
+            opacity: 0.7;
             cursor: not-allowed;
             transform: none;
             box-shadow: none;
@@ -228,7 +229,8 @@
 
         /* Estado de carga */
         .auth-loading .auth-btn-primary {
-            background-color: var(--guinda-darker);
+            background-color: #800000; /* Mismo guinda */
+            opacity: 0.8;
             cursor: progress;
         }
 

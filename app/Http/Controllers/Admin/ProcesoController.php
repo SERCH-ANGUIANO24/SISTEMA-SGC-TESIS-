@@ -4,13 +4,13 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\ProcesoCustom;
+use App\Helpers\HistorialVersionesHelper;
 use Illuminate\Http\Request;
 
 class ProcesoController extends Controller
 {
     /**
      * Guarda un nuevo proceso+departamento personalizado.
-     * Usado desde el modal de registro cuando se elige "Otro".
      */
     public function store(Request $request)
     {
@@ -19,17 +19,36 @@ class ProcesoController extends Controller
             'departamento' => ['required', 'string', 'max:255'],
         ]);
 
-        ProcesoCustom::firstOrCreate([
-            'proceso'      => trim($request->proceso),
-            'departamento' => trim($request->departamento),
-        ]);
+        $proceso = trim($request->proceso);
+        $departamento = trim($request->departamento);
 
-        return back()->with('success', "Proceso \"{$request->proceso}\" agregado correctamente.");
+        $existe = ProcesoCustom::where('proceso', $proceso)
+            ->where('departamento', $departamento)
+            ->exists();
+
+        if (!$existe) {
+            ProcesoCustom::create([
+                'proceso' => $proceso,
+                'departamento' => $departamento,
+            ]);
+            
+            // REGISTRAR EN HISTORIAL - CREACIÓN DE PROCESO
+            $procesoData = (object)['nombre' => $proceso];
+            HistorialVersionesHelper::crear('PROCESOS', $procesoData);
+            
+            // REGISTRAR EN HISTORIAL - CREACIÓN DE DEPARTAMENTO
+            $deptoData = (object)[
+                'proceso' => $proceso,
+                'departamento' => $departamento
+            ];
+            HistorialVersionesHelper::crear('DEPARTAMENTOS', $deptoData);
+        }
+
+        return back()->with('success', "Proceso \"{$proceso}\" agregado correctamente.");
     }
 
     /**
      * Agrega un nuevo departamento a un proceso custom existente.
-     * Recibe: proceso (nombre), departamento (nuevo nombre)
      */
     public function addDepartamento(Request $request)
     {
@@ -41,7 +60,6 @@ class ProcesoController extends Controller
         $proceso      = trim($request->proceso);
         $departamento = trim($request->departamento);
 
-        // Evitar duplicados
         $existe = ProcesoCustom::where('proceso', $proceso)
                                ->where('departamento', $departamento)
                                ->exists();
@@ -55,6 +73,13 @@ class ProcesoController extends Controller
             'departamento' => $departamento,
         ]);
 
+        // REGISTRAR EN HISTORIAL - CREACIÓN DE DEPARTAMENTO
+        $deptoData = (object)[
+            'proceso' => $proceso,
+            'departamento' => $departamento
+        ];
+        HistorialVersionesHelper::crear('DEPARTAMENTOS', $deptoData);
+
         return back()->with('success', "Departamento \"{$departamento}\" agregado al proceso \"{$proceso}\".");
     }
 
@@ -65,7 +90,16 @@ class ProcesoController extends Controller
     {
         $depto  = $proceso->departamento;
         $nombre = $proceso->proceso;
+        
+        $deptoData = (object)[
+            'proceso' => $nombre,
+            'departamento' => $depto
+        ];
+        
         $proceso->delete();
+
+        // REGISTRAR EN HISTORIAL - ELIMINACIÓN DE DEPARTAMENTO
+        HistorialVersionesHelper::eliminar('DEPARTAMENTOS', $deptoData);
 
         return back()->with('success', "Departamento \"{$depto}\" eliminado del proceso \"{$nombre}\".");
     }
@@ -80,17 +114,33 @@ class ProcesoController extends Controller
         ]);
 
         $nombre = trim($request->proceso);
-        $count  = ProcesoCustom::where('proceso', $nombre)->delete();
+        
+        $departamentos = ProcesoCustom::where('proceso', $nombre)->get();
+        
+        // Registrar cada departamento eliminado
+        foreach ($departamentos as $depto) {
+            $deptoData = (object)[
+                'proceso' => $nombre,
+                'departamento' => $depto->departamento
+            ];
+            HistorialVersionesHelper::eliminar('DEPARTAMENTOS', $deptoData);
+        }
+        
+        $count = ProcesoCustom::where('proceso', $nombre)->delete();
 
         if ($count === 0) {
             return back()->with('error', "No se encontró el proceso \"{$nombre}\".");
         }
 
+        // REGISTRAR EN HISTORIAL - ELIMINACIÓN DEL PROCESO
+        $procesoData = (object)['nombre' => $nombre];
+        HistorialVersionesHelper::eliminar('PROCESOS', $procesoData);
+
         return back()->with('success', "Proceso \"{$nombre}\" y todos sus departamentos fueron eliminados.");
     }
 
     /**
-     * Elimina un proceso+departamento por ID (alias, mantiene compatibilidad).
+     * Elimina un proceso+departamento por ID (alias)
      */
     public function destroy(ProcesoCustom $proceso)
     {

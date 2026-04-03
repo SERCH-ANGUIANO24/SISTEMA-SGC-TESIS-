@@ -62,10 +62,9 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">
-                        <i class="bi bi-pencil me-2" style="color: #800000;"></i>
+                        <i class="bi bi-pencil me-2" style="color: #000000;"></i>
                         Renombrar Carpeta
                     </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
@@ -93,15 +92,14 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">
-                        <i class="bi bi-arrow-right-circle me-2" style="color: #800000;"></i>
+                        <i class="bi bi-arrow-right-circle me-2" style="color: #000000;"></i>
                         Mover Carpeta
                     </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <p class="mb-3">
                         <span class="fw-bold">Carpeta a mover:</span><br>
-                        <span id="moveFolderName" style="color: #800000; font-size: 1.1rem;"></span>
+                        <span id="moveFolderName" style="color: #737373; font-size: 1.1rem;"></span>
                     </p>
                     <div class="mb-3">
                         <label for="folderDestination" class="form-label fw-bold">Seleccionar destino</label>
@@ -132,7 +130,7 @@
         font-size: 1.2rem !important;
     }
     .swal2-title {
-        color: #800000 !important;
+        color: #000000 !important;
     }
     .swal2-confirm {
         background-color: #dc3545 !important;
@@ -220,13 +218,28 @@
 
         Swal.fire({
             title: '¿Eliminar carpeta?',
-            text: `¿Estás seguro de eliminar "${folderName}"?`,
+            html: `
+                <div style="text-align: left;">
+                    <p style="font-size: 1.1rem; margin-bottom: 10px;">
+                        <strong>📁 ${folderName}</strong>
+                    </p>
+                    <p style="color: #dc3545; font-weight: 500;">
+                        ⚠️ Esta acción eliminará permanentemente:
+                    </p>
+                    <ul style="text-align: left; margin-bottom: 15px;">
+                        <li>La carpeta <strong>"${folderName}"</strong></li>
+                        <li>Todas las subcarpetas dentro de ella</li>
+                        <li>Todos los archivos dentro de la carpeta</li>
+                    </ul>
+                </div>
+            `,
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#dc3545',
             cancelButtonColor: '#6c757d',
             confirmButtonText: 'Sí, eliminar',
-            cancelButtonText: 'Cancelar'
+            cancelButtonText: 'Cancelar',
+            reverseButtons: true
         }).then((result) => {
             if (result.isConfirmed) {
                 Swal.fire({
@@ -253,8 +266,9 @@
                             icon: 'success',
                             title: '¡Eliminado!',
                             text: data.message,
-                            confirmButtonColor: '#800000',
-                            timer: 2000
+                            confirmButtonColor: '#000000',
+                            timer: 2000,
+                            showConfirmButton: false
                         }).then(() => {
                             location.reload();
                         });
@@ -263,7 +277,7 @@
                             icon: 'error',
                             title: 'Error',
                             text: data.message || 'Error al eliminar',
-                            confirmButtonColor: '#800000'
+                            confirmButtonColor: '#000000'
                         });
                     }
                 })
@@ -273,7 +287,7 @@
                         icon: 'error',
                         title: 'Error',
                         text: 'Error de conexión',
-                        confirmButtonColor: '#800000'
+                        confirmButtonColor: '#000000'
                     });
                 });
             }

@@ -6,7 +6,6 @@
                 <h5 class="modal-title text-white" id="modalGraficasLabel">
                     <i class="bi bi-pie-chart-fill me-2"></i> Estadísticas de Solicitudes de Mejora
                 </h5>
-
             </div>
             <div class="modal-body">
 
@@ -25,7 +24,7 @@
                         </select>
                     </div>
                     <div class="col-md-4 d-flex align-items-end">
-                        <button class="btn w-30 text-white" style="background-color:#0dcaf0;;" onclick="cargarGraficas()">
+                        <button class="btn w-30 text-white" style="background-color:#0dcaf0;" onclick="cargarGraficas()">
                             <i class="bi bi-funnel me-1"></i> Aplicar Filtros
                         </button>
                     </div>
@@ -44,16 +43,16 @@
                 <div class="row mb-4" id="indicadoresNcOmGrafica" style="display:none;">
                     <div class="col-12">
                         <div class="rounded p-3 d-flex gap-3 justify-content-center align-items-center flex-wrap"
-                             style="background:#fdf3f3;border:1px solid #e8c0c0;">
+                             style="background:#fff;border:1px solid #a29e9e;">
                             <div class="text-center px-4">
-                                <div style="font-size:0.78rem;color:#800000;font-weight:600;">NO CONFORMIDADES DEL PROCESO</div>
-                                <div id="graficaValorNC" style="font-size:2.8rem;font-weight:700;color:#800000;line-height:1.1;">—</div>
+                                <div style="font-size:0.78rem;color:#dc3545;font-weight:600;">NO CONFORMIDADES DEL PROCESO</div>
+                                <div id="graficaValorNC" style="font-size:2.8rem;font-weight:700;color:#dc3545;line-height:1.1;">—</div>
                                 <div style="font-size:0.72rem;color:#999;" id="graficaTextoAnioNC">según informes</div>
                             </div>
                             <div style="width:1px;min-height:70px;background:#e8c0c0;"></div>
                             <div class="text-center px-4">
-                                <div style="font-size:0.78rem;color:#1a5276;font-weight:600;">OPORTUNIDADES DE MEJORA DEL PROCESO</div>
-                                <div id="graficaValorOM" style="font-size:2.8rem;font-weight:700;color:#1a5276;line-height:1.1;">—</div>
+                                <div style="font-size:0.78rem;color:#28a745;font-weight:600;">OPORTUNIDADES DE MEJORA DEL PROCESO</div>
+                                <div id="graficaValorOM" style="font-size:2.8rem;font-weight:700;color:#28a745;line-height:1.1;">—</div>
                                 <div style="font-size:0.72rem;color:#999;" id="graficaTextoAnioOM">según informes</div>
                             </div>
                         </div>

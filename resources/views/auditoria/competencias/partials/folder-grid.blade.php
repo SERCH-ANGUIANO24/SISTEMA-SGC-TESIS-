@@ -61,10 +61,9 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">
-                        <i class="bi bi-pencil me-2" style="color: #800000;"></i>
+                        <i class="bi bi-pencil me-2" style="color: #000000;"></i>
                         Renombrar Carpeta
                     </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
@@ -92,15 +91,15 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">
-                        <i class="bi bi-arrow-right-circle me-2" style="color: #800000;"></i>
+                        <i class="bi bi-arrow-right-circle me-2" style="color: #000000;"></i>
                         Mover Carpeta
                     </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+
                 </div>
                 <div class="modal-body">
                     <p class="mb-3">
                         <span class="fw-bold">Carpeta a mover:</span><br>
-                        <span id="moveFolderName" style="color: #800000; font-size: 1.1rem;"></span>
+                        <span id="moveFolderName" style="color: #737373; font-size: 1.1rem;"></span>
                     </p>
                     <div class="mb-3">
                         <label for="folderDestination" class="form-label fw-bold">Seleccionar destino</label>

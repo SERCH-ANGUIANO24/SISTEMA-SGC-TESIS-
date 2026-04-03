@@ -5,11 +5,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use App\Traits\RegistraHistorialVersiones;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, RegistraHistorialVersiones;
+    use HasFactory, Notifiable;
 
     protected $fillable = [
         'name',
@@ -19,6 +18,7 @@ class User extends Authenticatable
         'is_active',
         'proceso',
         'departamento',
+        'theme_color', 
     ];
 
     protected $hidden = [

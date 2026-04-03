@@ -1,14 +1,16 @@
 <?php
-// app/Http/Controllers/DocumentalController.php
 
 namespace App\Http\Controllers;
 
 use App\Models\DocumentalFolder;
 use App\Models\DocumentalDocument;
+use App\Services\NotificacionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
+use App\Helpers\HistorialVersionesHelper;
 
 class DocumentalController extends Controller
 {
@@ -26,13 +28,18 @@ class DocumentalController extends Controller
             $currentFolder = DocumentalFolder::with('parent')->find($folderId);
 
             if ($currentFolder) {
-                $breadcrumbs = $this->buildBreadcrumbs($currentFolder);
+                // Construir breadcrumbs con protección contra ciclos
+                $breadcrumbs = $this->buildBreadcrumbsSafe($currentFolder);
 
+                // SOLO carpetas NO eliminadas
                 $folders = DocumentalFolder::where('parent_id', $folderId)
+                    ->whereNull('deleted_at')
                     ->orderBy('name')
                     ->get();
 
-                $documentsQuery = DocumentalDocument::where('folder_id', $folderId);
+                // SOLO documentos NO eliminados
+                $documentsQuery = DocumentalDocument::where('folder_id', $folderId)
+                    ->whereNull('deleted_at');
 
                 if ($request->filled('version')) {
                     $documentsQuery->where('version_procedimiento', $request->get('version'));
@@ -45,13 +52,20 @@ class DocumentalController extends Controller
                 }
 
                 $documents = $documentsQuery->orderBy('created_at', 'desc')->get();
+            } else {
+                // La carpeta no existe, redirigir al índice
+                return redirect()->route('documental.index')->with('error', 'La carpeta solicitada no existe.');
             }
         } else {
+            // SOLO carpetas raíz NO eliminadas
             $folders = DocumentalFolder::whereNull('parent_id')
+                ->whereNull('deleted_at')
                 ->orderBy('name')
                 ->get();
 
-            $documentsQuery = DocumentalDocument::whereNull('folder_id');
+            // SOLO documentos raíz NO eliminados
+            $documentsQuery = DocumentalDocument::whereNull('folder_id')
+                ->whereNull('deleted_at');
 
             if (!in_array($userRole, ['superadmin', 'admin'])) {
                 $documentsQuery->where('user_id', $userId);
@@ -70,10 +84,9 @@ class DocumentalController extends Controller
             $documents = $documentsQuery->orderBy('created_at', 'desc')->get();
         }
 
-        // Valores únicos para filtros (solo docs de admin)
         $baseQuery    = $folderId
-            ? DocumentalDocument::where('folder_id', $folderId)
-            : DocumentalDocument::whereNull('folder_id');
+            ? DocumentalDocument::where('folder_id', $folderId)->whereNull('deleted_at')
+            : DocumentalDocument::whereNull('folder_id')->whereNull('deleted_at');
 
         $adminUserIds = \App\Models\User::whereIn('role', ['superadmin', 'admin'])->pluck('id');
 
@@ -92,7 +105,6 @@ class DocumentalController extends Controller
             ->whereNotNull('clave_formato')
             ->distinct()->pluck('clave_formato')->sort()->values();
 
-        // ── Procesos y departamentos dinámicos para el modal de subir archivo ──
         $procesosEstandar = [
             'Planeación'                          => ['Rectoría', 'Dirección Académica', 'Dirección de Administración y Finanzas'],
             'Preinscripción'                      => ['Servicios Escolares'],
@@ -162,25 +174,67 @@ class DocumentalController extends Controller
         ));
     }
 
-    private function buildBreadcrumbs($folder)
+    /**
+     * Construir breadcrumbs de forma SEGURA (protegido contra ciclos)
+     */
+    private function buildBreadcrumbsSafe($folder)
     {
         $breadcrumbs = [];
         $current = $folder;
-
-        while ($current) {
+        $visitedIds = []; // Prevenir ciclos
+        
+        $maxDepth = 50; // Límite de seguridad
+        $depth = 0;
+        
+        while ($current && $depth < $maxDepth) {
+            // Detectar ciclos
+            if (in_array($current->id, $visitedIds)) {
+                Log::warning('Ciclo detectado en breadcrumbs para carpeta ID: ' . $current->id);
+                break;
+            }
+            
+            $visitedIds[] = $current->id;
+            
             array_unshift($breadcrumbs, [
                 'id' => $current->id,
                 'name' => $current->name
             ]);
-            $current = $current->parent;
+            
+            // Intentar obtener el padre
+            try {
+                if ($current->parent_id) {
+                    $current = $current->parent;
+                    if (!$current) {
+                        break;
+                    }
+                } else {
+                    $current = null;
+                }
+            } catch (\Exception $e) {
+                Log::error('Error al obtener padre de carpeta: ' . $e->getMessage());
+                break;
+            }
+            
+            $depth++;
         }
-
+        
+        if ($depth >= $maxDepth) {
+            Log::warning('Profundidad máxima excedida en breadcrumbs para carpeta ID: ' . ($folder->id ?? 'unknown'));
+        }
+        
         return $breadcrumbs;
+    }
+
+    /**
+     * Método original (deprecado) - mantener por compatibilidad pero no usar
+     */
+    private function buildBreadcrumbs($folder)
+    {
+        return $this->buildBreadcrumbsSafe($folder);
     }
 
     public function storeFolder(Request $request)
     {
-        // Solo superadmin y admin pueden crear carpetas
         if (!in_array(Auth::user()->role, ['superadmin', 'admin'])) {
             abort(403, 'No tienes permiso para crear carpetas.');
         }
@@ -191,7 +245,17 @@ class DocumentalController extends Controller
             'parent_id' => 'nullable|exists:documental_folders,id'
         ]);
 
-        DocumentalFolder::create([
+        // Verificar que la carpeta padre no esté eliminada
+        if ($request->parent_id) {
+            $parentExists = DocumentalFolder::where('id', $request->parent_id)
+                ->whereNull('deleted_at')
+                ->exists();
+            if (!$parentExists) {
+                return redirect()->back()->with('error', 'La carpeta padre no existe o está eliminada.');
+            }
+        }
+
+        $folder = DocumentalFolder::create([
             'name' => $request->name,
             'color' => $request->color ?? '#800000',
             'parent_id' => $request->parent_id,
@@ -201,17 +265,141 @@ class DocumentalController extends Controller
         return redirect()->back()->with('success', 'Carpeta creada exitosamente.');
     }
 
+    public function renameFolder(Request $request, $id)
+    {
+        if (!in_array(Auth::user()->role, ['superadmin', 'admin'])) {
+            abort(403, 'No tienes permiso para renombrar carpetas.');
+        }
+
+        try {
+            $request->validate([
+                'name' => 'required|string|max:255'
+            ]);
+
+            $folder = DocumentalFolder::whereNull('deleted_at')->findOrFail($id);
+            $folder->name = $request->name;
+            $folder->save();
+
+            return redirect()->back()->with('success', 'Carpeta renombrada exitosamente.');
+        } catch (\Exception $e) {
+            Log::error('Error al renombrar carpeta: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error al renombrar la carpeta.');
+        }
+    }
+
+    public function moveFolder(Request $request, $id)
+    {
+        if (!in_array(Auth::user()->role, ['superadmin', 'admin'])) {
+            abort(403, 'No tienes permiso para mover carpetas.');
+        }
+
+        try {
+            $request->validate([
+                'destination_id' => 'nullable|exists:documental_folders,id'
+            ]);
+
+            $folder = DocumentalFolder::whereNull('deleted_at')->findOrFail($id);
+            $origen = $folder->parent_id ? DocumentalFolder::whereNull('deleted_at')->find($folder->parent_id) : null;
+
+            if ($request->destination_id == $id) {
+                return redirect()->back()->with('error', 'No puedes mover una carpeta a sí misma.');
+            }
+
+            if ($request->destination_id) {
+                $destinationFolder = DocumentalFolder::whereNull('deleted_at')->find($request->destination_id);
+                if (!$destinationFolder) {
+                    return redirect()->back()->with('error', 'La carpeta destino no es válida.');
+                }
+
+                if ($this->wouldCreateCycle($folder, $request->destination_id)) {
+                    return redirect()->back()->with('error', 'No puedes mover una carpeta a una subcarpeta de sí misma.');
+                }
+            }
+
+            $destino = $request->destination_id ? DocumentalFolder::whereNull('deleted_at')->find($request->destination_id) : null;
+            
+            $folder->parent_id = $request->destination_id;
+            $folder->save();
+
+            HistorialVersionesHelper::mover('DOCUMENTALFOLDER', $folder, $origen, $destino);
+
+            return redirect()->back()->with('success', 'Carpeta movida exitosamente.');
+        } catch (\Exception $e) {
+            Log::error('Error al mover carpeta: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error al mover la carpeta.');
+        }
+    }
+
+    /**
+     * ELIMINAR CARPETA - CORREGIDO (SIN REGISTRO DUPLICADO)
+     */
+    public function destroyFolder($id)
+    {
+        if (!in_array(Auth::user()->role, ['superadmin', 'admin'])) {
+            abort(403, 'No tienes permiso para eliminar carpetas.');
+        }
+
+        try {
+            $folder = DocumentalFolder::whereNull('deleted_at')->findOrFail($id);
+            
+            // ✅ Solo soft delete - El Trait registra automáticamente
+            $folder->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Carpeta y todo su contenido eliminados exitosamente.'
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error al eliminar carpeta: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al eliminar la carpeta.'
+            ], 500);
+        }
+    }
+
+    /**
+     * Limpiar caché de Gestión Documental
+     */
+    public function limpiarCache(Request $request)
+    {
+        $folderId = $request->get('folder');
+        
+        // Limpiar caché específica
+        Cache::forget('documental_folders_' . auth()->id());
+        Cache::forget('documental_documents_' . auth()->id());
+        
+        if ($folderId) {
+            Cache::forget('documental_folder_contents_' . $folderId);
+        }
+        
+        // Limpiar sesión
+        session()->forget('documental_folders_cache');
+        
+        return response()->json(['success' => true]);
+    }
+
     public function upload(Request $request)
     {
         $isAdmin = in_array(Auth::user()->role, ['superadmin', 'admin']);
- 
-        // Validación base para todos
+
         $request->validate([
             'file'           => 'required|file|max:102400',
             'folder_id'      => 'nullable|exists:documental_folders,id',
             'tipo_documento' => 'required|in:Formato,Procedimiento',
         ]);
- 
+
+        // Verificar que la carpeta destino no esté eliminada
+        if ($request->folder_id) {
+            $folderExists = DocumentalFolder::where('id', $request->folder_id)
+                ->whereNull('deleted_at')
+                ->exists();
+            if (!$folderExists) {
+                return redirect()->back()->with('error', 'La carpeta destino no existe o está eliminada.');
+            }
+        }
+
         if ($isAdmin) {
             $request->validate([
                 'clave_formato'         => 'nullable|string|max:255',
@@ -219,20 +407,18 @@ class DocumentalController extends Controller
                 'version_procedimiento' => 'nullable|string|max:255',
             ]);
         }
- 
+
         $file           = $request->file('file');
         $originalName   = $file->getClientOriginalName();
         $extension      = $file->getClientOriginalExtension();
         $nameWithoutExt = pathinfo($originalName, PATHINFO_FILENAME);
         $fileName       = time() . '_' . uniqid() . '.' . $extension;
         $path           = $file->storeAs('documental/' . Auth::id(), $fileName, 'public');
- 
-        // proceso y departamento del perfil del usuario (admin o no)
+
         $proceso      = Auth::user()->proceso;
         $departamento = Auth::user()->departamento;
- 
-        // Guardar en Gestión Documental
-        DocumentalDocument::create([
+
+        $document = DocumentalDocument::create([
             'name'                  => $nameWithoutExt,
             'original_name'         => $originalName,
             'file_path'             => $path,
@@ -251,11 +437,17 @@ class DocumentalController extends Controller
             'codigo_procedimiento'  => $isAdmin && $request->filled('codigo_procedimiento')  ? $request->codigo_procedimiento  : null,
             'version_procedimiento' => $isAdmin && $request->filled('version_procedimiento') ? $request->version_procedimiento : null,
         ]);
- 
-        // Admin/Superadmin: registrar en Lista Maestra SIN copiar el archivo
-        // Se usa la misma ruta del archivo subido
+
+        HistorialVersionesHelper::subir('DOCUMENTAL_DOCUMENTS', $document);
+
+        // ── URL destino (con carpeta o raíz) ──────────────────────────
+        $urlDestino = $request->folder_id
+            ? route('documental.index', ['folder' => $request->folder_id])
+            : route('documental.index');
+
+        // ── ADMIN/SUPERADMIN: Lista Maestra + notificar a todos ───────
         if ($isAdmin) {
-            \App\Models\Formato::create([
+            $formato = \App\Models\Formato::create([
                 'proceso'               => $proceso,
                 'departamento'          => $departamento,
                 'clave_formato'         => $request->filled('clave_formato')         ? $request->clave_formato         : null,
@@ -267,16 +459,52 @@ class DocumentalController extends Controller
                 'tamanio_archivo'       => $file->getSize(),
                 'tipo_documento'        => $request->tipo_documento,
             ]);
- 
+
+            HistorialVersionesHelper::subir('FORMATOS', $formato, [], true);
+
+            // Notificar a TODOS de que hay un nuevo documento disponible
+            $notif = app(NotificacionService::class);
+            $notif->enviarATodos(
+                titulo:     'Nuevo documento disponible: ' . $nameWithoutExt,
+                mensaje:    Auth::user()->name . ' ha subido el archivo "' . $nameWithoutExt . '" ' .
+                            'y está disponible en Gestión Documental.',
+                tipo:       'info',
+                icono:      'bi-file-earmark-arrow-up',
+                url:        $urlDestino,
+                email:      true,
+                docId:      null,
+                tipoEvento: 'publicado'
+            );
+
             return redirect()->back()->with('success', 'Archivo subido y enviado al módulo de Lista Maestra exitosamente.');
         }
- 
+
+        // ── USUARIO NORMAL: notificar a admins ────────────────────────
+        if (!$isAdmin) {
+            $notif  = app(NotificacionService::class);
+            $admins = \App\Models\User::whereIn('role', ['superadmin', 'admin'])->get();
+            foreach ($admins as $admin) {
+                $notif->enviar(
+                    userId:     $admin->id,
+                    titulo:     'Documento pendiente de validación',
+                    mensaje:    Auth::user()->name . ' subió el archivo "' . $nameWithoutExt . '".' . PHP_EOL .
+                                'Es necesario revisarlo en Gestión Documental.',
+                    tipo:       'info',
+                    icono:      'bi-file-earmark-arrow-up',
+                    url:        $urlDestino,
+                    email:      true,
+                    docId:      null,
+                    tipoEvento: 'subida'
+                );
+            }
+        }
+
         return redirect()->back()->with('success', 'Archivo subido exitosamente.');
     }
 
-     public function getDocumentData($id)
+    public function getDocumentData($id)
     {
-        $query = DocumentalDocument::query();
+        $query = DocumentalDocument::whereNull('deleted_at');
         if (!in_array(Auth::user()->role, ['superadmin', 'admin'])) {
             $query->where('user_id', Auth::id());
         }
@@ -304,27 +532,27 @@ class DocumentalController extends Controller
             'tipo_documento'        => $document->tipo_documento,
         ]);
     }
+
     public function updateDocument(Request $request, $id)
     {
         if (!in_array(Auth::user()->role, ['superadmin', 'admin'])) {
             abort(403, 'No tienes permiso para editar documentos.');
         }
- 
-        $document        = DocumentalDocument::findOrFail($id);
+
+        $document = DocumentalDocument::whereNull('deleted_at')->findOrFail($id);
         $uploaderRole    = $document->user->role ?? null;
         $uploadedByAdmin = in_array($uploaderRole, ['superadmin', 'admin']);
- 
-        // ── Documento subido por admin/superadmin: solo renombrar ──
+
         if ($uploadedByAdmin) {
             $request->validate([
                 'name' => 'required|string|max:255',
             ]);
- 
-            $document->update(['name' => $request->name]);
- 
+
+            $document->name = $request->name;
+            $document->save();
+
             return redirect()->back()->with('success', 'Documento renombrado exitosamente.');
- 
-        // ── Documento subido por usuario ──
+
         } else {
             $request->validate([
                 'name'                  => 'required|string|max:255',
@@ -337,177 +565,431 @@ class DocumentalController extends Controller
                 'codigo_procedimiento'  => 'nullable|string|max:255',
                 'version_procedimiento' => 'nullable|string|max:255',
             ]);
- 
+
+            // ── GUARDAR ESTATUS ANTERIOR PARA COMPARAR ─────────────────
+            $estatusAnterior = $document->estatus;
+
             $data = $request->only([
                 'name', 'responsable', 'proceso', 'departamento',
                 'estatus', 'observaciones',
             ]);
- 
+
             if ($request->estatus === 'Valido') {
                 $data['observaciones'] = null;
- 
+
                 if ($request->filled('clave_formato')) {
                     $data['clave_formato']         = $request->clave_formato;
                     $data['codigo_procedimiento']  = $request->codigo_procedimiento;
                     $data['version_procedimiento'] = $request->version_procedimiento;
                 }
- 
+
                 if (!$request->filled('clave_formato') && $request->filled('codigo_procedimiento')) {
                     $data['codigo_procedimiento']  = $request->codigo_procedimiento;
                     $data['version_procedimiento'] = $request->version_procedimiento;
                 }
             }
- 
+
             unset($data['fecha']);
             $document->update($data);
- 
-            // ── Enviar a Lista Maestra si Válido tipo Formato ──
-            // Solo se registra la información, NO se copia el archivo
+
+            // ── NOTIFICACIONES (solo si el estatus cambió) ─────────────
+            if ($estatusAnterior !== $request->estatus) {
+                $notif = app(NotificacionService::class);
+
+                // CASO 1: Admin marcó como Válido
+                if ($request->estatus === 'Valido') {
+
+                    // Notif al usuario que subió el documento
+                    $notif->enviar(
+                        userId:     $document->user_id,
+                        titulo:     'Tu documento ha sido aprobado ✓',
+                        mensaje:    'El documento "' . $document->name . '" fue revisado y ' .
+                                    'aprobado por ' . Auth::user()->name . '. ' .
+                                    'Ya está disponible en el sistema.',
+                        tipo:       'exito',
+                        icono:      'bi-file-earmark-check',
+                        url:        $document->folder_id
+                                    ? route('documental.index', ['folder' => $document->folder_id])
+                                    : route('documental.index'),
+                        email:      true,
+                        docId:      (string) $document->id,
+                        tipoEvento: 'aprobado'
+                    );
+
+                    // Notif a TODOS los usuarios
+                    $notif->enviarATodos(
+                        titulo:     'Nuevo documento disponible: ' . $document->name,
+                        mensaje:    'El documento "' . $document->name . '" ha sido autorizado ' .
+                                    'y está disponible en Gestión Documental.',
+                        tipo:       'info',
+                        icono:      'bi-file-earmark-check2',
+                        url:        $document->folder_id
+                                    ? route('documental.index', ['folder' => $document->folder_id])
+                                    : route('documental.index'),
+                        email:      true,
+                        docId:      (string) $document->id,
+                        tipoEvento: 'publicado'
+                    );
+                }
+
+                // CASO 2: Admin marcó como No Válido
+                if ($request->estatus === 'No Valido') {
+
+                    $notif->enviar(
+                        userId:     $document->user_id,
+                        titulo:     'Tu documento requiere correcciones',
+                        mensaje:    'El documento "' . $document->name . '" fue revisado por ' .
+                                    Auth::user()->name . ' y no fue aprobado.' . PHP_EOL .
+                                    'Observaciones: ' . $request->observaciones,
+                        tipo:       'error',
+                        icono:      'bi-file-earmark-x',
+                        url:        $document->folder_id
+                                    ? route('documental.index', ['folder' => $document->folder_id])
+                                    : route('documental.index'),
+                        email:      true,
+                        docId:      (string) $document->id,
+                        tipoEvento: 'rechazado'
+                    );
+                }
+            }
+            // ── FIN NOTIFICACIONES ──────────────────────────────────────
+
             if (
                 $request->estatus === 'Valido'
-                && $request->filled('clave_formato')
                 && $request->filled('codigo_procedimiento')
                 && $request->filled('version_procedimiento')
             ) {
-                \App\Models\Formato::create([
+                $tipoDocumento = $request->filled('clave_formato') ? 'Formato' : 'Procedimiento';
+                
+                $formato = \App\Models\Formato::create([
                     'proceso'               => $document->proceso,
                     'departamento'          => $document->departamento,
-                    'clave_formato'         => $request->clave_formato,
+                    'clave_formato'         => $request->filled('clave_formato') ? $request->clave_formato : null,
                     'codigo_procedimiento'  => $request->codigo_procedimiento,
                     'version_procedimiento' => $request->version_procedimiento,
                     'nombre_archivo'        => $document->original_name,
                     'ruta_archivo'          => $document->file_path,
                     'extension_archivo'     => strtoupper($document->extension),
                     'tamanio_archivo'       => $document->size,
-                    'tipo_documento'        => 'Formato',
+                    'tipo_documento'        => $tipoDocumento,
                 ]);
- 
+
+                HistorialVersionesHelper::subir('FORMATOS', $formato, [], true);
+
                 return redirect()->back()->with('success', 'Documento validado y enviado al módulo de Lista Maestra exitosamente.');
             }
- 
-            // ── Enviar a Lista Maestra si Válido tipo Procedimiento ──
-            // Solo se registra la información, NO se copia el archivo
-            if (
-                $request->estatus === 'Valido'
-                && !$request->filled('clave_formato')
-                && $request->filled('codigo_procedimiento')
-                && $request->filled('version_procedimiento')
-            ) {
-                \App\Models\Formato::create([
-                    'proceso'               => $document->proceso,
-                    'departamento'          => $document->departamento,
-                    'clave_formato'         => null,
-                    'codigo_procedimiento'  => $request->codigo_procedimiento,
-                    'version_procedimiento' => $request->version_procedimiento,
-                    'nombre_archivo'        => $document->original_name,
-                    'ruta_archivo'          => $document->file_path,
-                    'extension_archivo'     => strtoupper($document->extension),
-                    'tamanio_archivo'       => $document->size,
-                    'tipo_documento'        => 'Procedimiento',
-                ]);
- 
-                return redirect()->back()->with('success', 'Procedimiento validado y enviado al módulo de Lista Maestra exitosamente.');
-            }
         }
- 
+
         return redirect()->back()->with('success', 'Documento actualizado exitosamente.');
     }
 
     public function moveDocument(Request $request, $id)
     {
-        // Solo superadmin y admin pueden mover documentos
         if (!in_array(Auth::user()->role, ['superadmin', 'admin'])) {
             abort(403, 'No tienes permiso para mover documentos.');
         }
 
-        $document = DocumentalDocument::findOrFail($id);
+        $document = DocumentalDocument::whereNull('deleted_at')->findOrFail($id);
+        $origen = $document->folder_id ? DocumentalFolder::whereNull('deleted_at')->find($document->folder_id) : null;
 
         $request->validate([
             'destination_id' => 'nullable|exists:documental_folders,id'
         ]);
 
+        // Verificar que la carpeta destino no esté eliminada
+        if ($request->destination_id) {
+            $destExists = DocumentalFolder::where('id', $request->destination_id)
+                ->whereNull('deleted_at')
+                ->exists();
+            if (!$destExists) {
+                return redirect()->back()->with('error', 'La carpeta destino no existe o está eliminada.');
+            }
+        }
+
+        $destino = $request->destination_id ? DocumentalFolder::whereNull('deleted_at')->find($request->destination_id) : null;
+        
         $document->folder_id = $request->destination_id;
         $document->save();
+
+        HistorialVersionesHelper::mover('DOCUMENTAL_DOCUMENTS', $document, $origen, $destino);
 
         return redirect()->back()->with('success', 'Documento movido exitosamente.');
     }
 
+    /**
+     * DESCARGAR DOCUMENTO - SOLO descarga (NO muestra)
+     */
     public function downloadDocument($id)
     {
-        // Todos pueden descargar cualquier documento de la carpeta
-        $document = DocumentalDocument::findOrFail($id);
+        $document = DocumentalDocument::whereNull('deleted_at')->findOrFail($id);
 
         if (!Storage::disk('public')->exists($document->file_path)) {
             return redirect()->back()->with('error', 'El archivo no existe.');
         }
 
-        return Storage::disk('public')->download($document->file_path, $document->name . '.' . $document->extension);
-    }
+        // Registrar en historial
+        HistorialVersionesHelper::descargar('DOCUMENTAL_DOCUMENTS', $document);
 
-    public function viewDocument($id)
-    {
-        // Todos pueden ver cualquier documento de la carpeta
-        $document = DocumentalDocument::findOrFail($id);
-
-        if (!Storage::disk('public')->exists($document->file_path)) {
-            abort(404);
-        }
-
-        $extension = strtolower($document->extension);
-        $path = storage_path('app/public/' . $document->file_path);
-
-        if (in_array($extension, ['txt', 'php', 'js', 'css', 'html', 'xml', 'json', 'sql', 'md'])) {
-            $content = file_get_contents($path);
-            if (mb_detect_encoding($content, 'UTF-8', true) !== 'UTF-8') {
-                $content = utf8_encode($content);
-            }
-            return response($content)
-                ->header('Content-Type', 'text/plain; charset=utf-8')
-                ->header('Content-Disposition', 'inline; filename="' . $document->original_name . '"');
-        }
-
-        if ($extension === 'pdf') {
-            return response()->file($path, [
-                'Content-Type' => 'application/pdf',
-                'Content-Disposition' => 'inline; filename="' . $document->original_name . '"'
-            ]);
-        }
-
-        if (in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg'])) {
-            return response()->file($path, [
-                'Content-Type' => $document->mime_type,
-                'Content-Disposition' => 'inline; filename="' . $document->original_name . '"'
-            ]);
-        }
-
+        // Forzar descarga
         return Storage::disk('public')->download($document->file_path, $document->original_name);
     }
 
+    /**
+     * VER DOCUMENTO - MUESTRA en el navegador (NO descarga)
+     */
+    public function viewDocument($id)
+    {
+        try {
+            Log::info('Intentando visualizar documento ID: ' . $id);
+            
+            // Permitir ver documentos eliminados (para restauraciones)
+            $document = DocumentalDocument::withTrashed()->findOrFail($id);
+            
+            Log::info('Documento encontrado: ' . $document->name . ' - Ruta: ' . $document->file_path);
+
+            if (!$document->file_path) {
+                Log::error('Documento sin file_path: ' . $id);
+                abort(404, 'No hay archivo asociado a este documento');
+            }
+
+            // Construir ruta completa
+            $path = storage_path('app/public/' . $document->file_path);
+            
+            Log::info('Ruta completa esperada: ' . $path);
+
+            // Verificar si el archivo existe
+            if (!file_exists($path)) {
+                Log::warning('Archivo no encontrado en ruta esperada: ' . $path);
+                
+                // Buscar el archivo en ubicaciones alternativas
+                $nuevaRuta = $this->buscarArchivoDocumental($document);
+                
+                if ($nuevaRuta) {
+                    $path = storage_path('app/public/' . $nuevaRuta);
+                    Log::info('Archivo encontrado en ubicación alternativa: ' . $path);
+                    
+                    // Actualizar la ruta en la base de datos
+                    $document->file_path = $nuevaRuta;
+                    $document->save();
+                    Log::info('Ruta actualizada en BD a: ' . $nuevaRuta);
+                } else {
+                    // No se encontró el archivo, crear contenido de respaldo
+                    $contenidoRespaldo = $this->crearContenidoRespaldo($document);
+                    
+                    // Mostrar el contenido de respaldo como texto plano
+                    return response($contenidoRespaldo, 200)
+                        ->header('Content-Type', 'text/plain; charset=utf-8');
+                }
+            }
+
+            $extension = strtolower($document->extension);
+            $mimeType = $this->getMimeType($extension, $document->mime_type);
+            
+            Log::info('Extensión: ' . $extension . ' - MimeType: ' . $mimeType);
+            
+            // Obtener el contenido del archivo
+            $content = file_get_contents($path);
+            
+            // Para archivos de texto, asegurar encoding UTF-8
+            if (in_array($extension, ['txt', 'php', 'js', 'css', 'html', 'xml', 'json', 'sql', 'md', 'log'])) {
+                if (mb_detect_encoding($content, 'UTF-8', true) !== 'UTF-8') {
+                    $content = utf8_encode($content);
+                }
+            }
+            
+            // REGISTRAR EN HISTORIAL (solo la primera vez que se ve)
+            // Usamos un flag en sesión para no registrar cada vez que se recarga
+            $viewKey = 'document_viewed_' . $document->id;
+            if (!session()->has($viewKey)) {
+                HistorialVersionesHelper::ver('DOCUMENTAL_DOCUMENTS', $document);
+                session()->put($viewKey, true);
+            }
+            
+            // Devolver el archivo para MOSTRAR en el navegador (inline)
+            return response($content)
+                ->header('Content-Type', $mimeType)
+                ->header('Content-Disposition', 'inline; filename="' . $document->original_name . '"')
+                ->header('Cache-Control', 'private, max-age=3600')
+                ->header('X-Content-Type-Options', 'nosniff');
+            
+        } catch (\Exception $e) {
+            Log::error('Error al ver documento: ' . $e->getMessage());
+            Log::error('Stack trace: ' . $e->getTraceAsString());
+            
+            $errorMsg = "Error al visualizar el documento.\n";
+            $errorMsg .= "ID: " . $id . "\n";
+            $errorMsg .= "Mensaje: " . $e->getMessage() . "\n";
+            $errorMsg .= "Por favor, contacte al administrador.";
+            
+            return response($errorMsg, 500)
+                ->header('Content-Type', 'text/plain; charset=utf-8');
+        }
+    }
+
+    /**
+     * Obtener el MIME type correcto para mostrar en el navegador
+     */
+    private function getMimeType($extension, $defaultMime = null)
+    {
+        $mimeTypes = [
+            'pdf' => 'application/pdf',
+            'jpg' => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+            'png' => 'image/png',
+            'gif' => 'image/gif',
+            'bmp' => 'image/bmp',
+            'svg' => 'image/svg+xml',
+            'webp' => 'image/webp',
+            'txt' => 'text/plain',
+            'html' => 'text/html',
+            'htm' => 'text/html',
+            'css' => 'text/css',
+            'js' => 'application/javascript',
+            'json' => 'application/json',
+            'xml' => 'application/xml',
+            'doc' => 'application/msword',
+            'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'xls' => 'application/vnd.ms-excel',
+            'xlsx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'ppt' => 'application/vnd.ms-powerpoint',
+            'pptx' => 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+        ];
+        
+        if (isset($mimeTypes[$extension])) {
+            return $mimeTypes[$extension];
+        }
+        
+        return $defaultMime ?: 'application/octet-stream';
+    }
+
+    /**
+     * BUSCAR ARCHIVO EN UBICACIONES ALTERNATIVAS PARA GESTIÓN DOCUMENTAL
+     */
+    private function buscarArchivoDocumental($document)
+    {
+        $userId = $document->user_id;
+        $documentId = $document->id;
+        $nombreOriginal = pathinfo($document->original_name, PATHINFO_FILENAME);
+        
+        // Buscar por patrón de nombre (time()_uniqid.extensión)
+        $basePath = storage_path('app/public/documental/' . $userId . '/');
+        
+        if (is_dir($basePath)) {
+            // Buscar archivos que contengan el ID del documento
+            $files = glob($basePath . '*' . $documentId . '*');
+            if (!empty($files)) {
+                return 'documental/' . $userId . '/' . basename($files[0]);
+            }
+            
+            // Buscar archivos que contengan el nombre original
+            $files = glob($basePath . '*' . $nombreOriginal . '*');
+            if (!empty($files)) {
+                return 'documental/' . $userId . '/' . basename($files[0]);
+            }
+            
+            // Buscar archivos con el nombre original exacto
+            $files = glob($basePath . $document->original_name);
+            if (!empty($files)) {
+                return 'documental/' . $userId . '/' . basename($files[0]);
+            }
+            
+            // Buscar cualquier archivo en la carpeta (último recurso)
+            $files = glob($basePath . '*');
+            if (!empty($files)) {
+                Log::info('Posibles archivos en carpeta: ' . json_encode(array_map('basename', $files)));
+                return 'documental/' . $userId . '/' . basename($files[0]);
+            }
+        }
+        
+        // Buscar en toda la carpeta public/documental
+        $allFiles = glob(storage_path('app/public/documental/*/*'));
+        foreach ($allFiles as $file) {
+            if (strpos($file, (string)$documentId) !== false) {
+                return str_replace(storage_path('app/public/'), '', $file);
+            }
+        }
+        
+        // Buscar por nombre original
+        foreach ($allFiles as $file) {
+            if (strpos($file, $nombreOriginal) !== false) {
+                return str_replace(storage_path('app/public/'), '', $file);
+            }
+        }
+        
+        return null;
+    }
+
+    /**
+     * CREAR CONTENIDO DE RESPALDO PARA DOCUMENTO RESTAURADO
+     */
+    private function crearContenidoRespaldo($document)
+    {
+        $contenido = "========================================\n";
+        $contenido .= "DOCUMENTO RESTAURADO - CONTENIDO DE RESPALDO\n";
+        $contenido .= "========================================\n\n";
+        $contenido .= "Nombre del documento: " . ($document->original_name ?? $document->name) . "\n";
+        $contenido .= "ID del documento: " . $document->id . "\n";
+        $contenido .= "Fecha de creación: " . ($document->created_at ?? 'No disponible') . "\n";
+        $contenido .= "Fecha de restauración: " . now() . "\n";
+        $contenido .= "Usuario que subió: " . ($document->user->name ?? 'No disponible') . "\n";
+        $contenido .= "Proceso: " . ($document->proceso ?? 'No disponible') . "\n";
+        $contenido .= "Departamento: " . ($document->departamento ?? 'No disponible') . "\n";
+        $contenido .= "Tipo de documento: " . ($document->tipo_documento ?? 'No disponible') . "\n";
+        $contenido .= "Estatus: " . ($document->estatus ?? 'No disponible') . "\n";
+        $contenido .= "\n========================================\n";
+        $contenido .= "CONTENIDO DEL ARCHIVO\n";
+        $contenido .= "========================================\n\n";
+        $contenido .= "El archivo original no se encuentra en el servidor.\n";
+        $contenido .= "Este es un mensaje de respaldo generado automáticamente.\n\n";
+        $contenido .= "HISTORIAL DEL DOCUMENTO:\n";
+        $contenido .= "----------------------------------------\n";
+        
+        // Intentar obtener historial del documento
+        try {
+            $historial = \App\Models\HistorialVersiones::where('modulo', 'DOCUMENTAL_DOCUMENTS')
+                ->where('registro_id', $document->id)
+                ->orderBy('created_at', 'desc')
+                ->get();
+            
+            foreach ($historial as $h) {
+                $contenido .= "• " . $h->created_at . " - " . $h->accion . " - " . $h->descripcion . "\n";
+            }
+        } catch (\Exception $e) {
+            $contenido .= "No se pudo recuperar el historial.\n";
+        }
+        
+        $contenido .= "\n========================================\n";
+        $contenido .= "FIN DEL DOCUMENTO RESTAURADO\n";
+        $contenido .= "========================================\n";
+        
+        return $contenido;
+    }
+
+    /**
+     * ELIMINAR DOCUMENTO - CORREGIDO (SIN REGISTRO DUPLICADO)
+     */
     public function destroyDocument($id)
     {
-        // Solo superadmin y admin pueden eliminar
         if (!in_array(Auth::user()->role, ['superadmin', 'admin'])) {
             abort(403, 'No tienes permiso para eliminar documentos.');
         }
 
         try {
-            $document = DocumentalDocument::findOrFail($id);
-
-            if (Storage::disk('public')->exists($document->file_path)) {
-                Storage::disk('public')->delete($document->file_path);
-            }
-
+            $document = DocumentalDocument::whereNull('deleted_at')->findOrFail($id);
+            
+            // ✅ Solo softDelete - El Trait registra automáticamente
             $document->delete();
 
             return response()->json([
                 'success' => true,
-                'message' => 'Archivo eliminado exitosamente.'
+                'message' => 'Documento eliminado correctamente.'
             ]);
 
         } catch (\Exception $e) {
+            Log::error('Error al eliminar documento: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Error al eliminar el archivo.'
+                'message' => 'Error al eliminar el documento: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -516,8 +998,8 @@ class DocumentalController extends Controller
     {
         $currentFolderId = $request->get('current_folder');
 
-        // Admin ve todas las carpetas
-        $foldersQuery = DocumentalFolder::where('id', '!=', $currentFolderId);
+        $foldersQuery = DocumentalFolder::where('id', '!=', $currentFolderId)
+            ->whereNull('deleted_at');
 
         if (!in_array(Auth::user()->role, ['superadmin', 'admin'])) {
             $foldersQuery->where('user_id', Auth::id());
@@ -534,119 +1016,19 @@ class DocumentalController extends Controller
         return response()->json($folders);
     }
 
-    public function destroyFolder($id)
-    {
-        if (!in_array(Auth::user()->role, ['superadmin', 'admin'])) {
-            abort(403, 'No tienes permiso para eliminar carpetas.');
-        }
-
-        try {
-            $folder = DocumentalFolder::findOrFail($id);
-            $this->deleteFolderRecursively($folder);
-            $folder->delete();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Carpeta y todo su contenido eliminados exitosamente.'
-            ]);
-
-        } catch (\Exception $e) {
-            Log::error('Error al eliminar carpeta: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al eliminar la carpeta.'
-            ], 500);
-        }
-    }
-
-    private function deleteFolderRecursively($folder)
-    {
-        foreach ($folder->documents as $document) {
-            if (Storage::disk('public')->exists($document->file_path)) {
-                Storage::disk('public')->delete($document->file_path);
-            }
-            $document->delete();
-        }
-
-        foreach ($folder->subfolders as $subfolder) {
-            $this->deleteFolderRecursively($subfolder);
-            $subfolder->delete();
-        }
-    }
-
-    public function renameFolder(Request $request, $id)
-    {
-        // Solo superadmin y admin pueden renombrar
-        if (!in_array(Auth::user()->role, ['superadmin', 'admin'])) {
-            abort(403, 'No tienes permiso para renombrar carpetas.');
-        }
-
-        try {
-            $request->validate([
-                'name' => 'required|string|max:255'
-            ]);
-
-            $folder = DocumentalFolder::findOrFail($id);
-            $folder->name = $request->name;
-            $folder->save();
-
-            return redirect()->back()->with('success', 'Carpeta renombrada exitosamente.');
-        } catch (\Exception $e) {
-            Log::error('Error al renombrar carpeta: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Error al renombrar la carpeta.');
-        }
-    }
-
-    public function moveFolder(Request $request, $id)
-    {
-        // Solo superadmin y admin pueden mover
-        if (!in_array(Auth::user()->role, ['superadmin', 'admin'])) {
-            abort(403, 'No tienes permiso para mover carpetas.');
-        }
-
-        try {
-            $request->validate([
-                'destination_id' => 'nullable|exists:documental_folders,id'
-            ]);
-
-            $folder = DocumentalFolder::findOrFail($id);
-
-            if ($request->destination_id == $id) {
-                return redirect()->back()->with('error', 'No puedes mover una carpeta a sí misma.');
-            }
-
-            if ($request->destination_id) {
-                $destinationFolder = DocumentalFolder::find($request->destination_id);
-                if (!$destinationFolder) {
-                    return redirect()->back()->with('error', 'La carpeta destino no es válida.');
-                }
-
-                if ($this->wouldCreateCycle($folder, $request->destination_id)) {
-                    return redirect()->back()->with('error', 'No puedes mover una carpeta a una subcarpeta de sí misma.');
-                }
-            }
-
-            $folder->parent_id = $request->destination_id;
-            $folder->save();
-
-            return redirect()->back()->with('success', 'Carpeta movida exitosamente.');
-        } catch (\Exception $e) {
-            Log::error('Error al mover carpeta: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Error al mover la carpeta.');
-        }
-    }
-
     private function wouldCreateCycle($folder, $newParentId)
     {
         $parent = DocumentalFolder::find($newParentId);
-
+        $visitedIds = [$folder->id];
+        
         while ($parent) {
-            if ($parent->id == $folder->id) {
+            if (in_array($parent->id, $visitedIds)) {
                 return true;
             }
+            $visitedIds[] = $parent->id;
             $parent = $parent->parent;
         }
 
         return false;
-    }
+    } 
 }

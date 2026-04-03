@@ -5,12 +5,10 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\ProcesosDepartamento;
+use App\Helpers\HistorialVersionesHelper;
 
 class ProcesosDepartamentosController extends Controller
 {
-    /**
-     * Devuelve todos los procesos dinámicos con sus departamentos. — TODOS los roles
-     */
     public function index()
     {
         $rows = ProcesosDepartamento::orderBy('proceso')->orderBy('departamento')->get();
@@ -31,9 +29,6 @@ class ProcesosDepartamentosController extends Controller
         return response()->json($resultado);
     }
 
-    /**
-     * Guarda un nuevo proceso con sus departamentos. — SOLO SUPERADMIN/ADMIN
-     */
     public function store(Request $request)
     {
         $user = Auth::user();
@@ -78,6 +73,19 @@ class ProcesosDepartamentosController extends Controller
             $guardados[] = $departamento;
         }
 
+        // Registrar en historial - Creación de proceso
+        $procesoData = (object)['nombre' => $proceso];
+        HistorialVersionesHelper::crear('PROCESOS', $procesoData);
+        
+        // Registrar cada departamento creado en historial
+        foreach ($guardados as $departamento) {
+            $deptoData = (object)[
+                'proceso' => $proceso,
+                'departamento' => $departamento
+            ];
+            HistorialVersionesHelper::crear('DEPARTAMENTOS', $deptoData);
+        }
+
         return response()->json([
             'success'       => true,
             'message'       => 'Proceso y departamentos guardados correctamente.',
@@ -86,9 +94,6 @@ class ProcesosDepartamentosController extends Controller
         ]);
     }
 
-    /**
-     * Elimina un proceso completo con todos sus departamentos. — SOLO SUPERADMIN/ADMIN
-     */
     public function destroy(Request $request)
     {
         $user = Auth::user();
@@ -106,6 +111,20 @@ class ProcesosDepartamentosController extends Controller
 
         $proceso = strtoupper(trim($request->proceso));
 
+        $procesoData = (object)['nombre' => $proceso];
+        
+        // Obtener todos los departamentos del proceso antes de eliminarlos
+        $departamentos = ProcesosDepartamento::where('proceso', $proceso)->get();
+
+        // Registrar cada departamento eliminado en historial
+        foreach ($departamentos as $depto) {
+            $deptoData = (object)[
+                'proceso' => $proceso,
+                'departamento' => $depto->departamento
+            ];
+            HistorialVersionesHelper::eliminar('DEPARTAMENTOS', $deptoData);
+        }
+
         $eliminados = ProcesosDepartamento::where('proceso', $proceso)->delete();
 
         if ($eliminados === 0) {
@@ -115,15 +134,15 @@ class ProcesosDepartamentosController extends Controller
             ], 404);
         }
 
+        // Registrar en historial - Eliminación del proceso
+        HistorialVersionesHelper::eliminar('PROCESOS', $procesoData);
+
         return response()->json([
             'success' => true,
             'message' => "Proceso \"{$proceso}\" eliminado correctamente.",
         ]);
     }
 
-    /**
-     * Elimina un departamento específico de un proceso. — SOLO SUPERADMIN/ADMIN
-     */
     public function destroyDepartamento(Request $request)
     {
         $user = Auth::user();
@@ -143,6 +162,11 @@ class ProcesosDepartamentosController extends Controller
         $proceso      = strtoupper(trim($request->proceso));
         $departamento = strtoupper(trim($request->departamento));
 
+        $departamentoData = (object)[
+            'proceso'      => $proceso,
+            'departamento' => $departamento,
+        ];
+
         $eliminado = ProcesosDepartamento::where('proceso', $proceso)
             ->where('departamento', $departamento)
             ->delete();
@@ -153,6 +177,9 @@ class ProcesosDepartamentosController extends Controller
                 'message' => 'No se encontró el departamento.',
             ], 404);
         }
+
+        // Registrar en historial - Eliminación de departamento
+        HistorialVersionesHelper::eliminar('DEPARTAMENTOS', $departamentoData);
 
         return response()->json([
             'success' => true,

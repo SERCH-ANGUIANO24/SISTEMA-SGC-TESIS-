@@ -11,7 +11,7 @@
             <div class="d-flex justify-content-between align-items-start">
                 <div class="d-flex flex-column">
                     <a href="{{ route('dashboard') }}" class="text-decoration-none" title="Regresar al Dashboard">
-                        <h1 class="h3 mb-0" style="color:#800000; cursor:pointer;">
+                        <h1 class="h3 mb-0" style="color:#16a34a; cursor:pointer;">
                             <i class="bi bi-file-earmark-text me-2" style="font-size: 3rem; vertical-align:middle;"></i>
                             Lista Maestra
                         </h1>
@@ -21,22 +21,27 @@
         </div>
     </div>
 
-    {{-- ── ALERTAS ── --}}
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert" id="alerta-principal">
-            <i class="bi bi-check-circle me-2"></i> {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    @endif
+        
+        {{-- ── ALERTAS ── --}}
+    
+
     @if(session('warning'))
-        <div class="alert alert-warning alert-dismissible fade show fw-bold" role="alert" id="alerta-principal">
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
             <i class="bi bi-exclamation-triangle me-2"></i> {{ session('warning') }}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     @endif
+
     @if(session('error'))
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
             <i class="bi bi-x-circle me-2"></i> {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+
+    @if(session('info'))
+        <div class="alert alert-info alert-dismissible fade show" role="alert">
+            <i class="bi bi-info-circle me-2"></i> {{ session('info') }}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     @endif
@@ -227,21 +232,21 @@
                                     id="btn-orden-desc"
                                     class="btn btn-sm orden-fecha-btn activo-orden"
                                     onclick="ordenarPorFecha('desc')"
-                                    style="border:1px solid #800000; background:#ffffff; font-size:0.8rem; padding:4px 14px; border-radius:6px;">
+                                    style="border:1px solid #000000; background:#ffffff; font-size:0.8rem; padding:4px 14px; border-radius:6px;">
                                 <i class="bi bi-sort-down me-1"></i> Más reciente primero
                             </button>
                             <button type="button"
                                     id="btn-orden-asc"
                                     class="btn btn-sm orden-fecha-btn"
                                     onclick="ordenarPorFecha('asc')"
-                                    style="border:1px solid #dee2e6; background:#f8f9fa; color:#495057; font-size:0.8rem; padding:4px 14px; border-radius:6px;">
+                                    style="border:1px solid #000000; background:#ffffff; color:#495057; font-size:0.8rem; padding:4px 14px; border-radius:6px;">
                                 <i class="bi bi-sort-up-alt me-1"></i> Más antigua primero
                             </button>
                             <button type="button"
                                     id="btn-orden-ninguno"
                                     class="btn btn-sm orden-fecha-btn"
                                     onclick="ordenarPorFecha('ninguno')"
-                                    style="border:1px solid #dee2e6; background:#f8f9fa; color:#495057; font-size:0.8rem; padding:4px 14px; border-radius:6px;">
+                                    style="border:1px solid #000000; background:#ffffff; color:#495057; font-size:0.8rem; padding:4px 14px; border-radius:6px;">
                                 <i class="bi bi-x-circle me-1"></i> Sin ordenar
                             </button>
                         </div>
@@ -258,7 +263,7 @@
         <div class="card-header d-flex align-items-center py-3 px-4"
              style="background:white; border-bottom:2px solid #f0f0f0;">
             <h6 class="mb-0 fw-bold" style="color:#333;">
-                <i class="bi bi-files me-2" style="color:#800000;"></i> Documentos
+                <i class="bi bi-files me-2" style="color:#000000;"></i> Documentos
             </h6>
         </div>
 
@@ -267,46 +272,47 @@
                 <table class="table align-middle mb-0" id="formatosTable" style="border-collapse: collapse;">
                     <thead style="background:#f8f9fa; border-bottom:2px solid #dee2e6;">
                         <tr>
-                            <th class="px-4 py-3" style="font-size:0.75rem; font-weight:700; text-transform:uppercase; color:#6c757d;">Nombre del Documento</th>
-                            <th class="py-3" style="font-size:0.75rem; font-weight:700; text-transform:uppercase; color:#6c757d;">Proceso</th>
-                            <th class="py-3" style="font-size:0.75rem; font-weight:700; text-transform:uppercase; color:#6c757d;">Departamento</th>
-                            <th class="py-3" style="font-size:0.75rem; font-weight:700; text-transform:uppercase; color:#6c757d;">Clave</th>
-                            <th class="py-3" style="font-size:0.75rem; font-weight:700; text-transform:uppercase; color:#6c757d;">Código</th>
-                            <th class="py-3" style="font-size:0.75rem; font-weight:700; text-transform:uppercase; color:#6c757d;">Versión</th>
-                            <th class="py-3" style="font-size:0.75rem; font-weight:700; text-transform:uppercase; color:#6c757d;">Tipo</th>
-                            <th class="py-3" style="font-size:0.75rem; font-weight:700; text-transform:uppercase; color:#6c757d;">Ext.</th>
-                            <th class="py-3" style="font-size:0.75rem; font-weight:700; text-transform:uppercase; color:#6c757d; white-space:nowrap;">Fecha y Hora</th>
+                            <th class="px-4 py-3" style="font-size:0.75rem; font-weight:700; text-transform:uppercase; color:#000000;">Nombre del Documento</th>
+                            <th class="py-3" style="font-size:0.75rem; font-weight:700; text-transform:uppercase; color:#000000;">Proceso</th>
+                            <th class="py-3" style="font-size:0.75rem; font-weight:700; text-transform:uppercase; color:#000000;">Departamento</th>
+                            <th class="py-3" style="font-size:0.75rem; font-weight:700; text-transform:uppercase; color:#000000;">Clave</th>
+                            <th class="py-3" style="font-size:0.75rem; font-weight:700; text-transform:uppercase; color:#000000;">Código</th>
+                            <th class="py-3" style="font-size:0.75rem; font-weight:700; text-transform:uppercase; color:#000000;">Versión</th>
+                            <th class="py-3" style="font-size:0.75rem; font-weight:700; text-transform:uppercase; color:#000000;">Tipo</th>
+                            <th class="py-3" style="font-size:0.75rem; font-weight:700; text-transform:uppercase; color:#000000;">Ext.</th>
+                            <th class="py-3" style="font-size:0.75rem; font-weight:700; text-transform:uppercase; color:#000000; white-space:nowrap;">Fecha y Hora</th>
+                            <th class="py-3 text-center" style="font-size:0.75rem; font-weight:700; text-transform:uppercase; color:#000000;">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach($formatos as $i => $formato)
                         @php
                             $tipoArchivo = \App\Http\Controllers\FormatoController::tipoArchivo($formato->extension_archivo);
+                            $puedeVer    = in_array($tipoArchivo, ['imagen', 'pdf']);
                         @endphp
                         <tr class="formato-row" data-file-name="{{ strtolower($formato->nombre_archivo) }}" data-version="{{ $formato->version_procedimiento }}" data-fecha="{{ $formato->created_at->format('Y-m-d H:i:s') }}" style="border-bottom:1px solid #f0f0f0;">
 
-                            {{-- Nombre SIN icono de extensión --}}
                             <td class="px-4 py-3" style="font-size:0.85rem; color:#333; font-weight:500; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="{{ $formato->nombre_archivo }}">
                                 {{ $formato->nombre_archivo }}
                             </td>
 
-                            <td style="font-size:0.8rem; color:#495057;">
+                            <td style="font-size:0.8rem; color:#000000;">
                                 {{ $formato->proceso }}
                             </td>
 
-                            <td style="font-size:0.8rem; color:#495057;">
+                            <td style="font-size:0.8rem; color:#000000;">
                                 {{ $formato->departamento }}
                             </td>
 
-                            <td style="font-size:0.8rem; color:#495057;">
+                            <td style="font-size:0.8rem; color:#000000;">
                                 {{ $formato->clave_formato ?? '—' }}
                             </td>
 
-                            <td style="font-size:0.8rem; color:#495057;">
+                            <td style="font-size:0.8rem; color:#000000;">
                                 {{ $formato->codigo_procedimiento ?? '—' }}
                             </td>
 
-                            <td style="font-size:0.8rem; color:#495057;">
+                            <td style="font-size:0.8rem; color:#000000;">
                                 {{ $formato->version_procedimiento ?? '—' }}
                             </td>
 
@@ -326,10 +332,57 @@
                                 </span>
                             </td>
 
-                            <td style="font-size:0.8rem; color:#6c757d; white-space:nowrap;">
+                            <td style="font-size:0.8rem; color:#000000; white-space:nowrap;">
                                 {{ $formato->created_at->format('d/m/Y h:i A') }}
                             </td>
 
+                            <td class="text-center">
+                                <div class="d-flex gap-1 justify-content-center">
+                                    @if($puedeVer)
+                                    <button type="button"
+                                       class="btn btn-sm btn-outline-info visualizar-archivo"
+                                       style="width:30px; height:30px; padding:0; display:flex; align-items:center; justify-content:center; border-radius:5px;"
+                                       title="{{ $tipoArchivo === 'imagen' ? 'Ver imagen' : ($tipoArchivo === 'pdf' ? 'Ver PDF' : 'Ver Texto') }}"
+                                       data-url="{{ route('formatos.show', $formato) }}"
+                                       data-nombre="{{ $formato->nombre_archivo }}"
+                                       data-tipo="{{ $tipoArchivo }}">
+                                        <i class="bi bi-eye" style="font-size:0.85rem;"></i>
+                                    </button>
+                                    @else
+                                    @if(!in_array(strtolower($formato->extension_archivo), ['doc','docx','xls','xlsx','ppt','pptx','csv']))
+                                    <button class="btn btn-sm btn-outline-secondary disabled"
+                                            style="width:30px; height:30px; padding:0; border-radius:5px; opacity:0.3;"
+                                            title="Vista previa no disponible">
+                                        <i class="bi bi-eye-slash" style="font-size:0.85rem;"></i>
+                                    </button>
+                                    @endif
+                                    @endif
+
+                                    <a href="{{ route('formatos.download', $formato) }}"
+                                       class="btn btn-sm btn-outline-primary"
+                                       style="width:30px; height:30px; padding:0; display:flex; align-items:center; justify-content:center; border-radius:5px;"
+                                       title="Descargar">
+                                        <i class="bi bi-download" style="font-size:0.85rem;"></i>
+                                    </a>
+
+                                    @if(in_array(Auth::user()->role, ['superadmin', 'admin']))
+                                    <form action="{{ route('formatos.destroy', $formato->id) }}" 
+                                          method="POST" 
+                                          class="form-eliminar-formato"
+                                          style="display:inline-block;">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="button" 
+                                                class="btn btn-sm btn-outline-danger eliminar-formato-btn"
+                                                style="width:30px; height:30px; padding:0; border-radius:5px;"
+                                                title="Eliminar"
+                                                data-nombre="{{ $formato->nombre_archivo }}">
+                                            <i class="bi bi-trash" style="font-size:0.85rem;"></i>
+                                        </button>
+                                    </form>
+                                    @endif
+                                </div>
+                            </td>
                         </tr>
                         @endforeach
                     </tbody>
@@ -343,9 +396,45 @@
             @endif
         </div>
     </div>
+    @else
+    <div class="alert alert-info text-center py-5">
+        <i class="bi bi-info-circle fs-1"></i>
+        <p class="mt-3 mb-0">No se encontraron documentos.</p>
+    </div>
     @endif
 
-</div>{{-- /container-fluid --}}
+</div>
+
+{{-- MODAL PARA VISUALIZAR ARCHIVO --}}
+<div class="modal fade" id="modalVisualizarArchivo" tabindex="-1" aria-hidden="true" data-bs-backdrop="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content" style="border-radius:12px; border:none; overflow:hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+            <div class="modal-header" style="background:white; color:#333; padding:1rem 1.5rem; border-bottom:1px solid #dee2e6;">
+                <h5 class="modal-title fw-bold" id="modalArchivoTitulo" style="color:#333;">
+                    <i class="bi bi-file-earmark-text me-2" style="color:#000000;"></i>
+                    <span id="modalArchivoNombre">Documento</span>
+                </h5>
+            </div>
+            <div class="modal-body p-0" style="height:70vh; background:#f5f5f5;">
+                <iframe id="visorArchivoModal" style="width:100%; height:100%; border:none;"></iframe>
+            </div>
+            <div class="modal-footer" style="background:white; border-top:1px solid #dee2e6; padding:1rem 1.5rem; display:flex; justify-content:space-between; align-items:center;">
+                <small class="text-muted">Si el archivo no se visualiza correctamente, usa el botón de descargar.</small>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn" id="btnDescargarArchivo" style="background:#800000; color:white; border:none; padding:0.5rem 1.5rem; border-radius:6px;">
+                        <i class="bi bi-download me-1"></i> Descargar
+                    </button>
+                    <button type="button" 
+                            data-bs-dismiss="modal"
+                            style="background-color: #737373; border: none; padding: 0.5rem 1.5rem; 
+                                border-radius: 6px; color: white; font-size: 1rem; cursor: pointer;">
+                        Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 @endsection
 
@@ -374,14 +463,25 @@
     }
 
     .btn-clear-search:hover {
-    background-color: #737373 !important;
-    border-color: #737373 !important;
+        background-color: #737373 !important;
+        border-color: #737373 !important;
     }
     .btn-clear-search:hover i {
         color: white !important;
     }
 
-
+    .swal2-popup {
+        font-size: 1.2rem !important;
+    }
+    .swal2-title {
+        color: #000000 !important;
+    }
+    .swal2-confirm {
+        background-color: #dc3545 !important;
+    }
+    .swal2-cancel {
+        background-color: #6c757d !important;
+    }
 </style>
 @endpush
 
@@ -394,6 +494,11 @@
     let extensionActual          = '';
     let ordenFechaActual         = 'desc';
     let filasOriginales          = [];
+
+    function getModalArchivo() {
+        const el = document.getElementById('modalVisualizarArchivo');
+        return bootstrap.Modal.getInstance(el) || new bootstrap.Modal(el, { backdrop: true });
+    }
 
     function extraerFecha(fechaStr) {
         if (!fechaStr) return new Date(0);
@@ -412,12 +517,6 @@
             btn.style.fontWeight  = 'normal';
         });
 
-        const btnActivo = document.getElementById(
-            direccion === 'desc'   ? 'btn-orden-desc' :
-            direccion === 'asc'    ? 'btn-orden-asc'  :
-                                     'btn-orden-ninguno'
-        );
-
         const tbody = document.querySelector('#formatosTable tbody');
         if (!tbody) return;
 
@@ -433,6 +532,7 @@
         if (direccion === 'ninguno') {
             tbody.innerHTML = '';
             filasOriginales.forEach(fila => tbody.appendChild(fila.cloneNode(true)));
+            reRegistrarEventosFilas();
             if (infoOrden) infoOrden.textContent = '';
             return;
         }
@@ -445,11 +545,143 @@
 
         tbody.innerHTML = '';
         filas.forEach(fila => tbody.appendChild(fila));
+        reRegistrarEventosFilas();
 
         if (infoOrden) {
             infoOrden.textContent = direccion === 'desc'
                 ? '(ordenado: más reciente → más antiguo)'
                 : '(ordenado: más antiguo → más reciente)';
+        }
+    }
+
+    function reRegistrarEventosFilas() {
+        document.querySelectorAll('.visualizar-archivo').forEach(btn => {
+            btn.removeEventListener('click', handleVisualizarClick);
+            btn.addEventListener('click', handleVisualizarClick);
+        });
+        
+        document.querySelectorAll('.eliminar-formato-btn').forEach(btn => {
+            btn.removeEventListener('click', handleEliminarClick);
+            btn.addEventListener('click', handleEliminarClick);
+        });
+    }
+
+    function handleVisualizarClick(e) {
+        e.preventDefault();
+        const btn = e.currentTarget;
+        mostrarVistaArchivo(btn.dataset.url, btn.dataset.nombre, btn.dataset.tipo);
+    }
+
+    function handleEliminarClick(e) {
+        e.preventDefault();
+        const btn = e.currentTarget;
+        const form = btn.closest('.form-eliminar-formato');
+        const nombre = btn.dataset.nombre;
+        
+        Swal.fire({
+            title: '¿Eliminar archivo?',
+            text: `¿Estás seguro de eliminar "${nombre}"?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                proceedWithDeletion(form);
+            }
+        });
+    }
+
+    function proceedWithDeletion(form) {
+        Swal.fire({
+            title: 'Eliminando...',
+            text: 'Por favor espere',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+        
+        const formData = new FormData(form);
+        
+        // Obtener el token CSRF del meta tag
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        
+        fetch(form.action, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': csrfToken,
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: formData
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(err => { throw err; });
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Eliminado!',
+                    text: data.message,
+                    confirmButtonColor: '#28a745',
+                    timer: 2000,
+                    showConfirmButton: false
+                }).then(() => {
+                    location.reload();
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: data.message || 'Error al eliminar el archivo',
+                    confirmButtonColor: '#dc3545'
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: error.message || 'Error de conexión al eliminar el archivo. Por favor, intenta de nuevo.',
+                confirmButtonColor: '#dc3545'
+            });
+        });
+    }
+
+    function mostrarVistaArchivo(url, nombre, tipo) {
+        document.getElementById('modalArchivoNombre').textContent = nombre;
+        document.getElementById('btnDescargarArchivo').setAttribute('data-url', url.replace('/show', '/download'));
+
+        const iframe = document.getElementById('visorArchivoModal');
+        const modalEl = document.getElementById('modalVisualizarArchivo');
+        const modalArchivo = getModalArchivo();
+
+        iframe.removeAttribute('srcdoc');
+        iframe.src = 'about:blank';
+
+        if (tipo === 'pdf') {
+            modalEl.addEventListener('shown.bs.modal', function onShown() {
+                modalEl.removeEventListener('shown.bs.modal', onShown);
+                iframe.src = url;
+            });
+            modalArchivo.show();
+        } else {
+            setTimeout(() => {
+                if (tipo === 'imagen') {
+                    iframe.srcdoc = `<html><head><style>body{margin:0;display:flex;justify-content:center;align-items:center;min-height:100vh;background:#f5f5f5;}img{max-width:100%;max-height:90vh;object-fit:contain;box-shadow:0 4px 8px rgba(0,0,0,0.1);}</style></head><body><img src="${url}" alt="${nombre}"></body></html>`;
+                } else {
+                    iframe.srcdoc = `<html><body style="display:flex;justify-content:center;align-items:center;min-height:100vh;background:#f5f5f5;font-family:Arial,sans-serif;"><div style="text-align:center;padding:2rem;background:white;border-radius:8px;max-width:400px;"><h5>Vista previa no disponible</h5><p>Usa el botón de descargar para ver el contenido.</p></div></body></html>`;
+                }
+            }, 50);
+            modalArchivo.show();
         }
     }
 
@@ -501,9 +733,16 @@
         setTimeout(() => {
             const a = document.getElementById('alerta-principal');
             if (a) {
-                try { bootstrap.Alert.getOrCreateInstance(a).close(); } catch(e) {}
+                setTimeout(() => {
+                    try { 
+                        const alert = bootstrap.Alert.getOrCreateInstance(a);
+                        alert.close();
+                    } catch(e) {
+                        a.style.display = 'none';
+                    }
+                }, 5000);
             }
-        }, 5000);
+        }, 100);
 
         const ff = document.getElementById('form-filtros');
         if (ff) {
@@ -522,6 +761,22 @@
                     const h     = document.getElementById('hidden-' + campo);
                     if (h) h.value = valor;
                 }
+            });
+        }
+
+        document.querySelectorAll('.visualizar-archivo').forEach(btn => {
+            btn.addEventListener('click', handleVisualizarClick);
+        });
+        
+        document.querySelectorAll('.eliminar-formato-btn').forEach(btn => {
+            btn.addEventListener('click', handleEliminarClick);
+        });
+
+        const btnDescargar = document.getElementById('btnDescargarArchivo');
+        if (btnDescargar) {
+            btnDescargar.addEventListener('click', function() {
+                const url = this.getAttribute('data-url');
+                if (url) window.location.href = url;
             });
         }
     });

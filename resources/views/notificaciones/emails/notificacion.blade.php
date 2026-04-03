@@ -10,8 +10,8 @@
     .wrap { max-width: 600px; margin: 30px auto; background: #fff;
             border-radius: 10px; overflow: hidden;
             box-shadow: 0 2px 12px rgba(0,0,0,.10); }
-    .header { background: #800000; padding: 28px 32px; }
-    .header h1 { color: #fff; font-size: 1.15rem; margin-bottom: 4px; }
+    .header { background: #ffffff; padding: 28px 32px; } /*AQUI SE CAMBIA EL COLOR DEL ENCABEZADO (SE PUEDE CAMBIAR EN BACKGROUN:#ffffff) DEL CORREO ELECTRONICO CUANDO SE ENVIA UNA NOTIFICACION POR CORREO */ 
+    .header h1 { color: #000000; font-size: 1.15rem; margin-bottom: 4px; }/* SE PUEDE CAMBIAR EL TAMAÑO Y COLOR DE LAS LETRAS DEL ENCABEZADO DEL CORREO ELECTROCNICO */
     .header p  { color: rgba(255,255,255,.75); font-size: .82rem; }
     .body { padding: 28px 32px; }
     .greeting { color: #374151; font-size: .95rem; margin-bottom: 14px; }
@@ -28,7 +28,7 @@
     .obs-title { font-weight: 700; color: #92400E; margin-bottom: 6px;
                  font-size: .85rem; }
     .obs-body  { color: #78350F; font-size: .85rem; line-height: 1.6; }
-    .btn { display: inline-block; background: #800000; color: #fff;
+    .btn { display: inline-block; background: #737373; color: #fff;
            padding: 11px 28px; border-radius: 6px; text-decoration: none;
            font-size: .88rem; font-weight: 600; margin-top: 6px; }
     .footer { background: #F9FAFB; border-top: 1px solid #E5E7EB;
@@ -74,7 +74,7 @@
   {{-- FOOTER --}}
   <div class='footer'>
     Este mensaje fue generado automáticamente por el SGC. Por favor no respondas.<br>
-    © {{ date('Y') }} Sistema de Gestión de la Calidad — UPTEX
+    © {{ date('Y') }} SAMS Infinity. Todos los derechos reservados.
   </div>
 
 </div>

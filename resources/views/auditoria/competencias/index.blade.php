@@ -9,8 +9,8 @@
             <div class="d-flex justify-content-between align-items-start">
                 <div class="d-flex flex-column">
                     <a href="{{ route('auditoria.dashboard') }}" class="text-decoration-none" title="Ir al Dashboard">
-                        <h1 class="h3 mb-2" style="color: #800000; cursor: pointer;">
-                            <i class="bi bi-folder me-2" style="font-size: 3rem; vertical-align: middle;"></i>
+                        <h1 class="h3 mb-2" style="color: #7c3aed; cursor: pointer;">
+                            <i class="bi-person-workspace me-2" style="font-size: 3rem; vertical-align: middle;"></i>
                             Competencias
                         </h1>
                     </a>
@@ -44,8 +44,9 @@
         @include('auditoria.competencias.partials.breadcrumbs', ['breadcrumbs' => $breadcrumbs, 'currentFolder' => $currentFolder])
     </div>
 
+    {{-- SOLO UN MENSAJE DE ÉXITO --}}
     @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <div class="alert alert-success alert-dismissible fade show" role="alert" id="successMessage">
             <i class="bi bi-check-circle me-2"></i> {{ session('success') }}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
@@ -58,12 +59,26 @@
         </div>
     @endif
 
+    @if(session('warning'))
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i> {{ session('warning') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+
+    @if(session('info'))
+        <div class="alert alert-info alert-dismissible fade show" role="alert">
+            <i class="bi bi-info-circle me-2"></i> {{ session('info') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+
     @if(isset($currentFolder) && $currentFolder)
     <div class="row mb-4 align-items-end">
         <div class="col-md-6">
             <div class="card shadow-sm border-0">
                 <div class="card-body p-3">
-                    <label class="form-label fw-bold mb-2" style="color: #800000;">
+                    <label class="form-label fw-bold mb-2" style="color: #000000;">
                         <i class="bi bi-search me-1"></i> Buscar archivos
                     </label>
                     <div class="input-group">
@@ -89,7 +104,7 @@
                 <div class="card-body p-3">
                     <div class="row">
                         <div class="col-md-12">
-                            <label class="form-label fw-bold mb-2" style="color: #800000;">
+                            <label class="form-label fw-bold mb-2" style="color: #000000;">
                                 <i class="bi bi-sort-down me-1"></i> Ordenar por
                             </label>
                             <select id="sortSelect" class="form-select">
@@ -146,10 +161,9 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="viewDocumentModalLabel{{ $doc->id }}">
-                        <i class="bi bi-file-earmark-text me-2" style="color: #800000;"></i>
+                        <i class="bi bi-file-earmark-text me-2" style="color: #000000;"></i>
                         {{ $doc->nombre }}.{{ $doc->archivo_extension }}
                     </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-0" style="height: 80vh;">
                     @include('auditoria.competencias.partials.document-viewer', [
@@ -179,10 +193,10 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">
-                        <i class="bi bi-pencil me-2" style="color: #800000;"></i>
+                        <i class="bi bi-pencil me-2" style="color: #000000;"></i>
                         Renombrar Carpeta
                     </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
@@ -210,10 +224,10 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">
-                        <i class="bi bi-pencil me-2" style="color: #800000;"></i>
+                        <i class="bi bi-pencil me-2" style="color: #000000;"></i>
                         Renombrar Documento
                     </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
@@ -242,15 +256,15 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">
-                        <i class="bi bi-arrow-right-circle me-2" style="color: #800000;"></i>
+                        <i class="bi bi-arrow-right-circle me-2" style="color: #000000;"></i>
                         Mover Carpeta
                     </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+
                 </div>
                 <div class="modal-body">
                     <p class="mb-3">
                         <span class="fw-bold">Carpeta a mover:</span><br>
-                        <span id="moveFolderName" style="color: #800000; font-size: 1.1rem;"></span>
+                        <span id="moveFolderName" style="color: #737373; font-size: 1.1rem;"></span>
                     </p>
                     <div class="mb-3">
                         <label for="folderDestination" class="form-label fw-bold">Seleccionar destino</label>
@@ -283,15 +297,15 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">
-                        <i class="bi bi-arrow-right-circle me-2" style="color: #800000;"></i>
+                        <i class="bi bi-arrow-right-circle me-2" style="color: #000000;"></i>
                         Mover Documento
                     </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+
                 </div>
                 <div class="modal-body">
                     <p class="mb-3">
                         <span class="fw-bold">Documento a mover:</span><br>
-                        <span id="moveDocumentName" style="color: #800000; font-size: 1.1rem;"></span>
+                        <span id="moveDocumentName" style="color: #737373; font-size: 1.1rem;"></span>
                     </p>
                     <div class="mb-3">
                         <label for="documentDestination" class="form-label fw-bold">Seleccionar destino</label>
@@ -323,8 +337,11 @@
             <input type="hidden" name="parent_id" value="{{ $currentFolder->id ?? '' }}">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Agregar Carpeta</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <h5 class="modal-title">
+                        <i class="bi bi-folder-plus me-1" style="color: #000000;"></i>
+                        Agregar Carpeta
+                    </h5>
+
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
@@ -345,7 +362,7 @@
     </div>
 </div>
 
-{{-- MODAL SUBIR ARCHIVO --}}
+{{-- MODAL SUBIR ARCHIVO (con icono agregado) --}}
 <div class="modal fade" id="uploadFileModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <form action="{{ route('auditoria.competencias.upload') }}" method="POST" enctype="multipart/form-data">
@@ -353,8 +370,11 @@
             <input type="hidden" name="parent_id" value="{{ $currentFolder->id ?? '' }}">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Subir Archivo</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <h5 class="modal-title">
+                        <i class="bi bi-cloud-upload me-2" style="color: #000000;"></i>
+                        Subir Archivo
+                    </h5>
+
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
@@ -393,7 +413,7 @@
     }
     .breadcrumb-item a {
         text-decoration: none;
-        color: #800000;
+        color: #000000;
         font-weight: 500;
     }
     .folder-icon i {
@@ -410,13 +430,18 @@
         font-size: 1.2rem !important;
     }
     .swal2-title {
-        color: #800000 !important;
+        color: #000000 !important;
     }
     .swal2-confirm {
         background-color: #dc3545 !important;
     }
     .swal2-cancel {
         background-color: #6c757d !important;
+    }
+
+    /* ✅ ELIMINAR SEGUNDO MENSAJE DE ÉXITO DUPLICADO */
+    .alert-success:not(:first-of-type) {
+        display: none !important;
     }
 </style>
 @endpush
@@ -430,6 +455,14 @@
             initSearch();
             initSorting();
         @endif
+        
+        // ✅ ELIMINAR CUALQUIER MENSAJE DE ÉXITO DUPLICADO
+        const successAlerts = document.querySelectorAll('.alert-success');
+        if (successAlerts.length > 1) {
+            for (let i = 1; i < successAlerts.length; i++) {
+                successAlerts[i].remove();
+            }
+        }
     });
 
     // FUNCIONES PARA MODALES DE RENOMBRAR Y MOVER (ahora con envío tradicional)
@@ -580,10 +613,6 @@
                             ${type === 'Carpeta' ? '<li>Todas las subcarpetas dentro de ella</li>' : ''}
                             <li>Todos los archivos dentro ${type === 'Carpeta' ? 'de la carpeta' : ''}</li>
                         </ul>
-                        <p style="color: #856404; background-color: #fff3cd; padding: 10px; border-radius: 5px;">
-                            <i class="bi bi-exclamation-triangle-fill"></i>
-                            <strong>¡No podrás recuperar esta información después de eliminarla!</strong>
-                        </p>
                     </div>
                 `,
                 icon: 'warning',
@@ -631,8 +660,9 @@
                     icon: 'success',
                     title: '¡Eliminado!',
                     text: data.message,
-                    confirmButtonColor: '#800000',
-                    timer: 2000
+                    confirmButtonColor: '#000000',
+                    timer: 2000,
+                    showConfirmButton: false
                 }).then(() => {
                     location.reload();
                 });
@@ -641,7 +671,7 @@
                     icon: 'error',
                     title: 'Error',
                     text: data.message || 'Error al eliminar',
-                    confirmButtonColor: '#800000'
+                    confirmButtonColor: '#000000'
                 });
             }
         })
@@ -650,7 +680,7 @@
                 icon: 'error',
                 title: 'Error',
                 text: 'Error de conexión',
-                confirmButtonColor: '#800000'
+                confirmButtonColor: '#000000'
             });
         });
     }

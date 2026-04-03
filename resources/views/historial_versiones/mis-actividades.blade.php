@@ -102,66 +102,78 @@
                     <div class="table-responsive">
                         <table class="table table-hover align-middle mb-0">
                             <thead class="bg-light">
-                                <tr>
-                                    <th class="py-3">Fecha/Hora</th>
+                                脂
+                                    <th class="py-3" style="width: 110px;">Fecha/Hora</th>
                                     <th class="py-3">Módulo</th>
                                     <th class="py-3">Acción</th>
                                     <th class="py-3">Descripción</th>
-                                    <th class="py-3">Importancia</th>
                                     <th class="py-3">IP</th>
-                                </tr>
+                                    <th class="py-3" style="width: 120px;">Acciones</th>
+                                 tame
                             </thead>
                             <tbody>
                                 @forelse($actividades as $actividad)
-                                <tr>
-                                    <td>
-                                        <div>{{ $actividad->created_at->format('d/m/Y H:i:s') }}</div>
-                                        <small class="text-muted">{{ $actividad->created_at->diffForHumans() }}</small>
+                                <tr class="file-row">
+                                    <td class="text-nowrap small" style="font-size: 0.75rem;">
+                                        {{ $actividad->created_at->format('d/m/Y H:i:s') }}
                                     </td>
                                     <td>
-                                        <span class="badge bg-secondary">
-                                            {{ ucfirst(strtolower($actividad->modulo)) }}
+                                        <span class="badge" style="background: {{ $actividad->color_modulo }}; color: white; font-size: 0.7rem; padding: 0.35rem 0.7rem;">
+                                            <i class="{{ $actividad->icono_modulo }} me-1"></i>
+                                            {{ $actividad->nombre_modulo_formateado }}
                                         </span>
                                     </td>
                                     <td>
                                         <span class="badge" style="background: 
                                             @switch($actividad->accion)
-                                                @case('CREAR') #000000 @break
-                                                @case('EDITAR') #000000 @break
-                                                @case('ELIMINAR') #000000 @break
-                                                @case('RESTAURAR') #000000 @break
+                                                @case('CREAR') #10b981 @break
+                                                @case('SUBIR') #10b981 @break
+                                                @case('EDITAR') #f59e0b @break
+                                                @case('ELIMINAR') #ef4444 @break
+                                                @case('RESTAURAR') #06b6d4 @break
                                                 @default #6b7280
-                                            @endswitch; color: white;">
+                                            @endswitch; color: white; font-size: 0.7rem; padding: 0.35rem 0.7rem;">
                                             <i class="bi 
                                                 @switch($actividad->accion)
                                                     @case('CREAR') bi-plus-circle @break
+                                                    @case('SUBIR') bi-cloud-upload @break
                                                     @case('EDITAR') bi-pencil @break
                                                     @case('ELIMINAR') bi-trash @break
                                                     @case('RESTAURAR') bi-arrow-counterclockwise @break
                                                     @default bi-clock-history
                                                 @endswitch me-1"></i>
-                                            {{ $actividad->accion }}
+                                            {{ str_replace('MOVIR', 'MOVER', $actividad->accion) }}
                                         </span>
                                     </td>
                                     <td>
-                                        <span title="{{ $actividad->descripcion }}">
+                                        <span title="{{ $actividad->descripcion }}" style="font-size: 0.8rem;">
                                             {{ Str::limit($actividad->descripcion, 60) }}
                                         </span>
                                     </td>
                                     <td>
-                                        <span class="badge" style="background: 
-                                            @switch($actividad->nivel_importancia)
-                                                @case('bajo') #e2e8f0; color: #475569 @break
-                                                @case('normal') #000000 @break
-                                                @case('alto') #000000 @break
-                                                @case('critico') #000000 @break
-                                                @default #6b7280
-                                            @endswitch; color: white;">
-                                            {{ ucfirst($actividad->nivel_importancia) }}
-                                        </span>
-                                    </td>
-                                    <td>
                                         <small class="text-muted">{{ $actividad->ip_address ?? 'N/A' }}</small>
+                                    </td>
+                                    <td class="text-nowrap">
+                                        @if($actividad->accion === 'ELIMINAR')
+                                            {{-- Solo botón restaurar --}}
+                                            <form action="{{ route('historial-versiones.restaurar', $actividad->id) }}" method="POST" style="display: inline;">
+                                                @csrf
+                                                <button type="submit" class="btn btn-sm btn-outline-success" title="Restaurar elemento eliminado" onclick="return confirm('¿Está seguro de que desea restaurar este elemento?')" style="font-size: 0.7rem; padding: 0.2rem 0.5rem;">
+                                                    <i class="bi bi-arrow-counterclockwise"></i> Restaurar
+                                                </button>
+                                            </form>
+                                        @else
+                                            {{-- Siempre mostrar "Ir al Módulo" --}}
+                                            @if($actividad->detalle_url)
+                                                <a href="{{ $actividad->detalle_url }}" class="btn btn-sm btn-outline-primary" title="Ir al módulo" style="font-size: 0.7rem; padding: 0.2rem 0.5rem;">
+                                                    <i class="bi bi-box-arrow-in-right"></i> Ir al Módulo
+                                                </a>
+                                            @else
+                                                <button class="btn btn-sm btn-outline-secondary" disabled title="No disponible" style="font-size: 0.7rem; padding: 0.2rem 0.5rem;">
+                                                    <i class="bi bi-box-arrow-in-right"></i> Ir al Módulo
+                                                </button>
+                                            @endif
+                                        @endif
                                     </td>
                                 </tr>
                                 @empty
@@ -179,7 +191,7 @@
                 </div>
                 <div class="card-footer bg-white py-3">
                     <div class="d-flex justify-content-center">
-                        {{ $actividades->links() }}
+                        {{ $actividades->links('pagination::bootstrap-5') }}
                     </div>
                 </div>
             </div>

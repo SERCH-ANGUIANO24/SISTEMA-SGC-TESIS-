@@ -1,7 +1,7 @@
 @if($documents->count() > 0)
     <div class="card shadow-sm mt-4">
         <div class="card-header bg-light">
-            <h6 class="mb-0 fw-bold" style="color: #800000;">
+            <h6 class="mb-0 fw-bold" style="color: #000000;">
                 <i class="bi bi-file-earmark me-2"></i>Documentos
             </h6>     
         </div>
@@ -25,7 +25,7 @@
                             data-file-date="{{ $doc->created_at }}"
                             data-file-extension="{{ strtolower($doc->archivo_extension ?? '') }}">
                             <td>
-                                <i class="bi bi-file-earmark-text me-2" style="color: #800000;"></i>
+                                <i class="bi bi-file-earmark-text me-2" style="color: #000000;"></i>
                                 {{ $doc->nombre }}.{{ $doc->archivo_extension }}
                             </td>
                             <td>{{ $doc->formatted_size }}</td>

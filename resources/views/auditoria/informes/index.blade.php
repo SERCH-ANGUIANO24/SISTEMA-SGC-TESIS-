@@ -62,12 +62,12 @@
     .form-label { font-size: 0.85rem; font-weight: 600; color: #495057; }
     #selectAnioEstadisticas { border: 2px solid #0dcaf0; }
     .grafica-anual-container { background-color: #f8f9fa; border-radius: 8px; padding: 15px; margin-top: 20px; }
-    .border.rounded.p-4.bg-light, .drag-area { border: 2px dashed #800000 !important; border-radius: 5px; padding: 20px; text-align: center; background: #f8f9fa; cursor: pointer; transition: all 0.3s ease; }
-    .drag-area:hover, .border.rounded.p-4.bg-light:hover { background-color: #fff0f0 !important; border-color: #600000 !important; }
-    .drag-area i { font-size: 3rem; color: #800000; }
+    .border.rounded.p-4.bg-light, .drag-area { border: 2px dashed #000000 !important; border-radius: 5px; padding: 20px; text-align: center; background: #f8f9fa; cursor: pointer; transition: all 0.3s ease; }
+    .drag-area:hover, .border.rounded.p-4.bg-light:hover { background-color: #fff !important; border-color: #000000 !important; }
+    .drag-area i { font-size: 3rem; color: #000000; }
     .drag-area p { margin: 5px 0 0; color: #6c757d; }
     .form-control:focus, .form-select:focus { border-color: #737373; box-shadow: 0 0 0 0.3rem #d2e2f9; z-index: 1; }
-    .procesos-checklist { background-color: #f8f9fa; max-height: 200px; overflow-y: auto; column-count: 2; column-gap: 10px; }
+    .procesos-checklist { background-color: #fff; max-height: 200px; overflow-y: auto; column-count: 2; column-gap: 10px; }
     .procesos-checklist .form-check { break-inside: avoid; padding: 4px 8px; border-radius: 4px; transition: background-color 0.15s; }
     .procesos-checklist .form-check:hover { background-color: #ffffff; }
     .procesos-checklist .form-check-input:checked ~ .form-check-label { color: #000000; font-weight: 600; }
@@ -88,7 +88,7 @@
     @keyframes shake { 0%, 100% { transform: translateX(0); } 10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); } 20%, 40%, 60%, 80% { transform: translateX(2px); } }
     .campo-invalido-shake { animation: shake 0.5s ease-in-out; }
     .swal2-popup  { font-size: 1.2rem !important; }
-    .swal2-title  { color: #800000 !important; }
+    .swal2-title  { color: #000000 !important; }
     .swal2-confirm { background-color: #dc3545 !important; }
     .swal2-cancel  { background-color: #6c757d !important; }
     .rango-fechas { background-color: #f8f9fa; padding: 4px 8px; border-radius: 4px; font-size: 0.85rem; display: inline-block; border-left: 3px solid #800000; }
@@ -96,20 +96,20 @@
     .fecha-detalle { font-size: 0.75rem; color: #6c757d; margin-top: 2px; }
     #autocomplete-procesos { display: none; position: absolute; z-index: 9999; background: #fff; border: 1px solid #dee2e6; border-top: none; border-radius: 0 0 6px 6px; width: 100%; max-height: 200px; overflow-y: auto; box-shadow: 0 4px 12px rgba(0,0,0,0.12); left: 0; top: 100%; }
     #autocomplete-procesos .ac-item { padding: 8px 12px; cursor: pointer; font-size: 0.88rem; border-bottom: 1px solid #f3f3f3; display: flex; align-items: center; gap: 8px; }
-    #autocomplete-procesos .ac-item:hover, #autocomplete-procesos .ac-item.ac-active { background-color: #fdf0f1; color: #800000; }
+    #autocomplete-procesos .ac-item:hover, #autocomplete-procesos .ac-item.ac-active { background-color: #fdf0f1; color: #000000; }
     #autocomplete-procesos .ac-item i { color: #800000; font-size: 0.8rem; }
     #tablaNcOmPorProceso { display: none; margin-top: 16px; }
     #tablaNcOmPorProceso table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
-    #tablaNcOmPorProceso thead th { background-color: #800000; color: #fff; padding: 8px 10px; text-align: center; font-weight: 600; border: none; }
+    #tablaNcOmPorProceso thead th { background-color: #000000; color: #fff; padding: 8px 10px; text-align: center; font-weight: 600; border: none; }
     #tablaNcOmPorProceso thead th:first-child { text-align: left; border-radius: 6px 0 0 0; }
     #tablaNcOmPorProceso thead th:last-child { border-radius: 0 6px 0 0; }
     #tablaNcOmPorProceso tbody tr:nth-child(even) { background-color: #ffffff; }
     #tablaNcOmPorProceso tbody td { padding: 6px 10px; border-bottom: 1px solid #dee2e6; vertical-align: middle; }
     #tablaNcOmPorProceso tbody td input[type="number"] { width: 80px; text-align: center; border: 1px solid #ced4da; border-radius: 4px; padding: 3px 6px; font-size: 0.88rem; }
-    #tablaNcOmPorProceso tbody td input[type="number"]:focus { border-color: #800000; box-shadow: 0 0 0 0.15rem rgba(128,0,0,0.2); outline: none; }
+    #tablaNcOmPorProceso tbody td input[type="number"]:focus { border-color: #000000; box-shadow: 0 0 0 0.3rem #d2e2f9; outline: none; }
     /* Nuevo estilo para el campo de texto de criterio */
     #tablaNcOmPorProceso tbody td input[type="text"] { width: 180px; border: 1px solid #ced4da; border-radius: 4px; padding: 3px 6px; font-size: 0.88rem; }
-    #tablaNcOmPorProceso tbody td input[type="text"]:focus { border-color: #800000; box-shadow: 0 0 0 0.15rem rgba(128,0,0,0.2); outline: none; }
+    #tablaNcOmPorProceso tbody td input[type="text"]:focus { border-color: #000000; box-shadow: 0 0 0 0.3rem #d2e2f9; outline: none; }
     .totales-nc-om { margin-top: 8px; font-size: 0.88rem; display: flex; gap: 20px; justify-content: flex-end; padding-right: 4px; }
     .totales-nc-om .badge-total-nc { background-color: #dc3545; color: #fff; border-radius: 20px; padding: 3px 12px; font-weight: 600; }
     .totales-nc-om .badge-total-om { background-color: #28a745; color: #fff; border-radius: 20px; padding: 3px 12px; font-weight: 600; }
@@ -145,6 +145,7 @@
         display: inline-block;
         vertical-align: middle;
     }
+    
 </style>
 @endpush
 
@@ -156,14 +157,16 @@
         <div class="col-12">
             <div class="d-flex align-items-center justify-content-between">
                 <a href="{{ route('auditoria.dashboard') }}" class="text-decoration-none" title="Ir al Dashboard">
-                    <h1 class="h3 mb-0" style="color: #800000; cursor: pointer;">
-                        <i class="bi bi-file-earmark-text me-2" style="font-size: 2.5rem; vertical-align: middle;"></i>
+                    <h1 class="h3 mb-0" style="color: #059669; cursor: pointer;">
+                        <i class="bi bi-file-earmark-text me-2" style="font-size: 3rem; vertical-align: middle;"></i>
                         Informes
                     </h1>
                 </a>
+                @if(Auth::user()->role === 'admin' || Auth::user()->role === 'superadmin')
                 <button class="btn" type="button" id="btnNuevoInforme" style="background-color: #737373; color: white; border: none;">
                     <i class="bi bi-plus-circle"></i> Registrar Informe
                 </button>
+                @endif
             </div>
         </div>
     </div>
@@ -244,7 +247,6 @@
             <div class="table-responsive">
                 <table id="tablaInformes" class="table table-bordered" style="width:100%;">
                     <thead>
-                        <tr>
                             <th>Nombre de Informe</th>
                             <th>Tipo</th>
                             <th>Auditor Líder</th>
@@ -307,7 +309,7 @@
                             <td class="num-orange">{{ $inf->oportunidades_mejora }}</td>
                             <td>
                                 @if($inf->documento_path)
-                                    <span style="color: #212529;"><i class="bi bi-file-earmark-pdf me-1" style="color: #dc3545;"></i>{{ Str::limit($inf->documento_nombre, 20) }}</span>
+                                    <span style="color: #212529;"><i class="bi bi-file-earmark-pdf me-1" style="color: #000000;"></i>{{ Str::limit($inf->documento_nombre, 20) }}</span>
                                 @else <span class="text-muted">—</span>
                                 @endif
                             </td>
@@ -325,14 +327,18 @@
                                         <i class="bi bi-download"></i>
                                     </a>
                                     @endif
+                                    @if(Auth::user()->role === 'admin' || Auth::user()->role === 'superadmin')
                                     <button type="button" class="btn btn-sm btn-outline-secondary" title="Editar informe"
                                         onclick="editarInforme({{ $inf->id }})">
                                         <i class="bi bi-pencil-square"></i>
                                     </button>
+                                    @endif
+                                    @if(Auth::user()->role === 'admin' || Auth::user()->role === 'superadmin')
                                     <button type="button" class="btn btn-sm btn-outline-danger" title="Eliminar informe"
                                         onclick="eliminarInforme({{ $inf->id }}, '{{ addslashes($inf->nombre_informe) }}')">
                                         <i class="bi bi-trash"></i>
                                     </button>
+                                    @endif
                                 </div>
                             </td>
                         </tr>
@@ -364,8 +370,7 @@
   <div class="modal-dialog modal-lg modal-dialog-scrollable">
     <div class="modal-content">
       <div class="modal-header modal-header-rojo">
-        <h5 class="modal-title"><i class="bi bi-cloud-upload me-2" style="color: #800000"></i><span id="tituloModalInforme">Subir Informe</span></h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <h5 class="modal-title"><i class="bi bi-cloud-upload me-2" style="color: #000000"></i><span id="tituloModalInforme">Subir Informe</span></h5>
       </div>
       <div class="modal-body">
         <form id="formInforme" enctype="multipart/form-data" novalidate>
@@ -440,18 +445,18 @@
             </div>
             <div class="col-12" id="tablaNcOmPorProceso">
               <label class="form-label">
-                <i class="bi bi-table me-1" style="color:#800000;"></i>
+                <i class="bi bi-table me-1" style="color:#000000;"></i>
                 No Conformidades y Oportunidades de Mejora por Proceso
               </label>
               <div class="border rounded overflow-hidden">
                 <table style="width:100%; border-collapse:collapse; font-size:0.88rem;">
                   <thead>
-                    <tr>
+                     <tr>
                       <th style="background:#ffffff;color:#212529;padding:8px 12px;text-align:left;font-weight:600;border-bottom:1px solid #dee2e6;">Proceso</th>
                       <th style="background:#ffffff;color:#212529;padding:8px 12px;text-align:left;font-weight:600;border-bottom:1px solid #dee2e6;">Criterio de Auditoría</th>
                       <th style="background:#ffffff;color:#212529;padding:8px 12px;text-align:center;font-weight:600;width:130px;border-bottom:1px solid #dee2e6;">No Conformidades</th>
                       <th style="background:#ffffff;color:#212529;padding:8px 12px;text-align:center;font-weight:600;width:150px;border-bottom:1px solid #dee2e6;">Oport. de Mejora</th>
-                    </tr>
+                     </tr>
                   </thead>
                   <tbody id="cuerpoTablaNcOm"></tbody>
                 </table>
@@ -472,7 +477,7 @@
               <label class="form-label">Documento <span id="docRequerido" class="text-danger">*</span></label>
               <div class="drag-area border rounded p-4 bg-light" onclick="document.getElementById('fDocumento').click()" id="dragArea">
                 <div class="text-center mb-3">
-                    <i class="bi bi-cloud-upload" style="font-size: 3rem; color: #800000;"></i>
+                    <i class="bi bi-cloud-upload" style="font-size: 3rem; color: #000000;"></i>
                     <p class="mt-2 mb-1"><strong>Arrastra tu archivo aquí o haz clic para seleccionar</strong></p>
                     <p class="text-muted small mb-0" id="docLabel">PDF, DOC, DOCX, XLS, XLSX, CSV — máx. 10 MB</p>
                 </div>
@@ -617,12 +622,12 @@
           <div class="table-responsive">
             <table class="table table-bordered" style="font-size:0.9rem;">
               <thead>
-                <tr>
+                 <tr>
                   <th style="background:#0d6efd;color:#fff;text-align:center;border:none;">Año</th>
                   <th style="background:#0d6efd;color:#fff;text-align:center;border:none;">Total Auditorías</th>
                   <th style="background:#0d6efd;color:#fff;text-align:center;border:none;">No Conformidades</th>
                   <th style="background:#0d6efd;color:#fff;text-align:center;border:none;">Oport. de Mejora</th>
-                </tr>
+                 </tr>
               </thead>
               <tbody id="cuerpoTablaHistorico"></tbody>
             </table>
@@ -642,14 +647,13 @@
     <div class="modal-content">
       <div class="modal-header modal-header-rojo">
         <h5 class="modal-title"><i class="bi bi-file-earmark me-2"></i><span id="tituloDocumento"></span></h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body p-0">
         <iframe id="iframeDoc" src="about:blank"></iframe>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-          <i class="bi bi-x-circle me-1"></i> Cerrar
+          <i class=""></i> Cerrar
         </button>
         <a id="btnDescargarDocumento" href="#" class="btn text-white" style="background-color: #800000; border: none;">
           <i class="bi bi-download me-1"></i> Descargar
@@ -670,6 +674,32 @@
 <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
 
 <script>
+// ============================================================
+// 1.  DATOS COMPLETOS DE TODOS LOS INFORMES (para estadísticas)
+// ============================================================
+@php
+    $informesData = $informes->map(function($inf) {
+        return [
+            'id' => $inf->id,
+            'nombre_informe' => $inf->nombre_informe,
+            'tipo_auditoria' => $inf->tipo_auditoria,
+            'auditor_lider' => $inf->auditor_lider,
+            'fecha_informe' => $inf->fecha_informe->format('Y-m-d'),
+            'fecha_inicio' => $inf->fecha_inicio ?? ($inf->auditoriaRelacionada?->fecha_inicio ?? null),
+            'fecha_fin' => $inf->fecha_fin ?? ($inf->auditoriaRelacionada?->fecha_fin ?? null),
+            'anio' => $inf->anio,
+            'procesos_auditados' => $inf->procesos_auditados,
+            'nc_om_por_proceso' => $inf->nc_om_por_proceso,
+            'no_conformidades' => $inf->no_conformidades,
+            'oportunidades_mejora' => $inf->oportunidades_mejora,
+        ];
+    });
+@endphp
+const informesCompletos = @json($informesData);
+
+// ============================================================
+// 2.  RUTAS Y VARIABLES GLOBALES
+// ============================================================
 const ROUTES = {
     index       : "{{ route('informes-auditoria.index') }}",
     store       : "{{ route('informes-auditoria.store') }}",
@@ -692,18 +722,268 @@ let ordenSeleccionado  = '';
 let tipoEstadisticas   = 'todos';
 let tipoHistorico      = 'todos';
 
-// Paleta de colores para NC y OM según el tipo de auditoría
 const coloresNCPorTipo = {
-    todos: 'rgba(220, 53, 69, 0.85)',    // rojo original
-    Interna: 'rgba(220, 53, 69, 0.85)', // naranja
-    Externa: 'rgba(220, 53, 69, 0.85)'    // rojo oscuro
+    todos: 'rgba(220, 53, 69, 0.85)',
+    Interna: 'rgba(220, 53, 69, 0.85)',
+    Externa: 'rgba(220, 53, 69, 0.85)'
 };
 const coloresOMPorTipo = {
-    todos: 'rgba(40, 167, 69, 0.85)',    // verde original
-    Interna: 'rgba(40, 167, 69, 0.85)', // turquesa
-    Externa: 'rgba(40, 167, 69, 0.85)'     // verde oscuro
+    todos: 'rgba(40, 167, 69, 0.85)',
+    Interna: 'rgba(40, 167, 69, 0.85)',
+    Externa: 'rgba(40, 167, 69, 0.85)'
 };
 
+// ============================================================
+// 3.  FUNCIONES DE FILTRADO Y ESTADÍSTICAS (USANDO informesCompletos)
+// ============================================================
+function obtenerDatosFiltrados(anio, tipo) {
+    let total = 0, nc = 0, om = 0;
+    const procesosSet = new Set();
+    const procesosMap = {};
+
+    informesCompletos.forEach(inf => {
+        const coincideAnio = anio === '' || inf.anio == anio;
+        const coincideTipo = (tipo === 'todos') || (inf.tipo_auditoria === tipo);
+        if (!coincideAnio || !coincideTipo) return;
+
+        total++;
+        nc += inf.no_conformidades || 0;
+        om += inf.oportunidades_mejora || 0;
+
+        // Procesos generales (lista simple)
+        if (inf.procesos_auditados && Array.isArray(inf.procesos_auditados)) {
+            inf.procesos_auditados.forEach(p => procesosSet.add(p));
+        }
+
+        // Desglose por proceso (NC y OM por proceso)
+        if (inf.nc_om_por_proceso && Array.isArray(inf.nc_om_por_proceso)) {
+            inf.nc_om_por_proceso.forEach(item => {
+                if (!item.proceso) return;
+                if (!procesosMap[item.proceso]) {
+                    procesosMap[item.proceso] = { nc: 0, om: 0 };
+                }
+                procesosMap[item.proceso].nc += parseInt(item.nc) || 0;
+                procesosMap[item.proceso].om += parseInt(item.om) || 0;
+            });
+        }
+    });
+
+    return { totalAuditorias: total, totalNC: nc, totalOM: om, procesos: Array.from(procesosSet), procesosMap };
+}
+
+function obtenerAniosUnicosCompletos() {
+    const años = new Set();
+    informesCompletos.forEach(inf => { if (inf.anio) años.add(inf.anio.toString()); });
+    return Array.from(años).sort();
+}
+
+function actualizarTarjetas(t, nc, om) {
+    document.getElementById('statTotal').textContent = t;
+    document.getElementById('statNC').textContent    = nc;
+    document.getElementById('statOM').textContent    = om;
+}
+
+function actualizarGraficaPorProceso(procesosMap) {
+    const ctx    = document.getElementById('chartPorProceso');
+    const msgEl  = document.getElementById('sinDatosProcesoMsg');
+    const wrpEl  = document.getElementById('wrapperChartPorProceso');
+    if (!ctx) return;
+    if (chartPorProceso) { chartPorProceso.destroy(); chartPorProceso = null; }
+    const procesos = Object.keys(procesosMap);
+    if (procesos.length === 0) { msgEl.style.display = 'block'; wrpEl.style.display = 'none'; return; }
+    msgEl.style.display = 'none'; wrpEl.style.display = 'block';
+    ctx.height = Math.max(300, 200 + procesos.length * 25);
+
+    const colorNC = coloresNCPorTipo[tipoEstadisticas] || coloresNCPorTipo.todos;
+    const colorOM = coloresOMPorTipo[tipoEstadisticas] || coloresOMPorTipo.todos;
+    const borderColorNC = colorNC.replace('0.85', '1');
+    const borderColorOM = colorOM.replace('0.85', '1');
+
+    chartPorProceso = new Chart(ctx.getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: procesos,
+            datasets: [
+                {
+                    label: 'No Conformidades',
+                    data: procesos.map(p => procesosMap[p].nc),
+                    backgroundColor: colorNC,
+                    borderColor: borderColorNC,
+                    borderWidth: 1,
+                    borderRadius: 4
+                },
+                {
+                    label: 'Oport. de Mejora',
+                    data: procesos.map(p => procesosMap[p].om),
+                    backgroundColor: colorOM,
+                    borderColor: borderColorOM,
+                    borderWidth: 1,
+                    borderRadius: 4
+                }
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: {
+                legend: { display: true, position: 'top', labels: { font: { size: 13 } } },
+                tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ${ctx.raw}` } }
+            },
+            scales: {
+                x: { ticks: { maxRotation: 35, minRotation: 0, font: { size: 11 } } },
+                y: { beginAtZero: true, ticks: { stepSize: 1 }, title: { display: true, text: 'Cantidad' } }
+            }
+        }
+    });
+}
+
+function actualizarListaProcesos(procesos) {
+    const div = document.getElementById('listaProcesosEstadisticas');
+    div.innerHTML = '';
+    if (procesos.length > 0) {
+        procesos.forEach(p => { const s = document.createElement('span'); s.className = 'tag-proceso'; s.textContent = p; div.appendChild(s); });
+    } else {
+        div.innerHTML = '<span class="text-muted">No hay procesos para los filtros seleccionados</span>';
+    }
+}
+
+function refrescarEstadisticas() {
+    const anio = document.getElementById('selectAnioEstadisticas').value;
+    if (!anio || anio === '0') { actualizarTarjetas(0, 0, 0); actualizarGraficaPorProceso({}); actualizarListaProcesos([]); return; }
+    const d = obtenerDatosFiltrados(anio, tipoEstadisticas);
+    actualizarTarjetas(d.totalAuditorias, d.totalNC, d.totalOM);
+    actualizarGraficaPorProceso(d.procesosMap);
+    actualizarListaProcesos(d.procesos);
+}
+
+function seleccionarTipoEstadisticas(tipo) {
+    tipoEstadisticas = tipo;
+    document.getElementById('btnTipoTodos').className    = 'btn-tipo' + (tipo === 'todos'    ? ' activo-todos'    : '');
+    document.getElementById('btnTipoInterna').className  = 'btn-tipo' + (tipo === 'Interna'  ? ' activo-interna'  : '');
+    document.getElementById('btnTipoExterna').className  = 'btn-tipo' + (tipo === 'Externa'  ? ' activo-externa'  : '');
+    refrescarEstadisticas();
+}
+
+function renderHistorico() {
+    const anios = obtenerAniosUnicosCompletos();
+    const msgEl = document.getElementById('sinDatosHistoricoMsg');
+    const wrpEl = document.getElementById('wrapperChartHistorico');
+    const tbody = document.getElementById('cuerpoTablaHistorico');
+    if (chartHistorico) { chartHistorico.destroy(); chartHistorico = null; }
+    if (anios.length === 0) {
+        if (msgEl) msgEl.style.display = 'block';
+        if (wrpEl) wrpEl.style.display = 'none';
+        if (tbody) tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Sin datos</td></tr>';
+        return;
+    }
+    if (msgEl) msgEl.style.display = 'none';
+    if (wrpEl) wrpEl.style.display = 'block';
+    if (tbody) tbody.innerHTML = '';
+    const dataNc = [], dataOm = [], dataTotal = [];
+    anios.forEach((a, idx) => {
+        const d = obtenerDatosFiltrados(a, tipoHistorico);
+        dataNc.push(d.totalNC);
+        dataOm.push(d.totalOM);
+        dataTotal.push(d.totalAuditorias);
+        if (tbody) {
+            const tr = document.createElement('tr');
+            tr.style.background = idx % 2 === 1 ? '#f8f9fa' : '#fff';
+            tr.innerHTML = `<td style="text-align:center;font-weight:600;">${a}</td>
+                            <td style="text-align:center;">${d.totalAuditorias}</td>
+                            <td style="text-align:center;color:#dc3545;font-weight:700;">${d.totalNC}</td>
+                            <td style="text-align:center;color:#fd7e14;font-weight:700;">${d.totalOM}</td>`;
+            tbody.appendChild(tr);
+        }
+    });
+    const ctx = document.getElementById('chartHistorico');
+    if (!ctx) return;
+    const colorNC = coloresNCPorTipo[tipoHistorico] || coloresNCPorTipo.todos;
+    const colorOM = coloresOMPorTipo[tipoHistorico] || coloresOMPorTipo.todos;
+    const borderColorNC = colorNC.replace('0.85', '1');
+    const borderColorOM = colorOM.replace('0.85', '1');
+    chartHistorico = new Chart(ctx.getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: anios,
+            datasets: [
+                {
+                    label: 'No Conformidades',
+                    data: dataNc,
+                    backgroundColor: colorNC,
+                    borderColor: borderColorNC,
+                    borderWidth: 1,
+                    borderRadius: 5,
+                    barPercentage: 0.6
+                },
+                {
+                    label: 'Oport. de Mejora',
+                    data: dataOm,
+                    backgroundColor: colorOM,
+                    borderColor: borderColorOM,
+                    borderWidth: 1,
+                    borderRadius: 5,
+                    barPercentage: 0.6
+                }
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: true,
+            plugins: {
+                legend: { display: true, position: 'top', labels: { font: { size: 13 } } },
+                tooltip: { callbacks: { label: c => `${c.dataset.label}: ${c.raw}` } }
+            },
+            scales: {
+                x: { ticks: { font: { size: 12 } } },
+                y: { beginAtZero: true, ticks: { stepSize: 1 }, title: { display: true, text: 'Total' } }
+            }
+        }
+    });
+}
+
+function seleccionarTipoHistorico(tipo) {
+    tipoHistorico = tipo;
+    document.getElementById('btnHistTodos').className   = 'btn-tipo' + (tipo === 'todos'   ? ' activo-todos'   : '');
+    document.getElementById('btnHistInterna').className = 'btn-tipo' + (tipo === 'Interna' ? ' activo-interna' : '');
+    document.getElementById('btnHistExterna').className = 'btn-tipo' + (tipo === 'Externa' ? ' activo-externa' : '');
+    renderHistorico();
+}
+
+// ============================================================
+// 4.  EVENTOS PARA ABRIR MODALES
+// ============================================================
+document.getElementById('btnEstadisticas').addEventListener('click', () => {
+    const anios = obtenerAniosUnicosCompletos();
+    tipoEstadisticas = 'todos';
+    seleccionarTipoEstadisticas('todos');
+    new bootstrap.Modal(document.getElementById('modalEstadisticas')).show();
+    const sel = document.getElementById('selectAnioEstadisticas');
+    sel.innerHTML = '';
+    if (anios.length === 0) {
+        sel.innerHTML = '<option value="0">Sin años disponibles</option>';
+        actualizarTarjetas(0, 0, 0); actualizarGraficaPorProceso({}); actualizarListaProcesos([]);
+    } else {
+        anios.forEach(a => { const o = document.createElement('option'); o.value = a; o.textContent = a; sel.appendChild(o); });
+        sel.value = anios[0];
+        refrescarEstadisticas();
+    }
+});
+
+document.getElementById('btnHistorico').addEventListener('click', () => {
+    tipoHistorico = 'todos';
+    seleccionarTipoHistorico('todos');
+    new bootstrap.Modal(document.getElementById('modalHistorico')).show();
+    renderHistorico();
+});
+
+document.getElementById('modalEstadisticas').addEventListener('hidden.bs.modal', () => {
+    if (chartPorProceso) { chartPorProceso.destroy(); chartPorProceso = null; }
+});
+document.getElementById('modalHistorico').addEventListener('hidden.bs.modal', () => {
+    if (chartHistorico) { chartHistorico.destroy(); chartHistorico = null; }
+});
+
+// ============================================================
+// 5.  FUNCIONES ORIGINALES PARA EL CRUD Y MANEJO DE FORMULARIOS
+// ============================================================
 function inicializarDateRangePicker() {}
 
 document.getElementById('fAuditoriaRel').addEventListener('change', function () {
@@ -738,7 +1018,6 @@ function limpiarBuscador() {
     const b = document.getElementById('inputBuscar');
     if (b) { b.value = ''; aplicarFiltros(); b.focus(); }
 }
-
 function seleccionarAnio(anio, texto) {
     anioSeleccionado = anio;
     document.getElementById('anioTexto').innerText = texto;
@@ -880,7 +1159,7 @@ function reconstruirTablaNcOm() {
         const tr = document.createElement('tr');
         tr.dataset.proceso = proc;
         tr.style.cssText = bg;
-        tr.innerHTML = `<td style="padding:6px 12px; border-bottom:1px solid #dee2e6; vertical-align:middle;"><i class="bi bi-diagram-3 me-1" style="color:#800000; font-size:0.8rem;"></i>${_escHtml(proc)}</td>
+        tr.innerHTML = `<td style="padding:6px 12px; border-bottom:1px solid #dee2e6; vertical-align:middle;"><i class="bi bi-diagram-3 me-1" style="color:#000000; font-size:0.8rem;"></i>${_escHtml(proc)}</td>
                         <td style="padding:6px 12px; border-bottom:1px solid #dee2e6; vertical-align:middle;">
                             <input type="text" class="form-control form-control-sm input-criterio" name="criterio_por_proceso[${_escAttr(proc)}]" value="${_escAttr(criterio)}" placeholder="Criterio" style="width:100%;">
                         </td>
@@ -1000,6 +1279,7 @@ function mostrarMensajeExito(mensaje) {
     if (c) c.insertBefore(a, c.firstChild);
     setTimeout(() => { if (a && a.parentNode) a.remove(); }, 5000);
 }
+
 async function editarInforme(id) {
     try {
         resetForm();
@@ -1063,7 +1343,8 @@ async function editarInforme(id) {
         const ex = bootstrap.Modal.getInstance(el);
         if (ex) ex.dispose();
         new bootstrap.Modal(el, { backdrop: true, keyboard: true }).show();
-    } catch (e) {console.error('Error al cargar el informe:', e);
+    } catch (e) {
+        console.error('Error al cargar el informe:', e);
         mostrarErrores({ error: ['Error al cargar los datos del informe'] });
     }
 }
@@ -1085,12 +1366,12 @@ function eliminarInforme(id, nombre) {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    Swal.fire({ icon: 'success', title: '¡Eliminado!', text: data.message, confirmButtonColor: '#800000', timer: 2000 }).then(() => { location.reload(); });
+                    Swal.fire({ icon: 'success', title: '¡Eliminado!', text: data.message, confirmButtonColor: '#000000', timer: 2000, showConfirmButton: false  }).then(() => { location.reload(); });
                 } else {
-                    Swal.fire({ icon: 'error', title: 'Error', text: data.message || 'Error al eliminar', confirmButtonColor: '#800000' });
+                    Swal.fire({ icon: 'error', title: 'Error', text: data.message || 'Error al eliminar', confirmButtonColor: '#000000' });
                 }
             })
-            .catch(error => { console.error('Error:', error); Swal.fire({ icon: 'error', title: 'Error', text: 'Error de conexión', confirmButtonColor: '#800000' }); });
+            .catch(error => { console.error('Error:', error); Swal.fire({ icon: 'error', title: 'Error', text: 'Error de conexión', confirmButtonColor: '#000000',showConfirmButton: false  }); });
         }
     });
 }
@@ -1114,7 +1395,7 @@ document.getElementById('modalDocumento').addEventListener('hidden.bs.modal', ()
     document.getElementById('iframeDoc').src = 'about:blank';
 });
 
-// ── Filtros de la tabla ───────────────────────────────────────────────────────
+// ── Filtros de la tabla (basados en la tabla visible) ───────────────────────────────────────
 function obtenerAniosUnicos() {
     const s = new Set();
     document.querySelectorAll('#tablaInformes tbody tr').forEach(f => {
@@ -1162,240 +1443,6 @@ function inicializarFiltrosDesdeURL() {
     }
 }
 
-// ── Estadísticas ──────────────────────────────────────────────────────────────
-function obtenerDatosFiltrados(anio, tipo) {
-    let total = 0, nc = 0, om = 0;
-    const procesosSet = new Set();
-    const procesosMap = {};
-    document.querySelectorAll('#tablaInformes tbody tr').forEach(fila => {
-        const anioFila = fila.cells[5]?.textContent.trim();          // Año (índice 5)
-        const tipoFila = fila.dataset.tipo ?? '';
-        const coincideAnio = anioFila === anio;
-        const coincideTipo = (tipo === 'todos') || (tipoFila === tipo);
-        if (!coincideAnio || !coincideTipo) return;
-        total++;
-        // NC ahora en índice 8, OM en índice 9 (después de la columna Criterios)
-        nc += parseInt(fila.cells[8]?.textContent.trim()) || 0;
-        om += parseInt(fila.cells[9]?.textContent.trim()) || 0;
-        // Procesos en índice 6
-        fila.cells[6]?.querySelectorAll('.tag-proceso').forEach(s => { if (s.textContent.trim()) procesosSet.add(s.textContent.trim()); });
-        let ncOmData = [];
-        try { ncOmData = JSON.parse(fila.dataset.ncOmPorProceso || '[]'); } catch(e) {}
-        ncOmData.forEach(item => {
-            if (!item.proceso) return;
-            if (!procesosMap[item.proceso]) procesosMap[item.proceso] = { nc: 0, om: 0 };
-            procesosMap[item.proceso].nc += parseInt(item.nc) || 0;
-            procesosMap[item.proceso].om += parseInt(item.om) || 0;
-        });
-    });
-    return { totalAuditorias: total, totalNC: nc, totalOM: om, procesos: Array.from(procesosSet), procesosMap };
-}
-
-function actualizarTarjetas(t, nc, om) {
-    document.getElementById('statTotal').textContent = t;
-    document.getElementById('statNC').textContent    = nc;
-    document.getElementById('statOM').textContent    = om;
-}
-
-function actualizarGraficaPorProceso(procesosMap) {
-    const ctx    = document.getElementById('chartPorProceso');
-    const msgEl  = document.getElementById('sinDatosProcesoMsg');
-    const wrpEl  = document.getElementById('wrapperChartPorProceso');
-    if (!ctx) return;
-    if (chartPorProceso) { chartPorProceso.destroy(); chartPorProceso = null; }
-    const procesos = Object.keys(procesosMap);
-    if (procesos.length === 0) { msgEl.style.display = 'block'; wrpEl.style.display = 'none'; return; }
-    msgEl.style.display = 'none'; wrpEl.style.display = 'block';
-    ctx.height = Math.max(300, 200 + procesos.length * 25);
-    
-    // Usar colores según el tipo seleccionado (tipoEstadisticas)
-    const colorNC = coloresNCPorTipo[tipoEstadisticas] || coloresNCPorTipo.todos;
-    const colorOM = coloresOMPorTipo[tipoEstadisticas] || coloresOMPorTipo.todos;
-    const borderColorNC = colorNC.replace('0.85', '1');
-    const borderColorOM = colorOM.replace('0.85', '1');
-
-    chartPorProceso = new Chart(ctx.getContext('2d'), {
-        type: 'bar',
-        data: {
-            labels: procesos,
-            datasets: [
-                { 
-                    label: 'No Conformidades', 
-                    data: procesos.map(p => procesosMap[p].nc), 
-                    backgroundColor: colorNC, 
-                    borderColor: borderColorNC, 
-                    borderWidth: 1, 
-                    borderRadius: 4 
-                },
-                { 
-                    label: 'Oport. de Mejora', 
-                    data: procesos.map(p => procesosMap[p].om), 
-                    backgroundColor: colorOM, 
-                    borderColor: borderColorOM, 
-                    borderWidth: 1, 
-                    borderRadius: 4 
-                }
-            ]
-        },
-        options: {
-            responsive: true, maintainAspectRatio: false,
-            plugins: { 
-                legend: { display: true, position: 'top', labels: { font: { size: 13 } } }, 
-                tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ${ctx.raw}` } } 
-            },
-            scales: { 
-                x: { ticks: { maxRotation: 35, minRotation: 0, font: { size: 11 } } }, 
-                y: { beginAtZero: true, ticks: { stepSize: 1 }, title: { display: true, text: 'Cantidad' } } 
-            }
-        }
-    });
-}
-
-function actualizarListaProcesos(procesos) {
-    const div = document.getElementById('listaProcesosEstadisticas');
-    div.innerHTML = '';
-    if (procesos.length > 0) {
-        procesos.forEach(p => { const s = document.createElement('span'); s.className = 'tag-proceso'; s.textContent = p; div.appendChild(s); });
-    } else {
-        div.innerHTML = '<span class="text-muted">No hay procesos para los filtros seleccionados</span>';
-    }
-}
-
-function refrescarEstadisticas() {
-    const anio = document.getElementById('selectAnioEstadisticas').value;
-    if (!anio || anio === '0') { actualizarTarjetas(0, 0, 0); actualizarGraficaPorProceso({}); actualizarListaProcesos([]); return; }
-    const d = obtenerDatosFiltrados(anio, tipoEstadisticas);
-    actualizarTarjetas(d.totalAuditorias, d.totalNC, d.totalOM);
-    actualizarGraficaPorProceso(d.procesosMap);
-    actualizarListaProcesos(d.procesos);
-}
-
-function seleccionarTipoEstadisticas(tipo) {
-    tipoEstadisticas = tipo;
-    document.getElementById('btnTipoTodos').className    = 'btn-tipo' + (tipo === 'todos'    ? ' activo-todos'    : '');
-    document.getElementById('btnTipoInterna').className  = 'btn-tipo' + (tipo === 'Interna'  ? ' activo-interna'  : '');
-    document.getElementById('btnTipoExterna').className  = 'btn-tipo' + (tipo === 'Externa'  ? ' activo-externa'  : '');
-    refrescarEstadisticas();
-}
-
-document.getElementById('btnEstadisticas').addEventListener('click', () => {
-    const anios = obtenerAniosUnicos();
-    tipoEstadisticas = 'todos';
-    seleccionarTipoEstadisticas('todos');
-    new bootstrap.Modal(document.getElementById('modalEstadisticas')).show();
-    const sel = document.getElementById('selectAnioEstadisticas');
-    sel.innerHTML = '';
-    if (anios.length === 0) {
-        sel.innerHTML = '<option value="0">Sin años disponibles</option>';
-        actualizarTarjetas(0, 0, 0); actualizarGraficaPorProceso({}); actualizarListaProcesos([]);
-    } else {
-        anios.forEach(a => { const o = document.createElement('option'); o.value = a; o.textContent = a; sel.appendChild(o); });
-        sel.value = anios[0];
-        refrescarEstadisticas();
-    }
-});
-
-document.getElementById('selectAnioEstadisticas').addEventListener('change', () => { refrescarEstadisticas(); });
-
-document.getElementById('modalEstadisticas').addEventListener('hidden.bs.modal', () => {
-    if (chartPorProceso) { chartPorProceso.destroy(); chartPorProceso = null; }
-});
-
-// ── NUEVO: Histórico Global ───────────────────────────────────────────────────
-function renderHistorico() {
-    const anios = obtenerAniosUnicos();
-    const msgEl = document.getElementById('sinDatosHistoricoMsg');
-    const wrpEl = document.getElementById('wrapperChartHistorico');
-    const tbody = document.getElementById('cuerpoTablaHistorico');
-    if (chartHistorico) { chartHistorico.destroy(); chartHistorico = null; }
-    if (anios.length === 0) {
-        if (msgEl) msgEl.style.display = 'block';
-        if (wrpEl) wrpEl.style.display = 'none';
-        if (tbody) tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Sin datos</td></tr>';
-        return;
-    }
-    if (msgEl) msgEl.style.display = 'none';
-    if (wrpEl) wrpEl.style.display = 'block';
-    if (tbody) tbody.innerHTML = '';
-    const dataNc = [], dataOm = [];
-    anios.forEach((a, idx) => {
-        const d = obtenerDatosFiltrados(a, tipoHistorico);
-        dataNc.push(d.totalNC);
-        dataOm.push(d.totalOM);
-        if (tbody) {
-            const tr = document.createElement('tr');
-            tr.style.background = idx % 2 === 1 ? '#f8f9fa' : '#fff';
-            tr.innerHTML = `<td style="text-align:center;font-weight:600;">${a}</td><td style="text-align:center;">${d.totalAuditorias}</td><td style="text-align:center;color:#dc3545;font-weight:700;">${d.totalNC}</td><td style="text-align:center;color:#fd7e14;font-weight:700;">${d.totalOM}</td>`;
-            tbody.appendChild(tr);
-        }
-    });
-    const ctx = document.getElementById('chartHistorico');
-    if (!ctx) return;
-
-    // Usar colores según el tipo seleccionado (tipoHistorico)
-    const colorNC = coloresNCPorTipo[tipoHistorico] || coloresNCPorTipo.todos;
-    const colorOM = coloresOMPorTipo[tipoHistorico] || coloresOMPorTipo.todos;
-    const borderColorNC = colorNC.replace('0.85', '1');
-    const borderColorOM = colorOM.replace('0.85', '1');
-
-    chartHistorico = new Chart(ctx.getContext('2d'), {
-        type: 'bar',
-        data: {
-            labels: anios,
-            datasets: [
-                { 
-                    label: 'No Conformidades', 
-                    data: dataNc, 
-                    backgroundColor: colorNC, 
-                    borderColor: borderColorNC, 
-                    borderWidth: 1, 
-                    borderRadius: 5, 
-                    barPercentage: 0.6 
-                },
-                { 
-                    label: 'Oport. de Mejora', 
-                    data: dataOm, 
-                    backgroundColor: colorOM, 
-                    borderColor: borderColorOM, 
-                    borderWidth: 1, 
-                    borderRadius: 5, 
-                    barPercentage: 0.6 
-                }
-            ]
-        },
-        options: {
-            responsive: true, maintainAspectRatio: true,
-            plugins: { 
-                legend: { display: true, position: 'top', labels: { font: { size: 13 } } }, 
-                tooltip: { callbacks: { label: c => `${c.dataset.label}: ${c.raw}` } } 
-            },
-            scales: { 
-                x: { ticks: { font: { size: 12 } } }, 
-                y: { beginAtZero: true, ticks: { stepSize: 1 }, title: { display: true, text: 'Total' } } 
-            }
-        }
-    });
-}
-
-function seleccionarTipoHistorico(tipo) {
-    tipoHistorico = tipo;
-    document.getElementById('btnHistTodos').className   = 'btn-tipo' + (tipo === 'todos'   ? ' activo-todos'   : '');
-    document.getElementById('btnHistInterna').className = 'btn-tipo' + (tipo === 'Interna' ? ' activo-interna' : '');
-    document.getElementById('btnHistExterna').className = 'btn-tipo' + (tipo === 'Externa' ? ' activo-externa' : '');
-    renderHistorico();
-}
-
-document.getElementById('btnHistorico').addEventListener('click', () => {
-    tipoHistorico = 'todos';
-    seleccionarTipoHistorico('todos');
-    new bootstrap.Modal(document.getElementById('modalHistorico')).show();
-    renderHistorico();
-});
-
-document.getElementById('modalHistorico').addEventListener('hidden.bs.modal', () => {
-    if (chartHistorico) { chartHistorico.destroy(); chartHistorico = null; }
-});
-
 // ── Agregar nuevo proceso ─────────────────────────────────────────────────────
 function agregarNuevoProceso() {
     const input  = document.getElementById('nuevoProceso');
@@ -1417,6 +1464,49 @@ function agregarNuevoProceso() {
     document.getElementById('fProcesos').classList.remove('is-invalid');
     document.getElementById('fProcesos-feedback').style.display = 'none';
     reconstruirTablaNcOm();
+}
+
+// ── Autocomplete procesos ─────────────────────────────────────────────────────
+let _procCache = null;
+let _procIdx   = -1;
+
+async function _fetchProcesos() {
+    if (_procCache !== null) return _procCache;
+    try {
+        const r = await fetch(ROUTES.procesosCustom, { headers: { 'Accept': 'application/json' } });
+        _procCache = await r.json();
+    } catch (e) { _procCache = []; }
+    return _procCache;
+}
+
+async function _mostrarDropdown(query) {
+    const dd = document.getElementById('autocomplete-procesos');
+    if (!dd || !query) { if (dd) dd.style.display = 'none'; return; }
+    const todos      = await _fetchProcesos();
+    const yaEnLista  = Array.from(document.querySelectorAll('.proceso-check')).map(c => c.value.toLowerCase());
+    const filtrados  = todos.filter(p => p.toLowerCase().includes(query.toLowerCase()) && !yaEnLista.includes(p.toLowerCase()));
+    dd.innerHTML = ''; _procIdx = -1;
+    filtrados.forEach(p => {
+        const d = document.createElement('div'); d.className = 'ac-item';
+        d.innerHTML = `<i class="bi bi-diagram-3"></i> ${p}`; d.dataset.val = p;
+        d.addEventListener('mousedown', e => { e.preventDefault(); _seleccionarProceso(p); });
+        dd.appendChild(d);
+    });
+    const exactoEnLista    = yaEnLista.includes(query.toLowerCase());
+    const exactoEnFiltrados = filtrados.some(p => p.toLowerCase() === query.toLowerCase());
+    if (!exactoEnLista && !exactoEnFiltrados) {
+        const d = document.createElement('div'); d.className = 'ac-item'; d.style.color = '#800000';
+        d.innerHTML = `<i class="bi bi-plus-circle"></i> Agregar "<strong>${query}</strong>"`;
+        d.addEventListener('mousedown', e => { e.preventDefault(); _seleccionarProceso(query); });
+        dd.appendChild(d);
+    }
+    dd.style.display = dd.children.length ? 'block' : 'none';
+}
+
+function _seleccionarProceso(nombre) {
+    document.getElementById('nuevoProceso').value = nombre;
+    document.getElementById('autocomplete-procesos').style.display = 'none';
+    agregarNuevoProceso();
 }
 
 // ── Inicialización ────────────────────────────────────────────────────────────
@@ -1477,7 +1567,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const dragArea = document.getElementById('dragArea');
     if (dragArea) {
         ['dragenter', 'dragover'].forEach(evt => {
-            dragArea.addEventListener(evt, function(e) { e.preventDefault(); e.stopPropagation(); dragArea.style.backgroundColor = '#fff0f0'; dragArea.style.borderColor = '#600000'; });
+            dragArea.addEventListener(evt, function(e) { e.preventDefault(); e.stopPropagation(); dragArea.style.backgroundColor = '#fff0f0'; dragArea.style.borderColor = '#00000'; });
         });
         ['dragleave', 'drop'].forEach(evt => {
             dragArea.addEventListener(evt, function(e) { e.preventDefault(); e.stopPropagation(); dragArea.style.backgroundColor = ''; dragArea.style.borderColor = ''; });
@@ -1497,48 +1587,5 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
-
-// ── Autocomplete procesos ─────────────────────────────────────────────────────
-let _procCache = null;
-let _procIdx   = -1;
-
-async function _fetchProcesos() {
-    if (_procCache !== null) return _procCache;
-    try {
-        const r = await fetch(ROUTES.procesosCustom, { headers: { 'Accept': 'application/json' } });
-        _procCache = await r.json();
-    } catch (e) { _procCache = []; }
-    return _procCache;
-}
-
-async function _mostrarDropdown(query) {
-    const dd = document.getElementById('autocomplete-procesos');
-    if (!dd || !query) { if (dd) dd.style.display = 'none'; return; }
-    const todos      = await _fetchProcesos();
-    const yaEnLista  = Array.from(document.querySelectorAll('.proceso-check')).map(c => c.value.toLowerCase());
-    const filtrados  = todos.filter(p => p.toLowerCase().includes(query.toLowerCase()) && !yaEnLista.includes(p.toLowerCase()));
-    dd.innerHTML = ''; _procIdx = -1;
-    filtrados.forEach(p => {
-        const d = document.createElement('div'); d.className = 'ac-item';
-        d.innerHTML = `<i class="bi bi-diagram-3"></i> ${p}`; d.dataset.val = p;
-        d.addEventListener('mousedown', e => { e.preventDefault(); _seleccionarProceso(p); });
-        dd.appendChild(d);
-    });
-    const exactoEnLista    = yaEnLista.includes(query.toLowerCase());
-    const exactoEnFiltrados = filtrados.some(p => p.toLowerCase() === query.toLowerCase());
-    if (!exactoEnLista && !exactoEnFiltrados) {
-        const d = document.createElement('div'); d.className = 'ac-item'; d.style.color = '#800000';
-        d.innerHTML = `<i class="bi bi-plus-circle"></i> Agregar "<strong>${query}</strong>"`;
-        d.addEventListener('mousedown', e => { e.preventDefault(); _seleccionarProceso(query); });
-        dd.appendChild(d);
-    }
-    dd.style.display = dd.children.length ? 'block' : 'none';
-}
-
-function _seleccionarProceso(nombre) {
-    document.getElementById('nuevoProceso').value = nombre;
-    document.getElementById('autocomplete-procesos').style.display = 'none';
-    agregarNuevoProceso();
-}
 </script>
 @endpush

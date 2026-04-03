@@ -56,19 +56,17 @@
                 </ul>
             </div>
 
-            <!-- Botón Ver Estadísticas -->
-            @if(in_array(Auth::user()->role, ['admin', 'superadmin']))
+            <!-- Botón Ver Estadísticas (ahora visible para todos los usuarios) -->
             <button class="btn" type="button" onclick="abrirModalGraficas()"
                 style="height: 42px; background-color: #0dcaf0; color: white; border: none; border-radius: 4px;">
                 <i class="bi bi-pie-chart-fill me-1"></i> Estadísticas
             </button>
 
-            <!-- Botón Histórico -->
+            <!-- Botón Histórico (ahora visible para todos los usuarios) -->
             <button class="btn" type="button" onclick="abrirModalHistorico()"
                 style="height: 42px; background-color: #0d6efd; color: white; border: none; border-radius: 4px;">
                 <i class="bi bi-bar-chart-line-fill me-1"></i> Histórico
             </button>
-            @endif
         </div>
     </div>
 </div>

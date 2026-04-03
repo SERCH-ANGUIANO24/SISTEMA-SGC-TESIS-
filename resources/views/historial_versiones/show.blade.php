@@ -54,7 +54,7 @@
                                     <td>
                                         <span class="badge" style="background: {{ $actividad->color_accion }}; color: white; padding: 8px 12px;">
                                             <i class="{{ $actividad->icono_accion }} me-1"></i>
-                                            {{ $actividad->accion }}
+                                            {{ str_replace('MOVIR', 'MOVER', $actividad->accion) }}
                                         </span>
                                     </td>
                                 </tr>

@@ -4,15 +4,17 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Traits\RegistraHistorialVersiones;
 
 class SolicitudMejora extends Model
 {
-    use HasFactory, RegistraHistorialVersiones;
+    use HasFactory, SoftDeletes, RegistraHistorialVersiones;
 
     protected $table = 'solicitudes_mejora';
 
     protected $fillable = [
+        'informe_id',
         'folio_solicitud',
         'fecha_solicitud',
         'responsable_accion',
@@ -22,38 +24,18 @@ class SolicitudMejora extends Model
         'estatus',
         'archivo_nombre',
         'archivo_ruta',
-        'informe_id',
         'fecha_informe',
         'procesos_auditados',
         'tipo_solicitud',
     ];
 
     protected $casts = [
-        'fecha_solicitud'   => 'date',
-        'fecha_aplicacion'  => 'date',
-        'fecha_verificacion'=> 'date',
-        'fecha_informe'     => 'date',
+        'fecha_solicitud' => 'datetime',
+        'fecha_aplicacion' => 'date',
+        'fecha_verificacion' => 'date',
+        'fecha_informe' => 'date',
+        'deleted_at' => 'datetime',
     ];
-
-    public function getEstatusBadgeClassAttribute()
-    {
-        return match($this->estatus) {
-            'No Atendida' => 'badge-no-atendida',
-            'En Proceso'  => 'badge-proceso',
-            'Cerrado'     => 'badge-cerrado',
-            default       => 'badge-secondary'
-        };
-    }
-
-    public function getEstatusColorAttribute()
-    {
-        return match($this->estatus) {
-            'No Atendida' => '#fd7e14',
-            'En Proceso'  => '#17a2b8',
-            'Cerrado'     => '#28a745',
-            default       => '#6c757d'
-        };
-    }
 
     public function informe()
     {

@@ -4,15 +4,17 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Traits\RegistraHistorialVersiones;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Folder extends Model
 {
-    use HasFactory, RegistraHistorialVersiones;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'name', 'color', 'parent_id', 'user_id'
     ];
+
+    protected $dates = ['deleted_at'];
 
     public function parent()
     {

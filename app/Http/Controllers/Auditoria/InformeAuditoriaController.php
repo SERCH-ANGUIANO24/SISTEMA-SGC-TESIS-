@@ -154,6 +154,23 @@ class InformeAuditoriaController extends Controller
         // Registrar SUBIR (documento)
         \App\Helpers\HistorialVersionesHelper::subir('INFORMES_AUDITORIA', $informe);
 
+        // ── NOTIFICACIÓN: nuevo informe subido ─────────────────────────
+        $notif = app(\App\Services\NotificacionService::class);
+        $notif->enviarATodos(
+            titulo:     'Nuevo informe disponible: ' . $informe->nombre_informe,
+            mensaje:    'Se ha publicado un nuevo informe de auditoría.' . PHP_EOL .
+                        'Tipo de auditoría: ' . $informe->tipo_auditoria . PHP_EOL .
+                        'Auditor Líder: ' . $informe->auditor_lider . PHP_EOL .
+                        'Fecha de registro del informe: ' . \Carbon\Carbon::parse($informe->created_at)->format('d/m/Y'),
+            tipo:       'info',
+            icono:      'bi-file-earmark-text',
+            url:        ('/auditoria/informes'),
+            email:      true,
+            docId:      (string) $informe->id,
+            tipoEvento: 'nuevo_informe'
+        );
+        // ── FIN NOTIFICACIÓN ───────────────────────────────────────────
+
         return response()->json(['success' => true, 'message' => 'Informe guardado correctamente.']);
     }
 
@@ -228,22 +245,57 @@ class InformeAuditoriaController extends Controller
     }
 
     // ------------------------------------------------------------------
-    // DESTROY
+    // DESTROY (Soft Delete - NO elimina el archivo físico)
     // ------------------------------------------------------------------
     public function destroy(InformeAuditoria $informeAuditoria)
     {
         // Guardar datos antes de eliminar
         $datosInforme = $informeAuditoria->toArray();
 
-        if ($informeAuditoria->documento_path) {
-            Storage::disk('public')->delete($informeAuditoria->documento_path);
-        }
+        // Soft delete - NO elimina el archivo físico
         $informeAuditoria->delete();
 
         // Registrar ELIMINAR
-        \App\Helpers\HistorialVersionesHelper::eliminar('INFORMES_AUDITORIA', (object)$datosInforme);
+        \App\Helpers\HistorialVersionesHelper::eliminar('INFORMES_AUDITORIA', $informeAuditoria, $datosInforme);
 
         return response()->json(['success' => true, 'message' => 'Informe eliminado correctamente.']);
+    }
+
+    // ------------------------------------------------------------------
+    // RESTAURAR INFORME ELIMINADO
+    // ------------------------------------------------------------------
+    public function restaurar($id)
+    {
+        try {
+            $informe = InformeAuditoria::withTrashed()->findOrFail($id);
+            
+            if (!$informe->trashed()) {
+                return response()->json(['success' => false, 'message' => 'El informe no está eliminado'], 400);
+            }
+            
+            // Verificar que no exista otro informe con el mismo nombre activo
+            $existing = InformeAuditoria::where('nombre_informe', $informe->nombre_informe)
+                ->whereNull('deleted_at')
+                ->first();
+                
+            if ($existing) {
+                return response()->json(['success' => false, 'message' => 'Ya existe un informe activo con el mismo nombre'], 400);
+            }
+            
+            // Verificar que el archivo físico aún existe
+            if ($informe->documento_path && !Storage::disk('public')->exists($informe->documento_path)) {
+                return response()->json(['success' => false, 'message' => 'El archivo físico no existe en el servidor. No se puede restaurar.'], 400);
+            }
+            
+            $informe->restore();
+            
+            \App\Helpers\HistorialVersionesHelper::restaurar('INFORMES_AUDITORIA', $informe);
+            
+            return response()->json(['success' => true, 'message' => 'Informe restaurado correctamente']);
+        } catch (\Exception $e) {
+            \Log::error('Error al restaurar informe: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Error al restaurar: ' . $e->getMessage()], 500);
+        }
     }
 
     // ------------------------------------------------------------------
@@ -307,7 +359,7 @@ class InformeAuditoriaController extends Controller
     // ------------------------------------------------------------------
     public function descargar($id)
     {
-        $informe = InformeAuditoria::findOrFail($id);
+        $informe = InformeAuditoria::withTrashed()->findOrFail($id);
         if (!$informe->documento_path) abort(404, 'El documento no existe');
 
         // Registrar descarga
@@ -346,20 +398,19 @@ class InformeAuditoriaController extends Controller
 
     // ------------------------------------------------------------------
     // HELPER: construir array nc_om_por_proceso desde el request
-    // AHORA INCLUYE EL CAMPO criterio_por_proceso
     // ------------------------------------------------------------------
     private function buildNcOmPorProceso(Request $request): array
     {
         $procesos = $request->input('procesos_auditados', []);
         $ncMap    = $request->input('nc_por_proceso', []);
         $omMap    = $request->input('om_por_proceso', []);
-        $criterioMap = $request->input('criterio_por_proceso', []); // ← NUEVO
+        $criterioMap = $request->input('criterio_por_proceso', []);
 
         $resultado = [];
         foreach ($procesos as $proceso) {
             $resultado[] = [
                 'proceso' => $proceso,
-                'criterio' => $criterioMap[$proceso] ?? '', // ← NUEVO
+                'criterio' => $criterioMap[$proceso] ?? '',
                 'nc'      => isset($ncMap[$proceso]) ? max(0, (int) $ncMap[$proceso]) : 0,
                 'om'      => isset($omMap[$proceso]) ? max(0, (int) $omMap[$proceso]) : 0,
             ];

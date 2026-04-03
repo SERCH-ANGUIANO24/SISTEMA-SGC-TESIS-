@@ -6,7 +6,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">
-                        <i class="bi bi-pencil-square me-2" style="color: #800000;"></i>
+                        <i class="bi bi-pencil-square me-2" style="color: #000000;"></i>
                         Editar Documento
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -72,7 +72,7 @@
                     {{-- ── SECCIÓN CAMPOS DE FORMATO ── --}}
                     <div id="edit_seccion_formato" style="display:none;">
                         <hr>
-                        <p class="fw-bold mb-3" style="color: #800000;">
+                        <p class="fw-bold mb-3" style="color: #000000;">
                             <i class="bi bi-file-earmark-check me-1"></i>
                             Información del formato <span class="text-danger">*</span>
                             <small class="text-muted fw-normal ms-1" style="font-size:0.8rem;">— Requerido para enviar al módulo de Formatos</small>
@@ -81,17 +81,20 @@
                             <div class="col-md-4 mb-3">
                                 <label class="form-label fw-bold">Clave del formato <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="edit_clave_formato"
-                                        placeholder="Ej: FO-SGC-001">
+                                       name="clave_formato" placeholder="Ej: FO-SGC-001">
+                                <div class="invalid-feedback" id="error_clave_formato">La clave del formato es obligatoria</div>
                             </div>
                             <div class="col-md-4 mb-3">
                                 <label class="form-label fw-bold">Código de procedimiento <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="edit_codigo_procedimiento"
-                                     placeholder="Ej: PR-001">
+                                       name="codigo_procedimiento" placeholder="Ej: PR-001">
+                                <div class="invalid-feedback" id="error_codigo_procedimiento">El código de procedimiento es obligatorio</div>
                             </div>
                             <div class="col-md-4 mb-3">
                                 <label class="form-label fw-bold">Versión del formato <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="edit_version_procedimiento"
-                                     placeholder="Ej: V1">
+                                       name="version_procedimiento" placeholder="Ej: V1">
+                                <div class="invalid-feedback" id="error_version_procedimiento">La versión del formato es obligatoria</div>
                             </div>
                         </div>
                     </div>
@@ -100,7 +103,7 @@
                     {{-- IMPORTANTE: estos inputs NO tienen name, se asignan en el submit via JS --}}
                     <div id="edit_seccion_procedimiento" style="display:none;">
                         <hr>
-                        <p class="fw-bold mb-3" style="color: #800000;">
+                        <p class="fw-bold mb-3" style="color: #000000;">
                             <i class="bi bi-file-earmark-ruled me-1"></i>
                             Información del procedimiento <span class="text-danger">*</span>
                             <small class="text-muted fw-normal ms-1" style="font-size:0.8rem;">— Requerido para enviar al módulo de Lista Maestra</small>
@@ -110,11 +113,13 @@
                                 <label class="form-label fw-bold">Código de procedimiento <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="edit_codigo_proc"
                                        placeholder="Ej: PR-001">
+                                <div class="invalid-feedback" id="error_codigo_proc">El código de procedimiento es obligatorio</div>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label fw-bold">Versión del procedimiento <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="edit_version_proc"
                                        placeholder="Ej: V1">
+                                <div class="invalid-feedback" id="error_version_proc">La versión del procedimiento es obligatoria</div>
                             </div>
                         </div>
                     </div>
@@ -188,106 +193,110 @@ document.addEventListener('DOMContentLoaded', function () {
         toggleSeccionFormato();
     }
 
-    // ── Al hacer submit: mapear los valores al hidden correcto ──
+    // Función para limpiar errores de validación
+    function limpiarErroresValidacion() {
+        // Limpiar errores de sección formato
+        ['edit_clave_formato', 'edit_codigo_procedimiento', 'edit_version_procedimiento'].forEach(id => {
+            const input = document.getElementById(id);
+            if (input) {
+                input.classList.remove('is-invalid');
+            }
+        });
+        
+        // Limpiar errores de sección procedimiento
+        ['edit_codigo_proc', 'edit_version_proc'].forEach(id => {
+            const input = document.getElementById(id);
+            if (input) {
+                input.classList.remove('is-invalid');
+            }
+        });
+    }
+
+    // Función para validar campos obligatorios
+    function validarCamposObligatorios() {
+        let esValido = true;
+        const tipoDocumento = seccionFormato.dataset.tipoDocumento || '';
+        const esValidoStatus = estatusSelect.value === 'Valido';
+        const esDeUsuario = seccionFormato.dataset.modoUsuario === '1';
+        
+        // Limpiar errores previos
+        limpiarErroresValidacion();
+        
+        // Solo validar si es válido y es documento de usuario
+        if (esValidoStatus && esDeUsuario) {
+            if (tipoDocumento === 'Procedimiento') {
+                // Validar campos de procedimiento
+                const codigoProc = document.getElementById('edit_codigo_proc');
+                const versionProc = document.getElementById('edit_version_proc');
+                
+                if (!codigoProc.value.trim()) {
+                    codigoProc.classList.add('is-invalid');
+                    esValido = false;
+                }
+                
+                if (!versionProc.value.trim()) {
+                    versionProc.classList.add('is-invalid');
+                    esValido = false;
+                }
+            } else {
+                // Validar campos de formato
+                const claveFormato = document.getElementById('edit_clave_formato');
+                const codigoProcedimiento = document.getElementById('edit_codigo_procedimiento');
+                const versionProcedimiento = document.getElementById('edit_version_procedimiento');
+                
+                if (!claveFormato.value.trim()) {
+                    claveFormato.classList.add('is-invalid');
+                    esValido = false;
+                }
+                
+                if (!codigoProcedimiento.value.trim()) {
+                    codigoProcedimiento.classList.add('is-invalid');
+                    esValido = false;
+                }
+                
+                if (!versionProcedimiento.value.trim()) {
+                    versionProcedimiento.classList.add('is-invalid');
+                    esValido = false;
+                }
+            }
+        }
+        
+        return esValido;
+    }
+
+    // ── Al hacer submit: validar y luego mapear los valores al hidden correcto ──
     const form = document.getElementById('editDocumentForm');
     if (form) {
-            form.addEventListener('submit', function (e) {
-                const tipoDocumento = seccionFormato.dataset.tipoDocumento || '';
-                const esValido      = estatusSelect.value === 'Valido';
-                const esDeUsuario   = seccionFormato.dataset.modoUsuario === '1';
+        form.addEventListener('submit', function (e) {
+            const tipoDocumento = seccionFormato.dataset.tipoDocumento || '';
+            const esValido      = estatusSelect.value === 'Valido';
+            const esDeUsuario   = seccionFormato.dataset.modoUsuario === '1';
+            
+            // Validar campos obligatorios
+            if (!validarCamposObligatorios()) {
+                e.preventDefault();
+                // Solo mostrar visualmente los campos en rojo, sin popup
+                return false;
+            }
 
-                // Limpiar errores previos
-                ['edit_clave_formato','edit_codigo_procedimiento','edit_version_procedimiento',
-                'edit_codigo_proc','edit_version_proc'].forEach(function(id) {
-                    const el = document.getElementById(id);
-                    if (el) {
-                        el.classList.remove('is-invalid');
-                        const err = document.getElementById(id + '_error');
-                        if (err) err.remove();
-                    }
-                });
+            // Limpiar hiddens primero
+            document.getElementById('hidden_clave_formato').value         = '';
+            document.getElementById('hidden_codigo_procedimiento').value  = '';
+            document.getElementById('hidden_version_procedimiento').value = '';
 
-                let hayError = false;
-
-                if (esValido && esDeUsuario) {
-                    if (tipoDocumento === 'Procedimiento') {
-                        const codigoEl  = document.getElementById('edit_codigo_proc');
-                        const versionEl = document.getElementById('edit_version_proc');
-
-                        if (codigoEl && !codigoEl.value.trim()) {
-                            codigoEl.classList.add('is-invalid');
-                            const msg = document.createElement('div');
-                            msg.id = 'edit_codigo_proc_error';
-                            msg.className = 'invalid-feedback';
-                            msg.textContent = 'El código de procedimiento es obligatorio.';
-                            codigoEl.parentNode.appendChild(msg);
-                            hayError = true;
-                        }
-                        if (versionEl && !versionEl.value.trim()) {
-                            versionEl.classList.add('is-invalid');
-                            const msg = document.createElement('div');
-                            msg.id = 'edit_version_proc_error';
-                            msg.className = 'invalid-feedback';
-                            msg.textContent = 'La versión del procedimiento es obligatoria.';
-                            versionEl.parentNode.appendChild(msg);
-                            hayError = true;
-                        }
-                    } else {
-                        const claveEl   = document.getElementById('edit_clave_formato');
-                        const codigoEl  = document.getElementById('edit_codigo_procedimiento');
-                        const versionEl = document.getElementById('edit_version_procedimiento');
-
-                        if (claveEl && !claveEl.value.trim()) {
-                            claveEl.classList.add('is-invalid');
-                            const msg = document.createElement('div');
-                            msg.id = 'edit_clave_formato_error';
-                            msg.className = 'invalid-feedback';
-                            msg.textContent = 'La clave del formato es obligatoria.';
-                            claveEl.parentNode.appendChild(msg);
-                            hayError = true;
-                        }
-                        if (codigoEl && !codigoEl.value.trim()) {
-                            codigoEl.classList.add('is-invalid');
-                            const msg = document.createElement('div');
-                            msg.id = 'edit_codigo_procedimiento_error';
-                            msg.className = 'invalid-feedback';
-                            msg.textContent = 'El código de procedimiento es obligatorio.';
-                            codigoEl.parentNode.appendChild(msg);
-                            hayError = true;
-                        }
-                        if (versionEl && !versionEl.value.trim()) {
-                            versionEl.classList.add('is-invalid');
-                            const msg = document.createElement('div');
-                            msg.id = 'edit_version_procedimiento_error';
-                            msg.className = 'invalid-feedback';
-                            msg.textContent = 'La versión del formato es obligatoria.';
-                            versionEl.parentNode.appendChild(msg);
-                            hayError = true;
-                        }
-                    }
+            if (esValido && esDeUsuario) {
+                if (tipoDocumento === 'Procedimiento') {
+                    // Solo código y versión, sin clave
+                    document.getElementById('hidden_codigo_procedimiento').value  = document.getElementById('edit_codigo_proc').value;
+                    document.getElementById('hidden_version_procedimiento').value = document.getElementById('edit_version_proc').value;
+                } else {
+                    // Formato: clave + código + versión
+                    document.getElementById('hidden_clave_formato').value         = document.getElementById('edit_clave_formato').value;
+                    document.getElementById('hidden_codigo_procedimiento').value  = document.getElementById('edit_codigo_procedimiento').value;
+                    document.getElementById('hidden_version_procedimiento').value = document.getElementById('edit_version_procedimiento').value;
                 }
-
-                if (hayError) {
-                    e.preventDefault();
-                    return;
-                }
-
-                // Limpiar hiddens y mapear valores
-                document.getElementById('hidden_clave_formato').value         = '';
-                document.getElementById('hidden_codigo_procedimiento').value  = '';
-                document.getElementById('hidden_version_procedimiento').value = '';
-
-                if (esValido && esDeUsuario) {
-                    if (tipoDocumento === 'Procedimiento') {
-                        document.getElementById('hidden_codigo_procedimiento').value  = document.getElementById('edit_codigo_proc').value;
-                        document.getElementById('hidden_version_procedimiento').value = document.getElementById('edit_version_proc').value;
-                    } else {
-                        document.getElementById('hidden_clave_formato').value         = document.getElementById('edit_clave_formato').value;
-                        document.getElementById('hidden_codigo_procedimiento').value  = document.getElementById('edit_codigo_procedimiento').value;
-                        document.getElementById('hidden_version_procedimiento').value = document.getElementById('edit_version_procedimiento').value;
-                    }
-                }
-            });
+            }
+        });
     }
 });
 

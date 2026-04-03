@@ -32,7 +32,6 @@
                         <th>Departamento</th>
                         <th>Tamaño</th>
                         <th>Fecha y Hora</th>
-                        {{-- Columna Estatus: visible para admin y para el propio usuario que subió docs --}}
                         @if($esAdmin || $hayDocsMios)
                         <th>Estatus</th>
                         @endif
@@ -48,17 +47,12 @@
                         $ext = strtolower($doc->extension ?? pathinfo($doc->original_name, PATHINFO_EXTENSION));
                         $estatus = $doc->estatus ?? 'Pendiente';
 
-                        // Usuarios normales NO ven docs de otros usuarios con estatus Pendiente o No Valido
-                        // Solo ven sus propios docs o docs Válidos
                         $esMiDoc = $doc->user_id === Auth::id();
                         $esValido = $estatus === 'Valido';
 
-                        // Si es usuario (no admin): ocultar fila si el doc no es suyo Y no es válido
                         if (!$esAdmin && !$uploadedByAdmin && !$esMiDoc && !$esValido) {
                             continue;
                         }
-                        // Si es usuario (no admin): ocultar fila si es su doc pero está Pendiente o No Valido
-                        // NO — el usuario sí puede ver sus propios docs en cualquier estatus
                     @endphp
                     <tr class="document-row"
                         data-file-id="{{ $doc->id }}"
@@ -68,7 +62,6 @@
                         data-file-extension="{{ $ext }}"
                         data-tipo-documento="{{ $doc->tipo_documento ?? '' }}">
 
-                        {{-- Nombre --}}
                         <td>
                             @php
                                 $icon = 'bi-file-earmark';
@@ -83,7 +76,7 @@
                                     $displayName = $matches[1];
                                 }
                             @endphp
-                            <i class="bi {{ $icon }} me-2" style="color: #800000;"></i>
+                            <i class="bi {{ $icon }} me-2" style="color: #000000;"></i>
                             <span title="{{ $doc->original_name }}">{{ $displayName }}.{{ $ext }}</span>
                             @if($doc->observaciones && $esAdmin)
                                 <br>
@@ -94,16 +87,9 @@
                             @endif
                         </td>
 
-                        {{-- Responsable --}}
                         <td>{{ $doc->responsable ?? $doc->user->name ?? 'N/A' }}</td>
-
-                        {{-- Proceso --}}
                         <td>{{ $doc->proceso ?? $doc->user->proceso ?? 'N/A' }}</td>
-
-                        {{-- Departamento --}}
                         <td>{{ $doc->departamento ?? $doc->user->departamento ?? 'N/A' }}</td>
-
-                        {{-- Tamaño --}}
                         <td>
                             @if($doc->size)
                                 @if($doc->size < 1024) {{ $doc->size }} B
@@ -112,12 +98,9 @@
                                 @endif
                             @else N/A @endif
                         </td>
-
-                        {{-- Fecha --}}
                         <td>{{ $doc->created_at->format('d/m/Y h:i A') }}</td>
 
-                        {{-- Estatus: visible para admin y para el propio usuario que subió el doc --}}
-                        @if($esAdmin || ($hayDocsMios && $esMiDoc && !$uploadedByAdmin))
+                        @if($esAdmin || $hayDocsMios)
                         <td>
                             @if($uploadedByAdmin)
                                 <span class="badge bg-success">Válido</span>
@@ -133,7 +116,6 @@
                         </td>
                         @endif
 
-                        {{-- Tipo --}}
                         <td>
                             @if($doc->tipo_documento === 'Formato')
                                 <span class="badge" style="background-color:#0d6efd;">Formato</span>
@@ -144,7 +126,6 @@
                             @endif
                         </td>
 
-                        {{-- Acciones --}}
                         <td class="text-end" style="white-space:nowrap;">
                             <div class="d-flex justify-content-end gap-1">
                                 @php
@@ -152,27 +133,21 @@
                                     $previewExtensions = array_merge(['pdf'], $imageExtensions, $textExtensions);
                                 @endphp
 
-                                {{-- VER: admin siempre, usuarios solo si el doc es Válido o es su propio doc --}}
                                 @if(in_array($ext, $previewExtensions) && ($esAdmin || $esValido || $esMiDoc))
                                 <button type="button" class="btn btn-sm btn-outline-info"
                                         onclick="viewDocument({{ $doc->id }})"
-                                        title="Ver documento"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#viewDocumentModal{{ $doc->id }}">
+                                        title="Ver documento">
                                     <i class="bi bi-eye"></i>
                                 </button>
                                 @endif
 
-                                {{-- EDITAR ESTATUS - Solo para docs de usuario (NO para docs de admin) --}}
                                 @if(in_array($userRole, ['superadmin', 'admin']) && !$uploadedByAdmin)
                                 <button type="button" class="btn btn-sm btn-outline-secondary"
                                         onclick="editDocument({{ $doc->id }})" title="Editar estatus">
-
                                     <i class="bi bi-pencil-square"></i>
                                 </button>
                                 @endif
 
-                                {{-- MOVER - Solo admin --}}
                                 @if(in_array($userRole, ['superadmin', 'admin']))
                                 <button type="button" class="btn btn-sm btn-outline-secondary"
                                         onclick="moveDocument({{ $doc->id }}, '{{ $doc->name }}.{{ $ext }}')" title="Mover Archivo">
@@ -180,7 +155,6 @@
                                 </button>
                                 @endif
 
-                                {{-- DESCARGAR: admin siempre, usuarios si el doc es Válido o es su propio doc --}}
                                 @if($esAdmin || $esValido || $esMiDoc)
                                 <a href="{{ route('documental.document.download', $doc->id) }}"
                                    class="btn btn-sm btn-outline-primary" title="Descargar archivo">
@@ -188,7 +162,6 @@
                                 </a>
                                 @endif
 
-                                {{-- ELIMINAR - Solo admin --}}
                                 @if(in_array($userRole, ['superadmin', 'admin']))
                                 <button type="button" class="btn btn-sm btn-outline-danger"
                                         onclick="deleteDocument({{ $doc->id }}, '{{ addslashes($doc->name) }}', '{{ $ext }}')"
@@ -208,6 +181,22 @@
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+function viewDocument(id) {
+    const modalElement = document.getElementById(`viewDocumentModal${id}`);
+    if (modalElement) {
+        const modal = new bootstrap.Modal(modalElement);
+        modal.show();
+    } else {
+        console.error('Modal no encontrado:', id);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'No se pudo abrir el visor del documento',
+            confirmButtonColor: '#800000'
+        });
+    }
+}
+
 function editDocument(id) {
     fetch(`/documental/document/${id}/data`)
         .then(response => response.json())
@@ -278,18 +267,20 @@ function deleteDocument(id, name, ext) {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    Swal.fire({ icon: 'success', title: '¡Eliminado!', text: data.message, confirmButtonColor: '#800000', timer: 2000 })
+                    Swal.fire({ icon: 'success', title: '¡Eliminado!', text: data.message, confirmButtonColor: '#000000', timer: 2000, showConfirmButton: false })
                     .then(() => { location.reload(); });
                 } else {
-                    Swal.fire({ icon: 'error', title: 'Error', text: data.message || 'Error al eliminar', confirmButtonColor: '#800000' });
+                    Swal.fire({ icon: 'error', title: 'Error', text: data.message || 'Error al eliminar', confirmButtonColor: '#000000' });
                 }
             })
             .catch(() => {
-                Swal.fire({ icon: 'error', title: 'Error', text: 'Error de conexión', confirmButtonColor: '#800000' });
+                Swal.fire({ icon: 'error', title: 'Error', text: 'Error de conexión', confirmButtonColor: '#000000' });
             });
         }
     });
     return false;
 }
 </script>
+@else
+
 @endif

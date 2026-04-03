@@ -9,7 +9,7 @@
             <div class="d-flex justify-content-between align-items-start">
                 <div class="d-flex flex-column">
                     <a href="{{ route('dashboard') }}" class="text-decoration-none" title="Ir al Dashboard">
-                        <h1 class="h3 mb-2" style="color: #800000; cursor: pointer;">
+                        <h1 class="h3 mb-2" style="color: #dc2626; cursor: pointer;">
                             <i class="bi bi-files me-2" style="font-size: 3rem; vertical-align: middle;"></i>
                             Gestión Documental
                         </h1>
@@ -23,20 +23,7 @@
                         </button>
                     @endif
 
-                    @php
-                        $hayArchivosDeAdmin   = isset($documents) ? $documents->contains(fn($d) => in_array($d->user->role ?? null, ['superadmin', 'admin'])) : false;
-                        $hayArchivosDeUsuario = isset($documents) ? $documents->contains(fn($d) => !in_array($d->user->role ?? null, ['superadmin', 'admin'])) : false;
-                    @endphp
-
-                    {{-- Usuarios: solo en subcarpetas Y solo si NO hay archivos subidos por admin --}}
-                    @if(!in_array($userRole, ['superadmin', 'admin']) && isset($currentFolder) && $currentFolder && $currentFolder->parent_id !== null && !$hayArchivosDeAdmin)
-                        <button type="button" class="btn text-white" style="background-color: #737373;" data-bs-toggle="modal" data-bs-target="#uploadFileModal">
-                            <i class="bi bi-upload me-1"></i> Subir Archivo
-                        </button>
-                    @endif
-
-                    {{-- Admin/Superadmin: en cualquier carpeta Y solo si NO hay archivos subidos por usuarios --}}
-                    @if(in_array($userRole, ['superadmin', 'admin']) && isset($currentFolder) && $currentFolder && !$hayArchivosDeUsuario)
+                    @if(isset($currentFolder) && $currentFolder)
                         <button type="button" class="btn text-white" style="background-color: #737373;" data-bs-toggle="modal" data-bs-target="#uploadFileModal">
                             <i class="bi bi-upload me-1"></i> Subir Archivo
                         </button>
@@ -112,26 +99,26 @@
         <div class="col-12">
             <div class="card shadow-sm border-0">
                 <div class="card-body p-3">
-                    <label class="form-label fw-bold mb-2" style="color: #800000;">
+                    <label class="form-label fw-bold mb-2" style="color: #000000;">
                         <i class="bi bi-tag me-1"></i> Filtrar por tipo de documento
                     </label>
                     <div class="d-flex gap-2 flex-wrap align-items-center">
-                        <button type="button" class="btn btn-sm filtro-tipo activo-tipo"
+                        <button type="button" class="btn btn-sm filtro-tipo btn-filtro-tipo no-tema activo-tipo"
                                 onclick="filtrarPorTipo('')"
                                 id="filtro-tipo-todos"
-                                style="border:1px solid #800000; background:#800000; color:white;">
+                                style="border:1px solid #000000; background:white; color:black;">
                             Todos
                         </button>
-                        <button type="button" class="btn btn-sm filtro-tipo"
+                        <button type="button" class="btn btn-sm filtro-tipo btn-filtro-tipo no-tema"
                                 onclick="filtrarPorTipo('Formato')"
                                 id="filtro-tipo-formato"
-                                style="border:1px solid #737373; color:#000000; background:white;">
+                                style="border:1px solid #000000; background:white; color:#000000;">
                             📄 Formato
                         </button>
-                        <button type="button" class="btn btn-sm filtro-tipo"
+                        <button type="button" class="btn btn-sm filtro-tipo btn-filtro-tipo no-tema"
                                 onclick="filtrarPorTipo('Procedimiento')"
                                 id="filtro-tipo-procedimiento"
-                                style="border:1px solid #737373; color:#000000; background:white;">
+                                style="border:1px solid #000000; background:white; color:#000000;">
                             📋 Procedimiento
                         </button>
                         <small class="text-muted ms-2" id="info-filtro-tipo" style="font-size:0.78rem;"></small>
@@ -196,7 +183,7 @@
     }
     .folder-icon   { font-size: 2.5rem; margin-bottom: 0.5rem; }
     .document-row:hover { background-color: rgba(0,0,0,0.02); }
-    .breadcrumb-item a  { text-decoration: none; color: #6c757d; font-weight: 500; }
+    .breadcrumb-item a  { text-decoration: none; color: #000000; font-weight: 500; }
     .filtro-tipo.activo-tipo {
         background-color: #ffffff !important;
         color: black !important;
@@ -231,7 +218,7 @@ function filtrarPorTipo(tipo) {
         btn.style.color       = btn.id === 'filtro-tipo-formato'       ? '#000000' :
                                  btn.id === 'filtro-tipo-procedimiento' ? '#000000' : '#ffffff';
         btn.style.borderColor = btn.id === 'filtro-tipo-formato'       ? '#000000' :
-                                 btn.id === 'filtro-tipo-procedimiento' ? '#737373' : '#ffffff';
+                                 btn.id === 'filtro-tipo-procedimiento' ? '#000000' : '#ffffff';
     });
 
     const btnActivo = document.getElementById(
@@ -242,7 +229,7 @@ function filtrarPorTipo(tipo) {
     if (btnActivo) {
         btnActivo.style.background  = '#ffffff';
         btnActivo.style.color       = 'black';
-        btnActivo.style.borderColor = '#800000';
+        btnActivo.style.borderColor = '#000000';
     }
 
     // Filtrar filas

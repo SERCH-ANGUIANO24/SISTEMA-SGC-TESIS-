@@ -5,8 +5,11 @@
             <input type="hidden" name="parent_id" value="{{ $currentFolder->id ?? '' }}">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Agregar Carpeta</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <h5 class="modal-title">
+                        <i class="bi bi-folder-plus me-1" style="color: #000000;"></i>
+                        Agregar Carpeta
+                    </h5>
+
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">

@@ -12,17 +12,11 @@ use Illuminate\Support\Facades\Log;
 
 class CompetenciaController extends Controller
 {
-    /**
-     * Verificar si el usuario puede modificar (superadmin o admin)
-     */
     private function canModify()
     {
         return in_array(Auth::user()->role, ['superadmin', 'admin']);
     }
 
-    /**
-     * Display a listing of the resource.
-     */
     public function index(Request $request)
     {
         $parentId = $request->get('folder', null);
@@ -30,10 +24,10 @@ class CompetenciaController extends Controller
         
         if ($parentId) {
             $currentFolder = Competencia::with(['children', 'documentosHijos'])->findOrFail($parentId);
-            
             if (!$currentFolder->isFolder()) {
                 abort(404, 'El elemento solicitado no es una carpeta');
             }
+            \App\Helpers\HistorialVersionesHelper::ver('COMPETENCIAS', $currentFolder, 'explorar');
             
             $folders = Competencia::with(['children', 'documentosHijos'])
                 ->folders()
@@ -48,6 +42,8 @@ class CompetenciaController extends Controller
                 
             $breadcrumbs = $this->getBreadcrumbs($currentFolder);
         } else {
+            \App\Helpers\HistorialVersionesHelper::ver('COMPETENCIAS', null, 'raiz');
+            
             $currentFolder = null;
             
             $folders = Competencia::with(['children', 'documentosHijos'])
@@ -73,9 +69,6 @@ class CompetenciaController extends Controller
         ));
     }
 
-    /**
-     * Store a new folder.
-     */
     public function storeFolder(Request $request)
     {
         if (!in_array(Auth::user()->role, ['superadmin', 'admin'])) {
@@ -89,30 +82,25 @@ class CompetenciaController extends Controller
         ]);
 
         try {
-            Competencia::create([
+            $folder = Competencia::create([
                 'nombre' => $request->nombre,
-                'tipo' => 'carpeta',
+                'tipo' => 'carpeta',  // ← IMPORTANTE: se guarda como carpeta
                 'color' => $request->color ?? '#800000',
                 'parent_id' => $request->parent_id
             ]);
 
+            // Registrar en historial como carpeta
+            \App\Helpers\HistorialVersionesHelper::crear('COMPETENCIAS', $folder);
+
             return redirect()->back()->with('success', 'Carpeta creada exitosamente');
-            
         } catch (\Exception $e) {
             Log::error('Error al crear carpeta: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Error al crear la carpeta');
         }
     }
 
-    /**
-     * Upload a new document.
-     * AHORA TODOS LOS USUARIOS PUEDEN SUBIR ARCHIVOS (admin, superadmin y usuarios normales)
-     */
     public function uploadDocument(Request $request)
     {
-        // Eliminada la restricción que impedía a admin/superadmin subir archivos
-        // Todos los usuarios autenticados pueden subir archivos
-
         $request->validate([
             'archivo' => 'required|file|max:20480',
             'parent_id' => 'nullable|exists:competencias,id'
@@ -121,16 +109,16 @@ class CompetenciaController extends Controller
         try {
             $file = $request->file('archivo');
             $originalName = $file->getClientOriginalName();
+            $nombreSinExtension = pathinfo($originalName, PATHINFO_FILENAME);
             $extension = $file->getClientOriginalExtension();
-            $nombreBase = pathinfo($originalName, PATHINFO_FILENAME);
             
-            $nombreArchivo = time() . '_' . uniqid() . '.' . $extension;
-            $ruta = $file->storeAs('competencias', $nombreArchivo, 'public');
+            $nombreArchivoFisico = time() . '_' . uniqid() . '.' . $extension;
+            $ruta = $file->storeAs('competencias', $nombreArchivoFisico, 'public');
 
-            Competencia::create([
-                'nombre' => $nombreBase,
-                'tipo' => 'documento',
-                'archivo_nombre' => $nombreArchivo,
+            $document = Competencia::create([
+                'nombre' => $nombreSinExtension,
+                'tipo' => 'documento',  // ← IMPORTANTE: se guarda como documento
+                'archivo_nombre' => $nombreArchivoFisico,
                 'archivo_ruta' => $ruta,
                 'archivo_original' => $originalName,
                 'archivo_tamano' => $file->getSize(),
@@ -138,17 +126,16 @@ class CompetenciaController extends Controller
                 'parent_id' => $request->parent_id
             ]);
 
+            // Registrar en historial como documento
+            \App\Helpers\HistorialVersionesHelper::subir('COMPETENCIAS', $document);
+
             return redirect()->back()->with('success', 'Documento subido exitosamente');
-            
         } catch (\Exception $e) {
             Log::error('Error al subir documento: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Error al subir el documento');
         }
     }
 
-    /**
-     * Rename a folder (ahora con mensaje flash).
-     */
     public function renameFolder(Request $request, $id)
     {
         if (!in_array(Auth::user()->role, ['superadmin', 'admin'])) {
@@ -161,25 +148,23 @@ class CompetenciaController extends Controller
 
         try {
             $carpeta = Competencia::findOrFail($id);
-            
             if (!$carpeta->isFolder()) {
                 return redirect()->back()->with('error', 'El elemento no es una carpeta');
             }
-            
+            $datosAnteriores = $carpeta->toArray();
             $carpeta->nombre = $request->nombre;
             $carpeta->save();
 
+            // Registrar en historial - edición de carpeta
+            \App\Helpers\HistorialVersionesHelper::editar('COMPETENCIAS', $carpeta, $datosAnteriores, $carpeta->toArray());
+
             return redirect()->back()->with('success', 'Carpeta renombrada exitosamente');
-            
         } catch (\Exception $e) {
             Log::error('Error al renombrar carpeta: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Error al renombrar la carpeta');
         }
     }
 
-    /**
-     * Rename a document (ahora con mensaje flash).
-     */
     public function renameDocument(Request $request, $id)
     {
         if (!in_array(Auth::user()->role, ['superadmin', 'admin'])) {
@@ -192,25 +177,28 @@ class CompetenciaController extends Controller
 
         try {
             $documento = Competencia::findOrFail($id);
-            
             if (!$documento->isDocument()) {
                 return redirect()->back()->with('error', 'El elemento no es un documento');
             }
             
+            $datosAnteriores = $documento->toArray();
+            $extension = $documento->archivo_extension;
+            $nuevoNombreCompleto = $request->nombre . '.' . $extension;
+            
             $documento->nombre = $request->nombre;
+            $documento->archivo_original = $nuevoNombreCompleto;
             $documento->save();
 
+            // Registrar en historial - edición de documento
+            \App\Helpers\HistorialVersionesHelper::editar('COMPETENCIAS', $documento, $datosAnteriores, $documento->toArray());
+
             return redirect()->back()->with('success', 'Documento renombrado exitosamente');
-            
         } catch (\Exception $e) {
             Log::error('Error al renombrar documento: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Error al renombrar el documento');
         }
     }
 
-    /**
-     * Move a folder (con mensaje flash).
-     */
     public function moveFolder(Request $request, $id)
     {
         if (!in_array(Auth::user()->role, ['superadmin', 'admin'])) {
@@ -223,21 +211,21 @@ class CompetenciaController extends Controller
 
         try {
             $carpeta = Competencia::findOrFail($id);
-            
             if (!$carpeta->isFolder()) {
                 return redirect()->back()->with('error', 'El elemento no es una carpeta');
             }
-            
+
+            $origen = $carpeta->parent_id ? Competencia::find($carpeta->parent_id) : null;
+            $destino = $request->destination_id ? Competencia::find($request->destination_id) : null;
+
             if ($request->destination_id) {
                 $destino = Competencia::findOrFail($request->destination_id);
                 if (!$destino->isFolder()) {
                     return redirect()->back()->with('error', 'El destino debe ser una carpeta');
                 }
-                
                 if ($carpeta->id == $request->destination_id) {
                     return redirect()->back()->with('error', 'No puedes mover una carpeta a sí misma');
                 }
-                
                 $descendantIds = $this->getAllDescendantFolderIds($carpeta->id);
                 if (in_array($request->destination_id, $descendantIds)) {
                     return redirect()->back()->with('error', 'No puedes mover una carpeta a una de sus subcarpetas');
@@ -247,17 +235,16 @@ class CompetenciaController extends Controller
             $carpeta->parent_id = $request->destination_id;
             $carpeta->save();
 
+            // Registrar en historial - movimiento de carpeta
+            \App\Helpers\HistorialVersionesHelper::mover('COMPETENCIAS', $carpeta, $origen ?? (object)['nombre' => 'Raíz'], $destino ?? (object)['nombre' => 'Raíz']);
+
             return redirect()->back()->with('success', 'Carpeta movida correctamente.');
-            
         } catch (\Exception $e) {
             Log::error('Error al mover carpeta: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Error al mover la carpeta');
         }
     }
 
-    /**
-     * Move a document (con mensaje flash).
-     */
     public function moveDocument(Request $request, $id)
     {
         if (!in_array(Auth::user()->role, ['superadmin', 'admin'])) {
@@ -270,11 +257,13 @@ class CompetenciaController extends Controller
 
         try {
             $documento = Competencia::findOrFail($id);
-            
             if (!$documento->isDocument()) {
                 return redirect()->back()->with('error', 'El elemento no es un documento');
             }
-            
+
+            $origen = $documento->parent_id ? Competencia::find($documento->parent_id) : null;
+            $destino = $request->destination_id ? Competencia::find($request->destination_id) : null;
+
             if ($request->destination_id) {
                 $destino = Competencia::findOrFail($request->destination_id);
                 if (!$destino->isFolder()) {
@@ -285,56 +274,50 @@ class CompetenciaController extends Controller
             $documento->parent_id = $request->destination_id;
             $documento->save();
 
+            // Registrar en historial - movimiento de documento
+            \App\Helpers\HistorialVersionesHelper::mover('COMPETENCIAS', $documento, $origen ?? (object)['nombre' => 'Raíz'], $destino ?? (object)['nombre' => 'Raíz']);
+
             return redirect()->back()->with('success', 'Documento movido correctamente.');
-            
         } catch (\Exception $e) {
             Log::error('Error al mover documento: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Error al mover el documento');
         }
     }
 
-    /**
-     * Download a document.
-     */
     public function downloadDocument($id)
     {
         try {
-            $documento = Competencia::findOrFail($id);
-            
+            $documento = Competencia::withTrashed()->findOrFail($id);
             if (!$documento->isDocument()) {
                 abort(404, 'El elemento no es un documento');
             }
-
             if (!Storage::disk('public')->exists($documento->archivo_ruta)) {
                 abort(404, 'El archivo no existe en el servidor');
             }
 
-            return Storage::disk('public')->download(
-                $documento->archivo_ruta, 
-                $documento->archivo_original
-            );
-            
+            // Registrar en historial - descarga
+            \App\Helpers\HistorialVersionesHelper::descargar('COMPETENCIAS', $documento);
+
+            return Storage::disk('public')->download($documento->archivo_ruta, $documento->archivo_original);
         } catch (\Exception $e) {
             Log::error('Error al descargar: ' . $e->getMessage());
             abort(500, 'Error al descargar el archivo');
         }
     }
 
-    /**
-     * View a document.
-     */
     public function viewDocument($id)
     {
         try {
-            $documento = Competencia::findOrFail($id);
-            
+            $documento = Competencia::withTrashed()->findOrFail($id);
             if (!$documento->isDocument()) {
                 abort(404, 'El elemento no es un documento');
             }
-
             if (!Storage::disk('public')->exists($documento->archivo_ruta)) {
                 abort(404, 'El archivo no existe en el servidor');
             }
+
+            // Registrar en historial - visualización
+            \App\Helpers\HistorialVersionesHelper::ver('COMPETENCIAS', $documento, 'visualizar');
 
             $extension = strtolower($documento->archivo_extension);
             
@@ -351,32 +334,25 @@ class CompetenciaController extends Controller
             
             if (in_array($extension, ['txt', 'csv', 'php', 'js', 'css', 'html', 'xml', 'json', 'sql', 'md'])) {
                 $content = Storage::disk('public')->get($documento->archivo_ruta);
-                
                 if (mb_detect_encoding($content, 'UTF-8', true) !== 'UTF-8') {
                     $content = utf8_encode($content);
                 }
-                
                 return response($content)
                     ->header('Content-Type', 'text/plain; charset=utf-8')
                     ->header('Content-Disposition', 'inline; filename="' . $documento->archivo_original . '"');
             }
             
             return Storage::disk('public')->download($documento->archivo_ruta, $documento->archivo_original);
-            
         } catch (\Exception $e) {
             Log::error('Error al ver archivo: ' . $e->getMessage());
             abort(500, 'Error al visualizar el archivo');
         }
     }
 
-    /**
-     * Get folders tree for move modal.
-     */
     public function getFoldersTree(Request $request)
     {
         try {
             $currentFolderId = $request->get('current_folder');
-            
             $allFolders = Competencia::folders()->get()->keyBy('id');
             
             $excludeIds = [];
@@ -395,199 +371,281 @@ class CompetenciaController extends Controller
                     $this->buildTreeRecursive($folder, $availableFolders, $tree, '');
                 }
             }
-            
             return response()->json($tree);
-            
         } catch (\Exception $e) {
             Log::error('Error al obtener árbol de carpetas: ' . $e->getMessage());
             return response()->json(['error' => 'Error al cargar carpetas'], 500);
         }
     }
 
-    /**
-     * Construir árbol recursivamente para el selector de carpetas.
-     */
     private function buildTreeRecursive($folder, $availableFolders, &$output, $prefix)
     {
         $output[] = [
             'id' => $folder->id,
             'full_path' => $prefix . $folder->nombre,
         ];
-        
         $children = $availableFolders->filter(function ($f) use ($folder) {
             return $f->parent_id == $folder->id;
         })->sortBy('nombre');
-        
         foreach ($children as $child) {
             $this->buildTreeRecursive($child, $availableFolders, $output, $prefix . $folder->nombre . ' / ');
         }
     }
 
-    /**
-     * Obtener todos los IDs de subcarpetas (solo carpetas) de una carpeta dada.
-     */
     private function getAllDescendantFolderIds($folderId)
     {
         $ids = [];
-        $subfolders = Competencia::where('parent_id', $folderId)
-            ->where('tipo', 'carpeta')
-            ->get();
-        
+        $subfolders = Competencia::where('parent_id', $folderId)->where('tipo', 'carpeta')->get();
         foreach ($subfolders as $sub) {
             $ids[] = $sub->id;
             $ids = array_merge($ids, $this->getAllDescendantFolderIds($sub->id));
         }
-        
         return $ids;
     }
 
-    /**
-     * Get document data for editing.
-     */
     public function getDocumentData($id)
     {
         try {
-            $documento = Competencia::findOrFail($id);
-            
+            $documento = Competencia::withTrashed()->findOrFail($id);
             if (!$documento->isDocument()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'El elemento no es un documento'
-                ], 400);
+                return response()->json(['success' => false, 'message' => 'El elemento no es un documento'], 400);
             }
-
             return response()->json([
                 'success' => true,
                 'nombre' => $documento->nombre,
+                'archivo_original' => $documento->archivo_original,
                 'archivo_extension' => $documento->archivo_extension,
                 'created_at' => $documento->created_at->format('Y-m-d H:i:s')
             ]);
-            
         } catch (\Exception $e) {
             Log::error('Error al obtener datos del documento: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al obtener los datos del documento'
-            ], 500);
+            return response()->json(['success' => false, 'message' => 'Error al obtener los datos del documento'], 500);
         }
     }
 
-    /**
-     * Remove a folder (con SweetAlert, se mantiene JSON).
-     */
     public function destroyFolder($id)
     {
         if (!in_array(Auth::user()->role, ['superadmin', 'admin'])) {
-            return response()->json([
-                'success' => false,
-                'message' => 'No tienes permiso para eliminar carpetas.'
-            ], 403);
+            return response()->json(['success' => false, 'message' => 'No tienes permiso para eliminar carpetas.'], 403);
         }
 
         try {
             $carpeta = Competencia::findOrFail($id);
-            
             if (!$carpeta->isFolder()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'El elemento no es una carpeta'
-                ], 400);
+                return response()->json(['success' => false, 'message' => 'El elemento no es una carpeta'], 400);
             }
             
+            // Guardar datos para historial
+            $carpetaData = $carpeta->toArray();
+            
+            // Eliminar recursivamente
             $this->deleteFolderRecursively($carpeta);
             $carpeta->delete();
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Carpeta eliminada exitosamente'
-            ]);
-            
+            // Registrar en historial - eliminación de carpeta
+            \App\Helpers\HistorialVersionesHelper::eliminar('COMPETENCIAS', $carpeta, $carpetaData);
+
+            return response()->json(['success' => true, 'message' => 'Carpeta eliminada exitosamente']);
         } catch (\Exception $e) {
             Log::error('Error al eliminar carpeta: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al eliminar la carpeta'
-            ], 500);
+            return response()->json(['success' => false, 'message' => 'Error al eliminar la carpeta'], 500);
         }
     }
 
-    /**
-     * Remove a document (con SweetAlert, se mantiene JSON).
-     */
     public function destroyDocument($id)
     {
         if (!in_array(Auth::user()->role, ['superadmin', 'admin'])) {
-            return response()->json([
-                'success' => false,
-                'message' => 'No tienes permiso para eliminar documentos.'
-            ], 403);
+            return response()->json(['success' => false, 'message' => 'No tienes permiso para eliminar documentos.'], 403);
         }
 
         try {
             $documento = Competencia::findOrFail($id);
-            
             if (!$documento->isDocument()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'El elemento no es un documento'
-                ], 400);
+                return response()->json(['success' => false, 'message' => 'El elemento no es un documento'], 400);
             }
             
-            if (Storage::disk('public')->exists($documento->archivo_ruta)) {
-                Storage::disk('public')->delete($documento->archivo_ruta);
-            }
-            
+            // Guardar datos para historial
+            $documentoData = $documento->toArray();
             $documento->delete();
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Documento eliminado exitosamente'
-            ]);
-            
+            // Registrar en historial - eliminación de documento
+            \App\Helpers\HistorialVersionesHelper::eliminar('COMPETENCIAS', $documento, $documentoData);
+
+            return response()->json(['success' => true, 'message' => 'Documento eliminado exitosamente']);
         } catch (\Exception $e) {
             Log::error('Error al eliminar documento: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al eliminar el documento'
-            ], 500);
+            return response()->json(['success' => false, 'message' => 'Error al eliminar el documento'], 500);
+        }
+    }
+
+    public function restaurarFolder($id)
+    {
+        try {
+            $carpeta = Competencia::withTrashed()->findOrFail($id);
+            
+            if (!$carpeta->isFolder()) {
+                return response()->json(['success' => false, 'message' => 'El elemento no es una carpeta'], 400);
+            }
+            
+            if (!$carpeta->trashed()) {
+                return response()->json(['success' => false, 'message' => 'La carpeta no está eliminada'], 400);
+            }
+            
+            if ($carpeta->parent_id) {
+                $parentExists = Competencia::withTrashed()->find($carpeta->parent_id);
+                if (!$parentExists) {
+                    return response()->json(['success' => false, 'message' => 'La carpeta padre ya no existe'], 400);
+                }
+            }
+            
+            $existing = Competencia::where('nombre', $carpeta->nombre)
+                ->where('tipo', 'carpeta')
+                ->where('parent_id', $carpeta->parent_id)
+                ->whereNull('deleted_at')
+                ->first();
+                
+            if ($existing) {
+                return response()->json(['success' => false, 'message' => 'Ya existe una carpeta activa con el mismo nombre en esta ubicación'], 400);
+            }
+            
+            // PRIMERO: Restaurar TODOS los documentos dentro de la carpeta
+            $this->restoreAllDocumentsInCompetenciaFolder($carpeta->id);
+            
+            // SEGUNDO: Restaurar TODAS las subcarpetas
+            $this->restoreAllSubfoldersCompetencia($carpeta->id);
+            
+            // TERCERO: Restaurar la carpeta principal
+            $carpeta->restore();
+            
+            // Registrar en historial - restauración de carpeta
+            \App\Helpers\HistorialVersionesHelper::restaurar('COMPETENCIAS', $carpeta);
+            
+            return response()->json(['success' => true, 'message' => 'Carpeta restaurada correctamente con todo su contenido']);
+        } catch (\Exception $e) {
+            Log::error('Error al restaurar carpeta: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Error al restaurar la carpeta: ' . $e->getMessage()], 500);
+        }
+    }
+
+    public function restaurarDocumento($id)
+    {
+        try {
+            $documento = Competencia::withTrashed()->findOrFail($id);
+            
+            if (!$documento->isDocument()) {
+                return response()->json(['success' => false, 'message' => 'El elemento no es un documento'], 400);
+            }
+            
+            if (!$documento->trashed()) {
+                return response()->json(['success' => false, 'message' => 'El documento no está eliminado'], 400);
+            }
+            
+            if ($documento->parent_id) {
+                $parentExists = Competencia::withTrashed()->find($documento->parent_id);
+                if (!$parentExists) {
+                    return response()->json(['success' => false, 'message' => 'La carpeta padre ya no existe'], 400);
+                }
+            }
+            
+            $existing = Competencia::where('nombre', $documento->nombre)
+                ->where('tipo', 'documento')
+                ->where('parent_id', $documento->parent_id)
+                ->whereNull('deleted_at')
+                ->first();
+                
+            if ($existing) {
+                return response()->json(['success' => false, 'message' => 'Ya existe un documento activo con el mismo nombre en esta ubicación'], 400);
+            }
+            
+            if (!Storage::disk('public')->exists($documento->archivo_ruta)) {
+                return response()->json(['success' => false, 'message' => 'El archivo físico no existe en el servidor'], 400);
+            }
+            
+            $documento->restore();
+            
+            // Registrar en historial - restauración de documento
+            \App\Helpers\HistorialVersionesHelper::restaurar('COMPETENCIAS', $documento);
+            
+            return response()->json(['success' => true, 'message' => 'Documento restaurado correctamente']);
+        } catch (\Exception $e) {
+            Log::error('Error al restaurar documento: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Error al restaurar el documento: ' . $e->getMessage()], 500);
         }
     }
 
     /**
-     * Eliminar recursivamente todo el contenido de una carpeta.
+     * Restaurar todos los documentos dentro de una carpeta de competencias (recursivamente)
      */
-    private function deleteFolderRecursively($folder)
+    private function restoreAllDocumentsInCompetenciaFolder($folderId)
     {
-        foreach ($folder->documentosHijos as $documento) {
-            if (Storage::disk('public')->exists($documento->archivo_ruta)) {
-                Storage::disk('public')->delete($documento->archivo_ruta);
-            }
-            $documento->delete();
-        }
-        
-        $subfolders = Competencia::where('parent_id', $folder->id)
-            ->where('tipo', 'carpeta')
+        // Restaurar documentos directamente en esta carpeta
+        $documents = Competencia::withTrashed()
+            ->documents()
+            ->where('parent_id', $folderId)
+            ->whereNotNull('deleted_at')
             ->get();
             
+        foreach ($documents as $document) {
+            if (Storage::disk('public')->exists($document->archivo_ruta)) {
+                $document->restore();
+            }
+        }
+        
+        // Buscar subcarpetas y restaurar sus documentos
+        $subfolders = Competencia::withTrashed()
+            ->folders()
+            ->where('parent_id', $folderId)
+            ->whereNotNull('deleted_at')
+            ->get();
+            
+        foreach ($subfolders as $subfolder) {
+            $this->restoreAllDocumentsInCompetenciaFolder($subfolder->id);
+        }
+    }
+    
+    /**
+     * Restaurar todas las subcarpetas (recursivamente)
+     */
+    private function restoreAllSubfoldersCompetencia($folderId)
+    {
+        $subfolders = Competencia::withTrashed()
+            ->folders()
+            ->where('parent_id', $folderId)
+            ->whereNotNull('deleted_at')
+            ->get();
+            
+        foreach ($subfolders as $subfolder) {
+            // Primero restaurar documentos dentro de esta subcarpeta
+            $this->restoreAllDocumentsInCompetenciaFolder($subfolder->id);
+            // Luego restaurar subcarpetas hijas
+            $this->restoreAllSubfoldersCompetencia($subfolder->id);
+            // Finalmente restaurar la subcarpeta
+            $subfolder->restore();
+        }
+    }
+
+    private function deleteFolderRecursively($folder)
+    {
+        // Eliminar documentos dentro de la carpeta
+        foreach ($folder->documentosHijos as $documento) {
+            $documento->delete();
+        }
+        // Eliminar subcarpetas
+        $subfolders = Competencia::where('parent_id', $folder->id)->where('tipo', 'carpeta')->get();
         foreach ($subfolders as $subfolder) {
             $this->deleteFolderRecursively($subfolder);
             $subfolder->delete();
         }
     }
 
-    /**
-     * Build breadcrumbs for navigation.
-     */
     private function getBreadcrumbs($folder)
     {
         $breadcrumbs = collect();
-        
         $current = $folder;
         while ($current) {
             $breadcrumbs->prepend($current);
             $current = $current->parent;
         }
-        
         return $breadcrumbs;
     }
 }

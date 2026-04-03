@@ -9,8 +9,8 @@
         <div class="col-12">
             <div class="d-flex flex-column">
                 <a href="{{ route('dashboard') }}" class="text-decoration-none" title="Ir al Dashboard">
-                    <h1 class="h3 mb-2" style="color: #800000; cursor: pointer;">
-                        <i class="bi bi-folder me-2" style="font-size: 3rem; vertical-align: middle;"></i>
+                    <h1 class="h3 mb-2" style="color: #059669; cursor: pointer;">
+                        <i class="bi-clipboard-check me-2" style="font-size: 3rem; vertical-align: middle;"></i>
                         Auditorias
                     </h1>
                 </a>
@@ -99,7 +99,7 @@
         left: 0;
         right: 0;
         height: 4px;
-        background: linear-gradient(135deg, #800000 0%, #800000 100%);
+        background: linear-gradient(135deg, #737373 0%, #737373 100%);
     }
 
     .dashboard-icon {

@@ -34,7 +34,7 @@
 
     /* Estilos del logo/título principal */
     .auth-logo h1 {
-        color: var(--guinda-base); /* Color guinda para el título */
+        color: #000000; /* Color guinda para el título */
         font-size: 2.2rem;
         margin-bottom: 25px;
         font-weight: 700;
@@ -102,8 +102,8 @@
     }
 
     .auth-form-control:focus {
-        border-color: var(--guinda-base); /* Borde guinda al enfocar */
-        box-shadow: 0 0 0 0.25rem rgba(128, 0, 0, 0.25); /* Sombra guinda */
+        border-color: var(#737373); /* Borde gris al enfocar */
+        box-shadow: 0 0 0 0.25rem #b8c9da; /* Sombra azul*/
         outline: none;
     }
 
@@ -127,7 +127,7 @@
 
     /* Botón principal (Iniciar Sesión) */
     .auth-btn-primary {
-        background-color: var(--guinda-base); /* Guinda */
+        background-color: #800000; /* Guinda */
         color: white;
         border: none;
         border-radius: 8px;
@@ -148,7 +148,7 @@
     }
 
     .auth-btn-primary:hover {
-        background-color: var(--guinda-darker); /* Guinda más oscuro en hover */
+        background-color: #800000; /* Guinda más oscuro en hover */
         transform: translateY(-2px);
         box-shadow: 0 6px 15px rgba(128, 0, 0, 0.3);
     }
@@ -209,7 +209,7 @@
     }
 
     .auth-btn-secondary:hover {
-        background-color: var(--guinda-light); /* Fondo guinda más claro en hover */
+        background-color: #800000; /* Fondo guinda más claro en hover */
         color: white; /* Texto blanco en hover */
         border-color: var(--guinda-light);
         transform: translateY(-2px);
@@ -222,31 +222,31 @@
     }
 
     .auth-link {
-        color: var(--guinda-base); /* Texto guinda */
+        color: #000; 
         text-decoration: none;
         font-weight: 500;
         transition: color 0.2s ease;
-        display: inline-flex; /* Para alinear el icono y el texto */
+        display: inline-flex; 
         align-items: center;
     }
 
     .auth-link .bi {
         margin-right: 5px;
-        color: var(--guinda-darker); /* Flecha más oscura */
+        color: #000;
         transition: color 0.2s ease;
     }
 
     .auth-link:hover {
-        color: var(--guinda-darker); /* Guinda más oscuro en hover */
+        color: #000; 
     }
 
     .auth-link:hover .bi {
-        color: var(--guinda-darker); /* La flecha se mantiene oscura o incluso más oscura */
+        color: #000; 
     }
 
     /* Estilos para el estado de carga */
     .auth-loading .auth-btn-primary {
-        background-color: var(--guinda-darker);
+        background-color:#800000;
         cursor: progress;
     }
 
