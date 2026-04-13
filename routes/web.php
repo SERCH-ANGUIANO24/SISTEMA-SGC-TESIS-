@@ -1,5 +1,5 @@
 <?php
-
+//
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Auth\LoginController;
@@ -123,13 +123,13 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/restaurar/{id}', [HistorialVersionesController::class, 'restaurar'])->name('restaurar');
         Route::get('/{id}', [HistorialVersionesController::class, 'show'])->name('show');
         
-        // Ruta para ver documentos desde el historial
+        // Ruta para ver documentos desde el historial (del WEB 2)
         Route::get('/documental/ver/{id}', [App\Http\Controllers\DocumentalController::class, 'viewDocument'])
             ->name('documental.ver');
     });
 });
 
-// ===== RUTAS DE DIAGNÓSTICO Y REPARACIÓN =====
+// ===== RUTAS DE DIAGNÓSTICO Y REPARACIÓN (RESTAURACION DE ARCHIVOS) =====
 Route::middleware(['auth'])->group(function () {
     Route::get('/historial-versiones/verificar-archivos/{folderId?}', [HistorialVersionesController::class, 'verificarArchivosRestaurados'])
         ->name('historial-versiones.verificar-archivos');
@@ -160,7 +160,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/calendar-events', [PlanAuditoriaController::class, 'getCalendarEvents'])->name('calendar.events');
     });
     
-    // SUBMODULO DE INFORMES
+    // RUTAS DE APARTADO  DE INFORMES
     Route::prefix('auditorias/informes')->name('informes-auditoria.')->middleware(['auth'])->group(function () {
         Route::get('/estadisticas/por-anio', [InformeAuditoriaController::class, 'estadisticasPorAnio'])->name('estadisticas');
         Route::get('/auditoria/{auditoria}/fecha', [InformeAuditoriaController::class, 'fechaAuditoriaRelacionada'])->name('fecha-auditoria');
@@ -177,7 +177,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{informeAuditoria}/descargar', [InformeAuditoriaController::class, 'descargar'])->name('descargar');
     });
 
-    // ===== RUTAS DE SOLICITUD DE MEJORA =====
+    // ===== RUTAS DE APARTADO DE SOLICITUD DE MEJORA =====
     Route::prefix('auditoria/solicitudes')->name('auditoria.solicitudes.')->group(function () {
         Route::get('/', [SolicitudMejoraController::class, 'index'])->name('index');
         Route::get('/data', [SolicitudMejoraController::class, 'data'])->name('data');
@@ -193,7 +193,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/historico', [SolicitudMejoraController::class, 'historico'])->name('historico');
     });
 
-    /* ===== MÓDULO COMPETENCIAS ===== */
+    /* ===== RUTAS DE APARTADO DE  COMPETENCIAS ===== */
     Route::prefix('auditoria/competencias')->name('auditoria.competencias.')->group(function () {
         Route::get('/', [CompetenciaController::class, 'index'])->name('index');
         Route::get('/folder/{folder}', [CompetenciaController::class, 'index'])->name('folder.show');
@@ -213,8 +213,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/document/{id}/data', [CompetenciaController::class, 'getDocumentData'])->name('document.data');
     });
 });
-
-/* ===== MÓDULO NOTIFICACIONES  ===== */
+/**RUTAS DEL MODULO DE NOTIFICACIONES */
 Route::middleware(['auth'])->group(function () {
     Route::prefix('notificaciones')->name('notificaciones.')
          ->controller(NotificacionController::class)
@@ -228,24 +227,7 @@ Route::middleware(['auth'])->group(function () {
              Route::get('/api/ultimas',   'ultimas')->name('ultimas');
          });
 
-    /* ===== MÓDULO DOCUMENTOS ===== */
-    Route::prefix('documentos')->name('documentos.')->group(function () {
-        // Rutas normales del DocumentoController
-        Route::get('/',       [DocumentoController::class, 'index'])->name('index');
-        Route::get('/create', [DocumentoController::class, 'create'])->name('create');
-        Route::get('/{doc}',  [DocumentoController::class, 'show'])->name('show');
 
-        // store con notificación
-        Route::post('/', [DocumentoNotificacionController::class, 'store'])->name('store');
-
-        // Solo admin/superadmin
-        Route::middleware(['can:admin-access'])
-             ->controller(DocumentoNotificacionController::class)
-             ->group(function () {
-                 Route::post('/{doc}/aprobar',  'aprobar')->name('aprobar');
-                 Route::post('/{doc}/rechazar', 'rechazar')->name('rechazar');
-             });
-    });
 });
 
 /* ===== RUTAS DE AUTENTICACIÓN ===== */
@@ -257,12 +239,12 @@ Route::middleware('guest')->group(function () {
     Route::get('password/reset/{token}', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
     Route::post('password/reset', [ResetPasswordController::class, 'reset'])->name('password.update');
 });
-
+/**RUTAS PARA EL REGISTRO DE USUARIOS */
 Route::middleware('auth')->group(function () {
     Route::get('register', [RegisterController::class, 'showRegistrationForm'])->name('register');
     Route::post('register', [RegisterController::class, 'register']);
 });
-
+/**RUTA PARA EL LOGEO DE USUARIOS A LA PLATAFORMA */
 Route::post('logout', [LoginController::class, 'logout'])->name('logout');
 
 /* ===== MÓDULO AVISOS ===== */
@@ -281,7 +263,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('api/avisos/activos', [AvisoController::class, 'getActiveAvisos'])->name('api.avisos.activos');
 });
 
-/* ===== MÓDULO TEMA*/
+/* ===== RUTAS DEL APARTADO DEL PERSONALIZADOR DE COLOR O TEMA */
 Route::middleware(['auth'])->group(function () {
     Route::post('/tema/actualizar', [ThemeController::class, 'update'])->name('tema.update');
 });

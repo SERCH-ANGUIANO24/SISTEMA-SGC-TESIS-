@@ -9,6 +9,14 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
+/*
+|--------------------------------------------------------------------------
+| CONTROLADOR: AVISOS
+|--------------------------------------------------------------------------
+| SE ENCARGA DE GESTIONAR LOS AVISOS DEL SISTEMA:
+| CREARLOS, EDITARLOS, ELIMINARLOS, RESTAURARLOS Y VER SUS ARCHIVOS.
+*/
+
 class AvisoController extends Controller
 {
     public function __construct()
@@ -16,14 +24,27 @@ class AvisoController extends Controller
         $this->middleware('auth');
     }
 
-    // Vista principal del módulo de avisos
+    /*
+    |--------------------------------------------------------------------------
+    | FUNCIÓN: index
+    |--------------------------------------------------------------------------
+    | MUESTRA LA PANTALLA PRINCIPAL DEL MÓDULO DE AVISOS.
+    | REGISTRA LA VISITA EN EL HISTORIAL DE VERSIONES.
+    */
     public function index()
     {
         HistorialVersionesHelper::ver('AVISOS', null, 'index');
         return view('avisos.index');
     }
 
-    // Guardar nuevo aviso
+    /*
+    |--------------------------------------------------------------------------
+    | FUNCIÓN: store
+    |--------------------------------------------------------------------------
+    | VALIDA LOS DATOS Y GUARDA UN NUEVO AVISO EN LA BASE DE DATOS.
+    | SI SE SUBE UN ARCHIVO, LO GUARDA EN EL SERVIDOR Y REGISTRA SUS DATOS.
+    | DEVUELVE JSON DE ÉXITO O ERRORES DE VALIDACIÓN.
+    */
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -69,7 +90,13 @@ class AvisoController extends Controller
         ]);
     }
 
-    // Mostrar un aviso específico
+    /*
+    |--------------------------------------------------------------------------
+    | FUNCIÓN: show
+    |--------------------------------------------------------------------------
+    | BUSCA UN AVISO POR SU ID, SUMA UNA VISITA Y LO DEVUELVE EN JSON.
+    | TAMBIÉN REGISTRA LA VISITA EN EL HISTORIAL DE VERSIONES.
+    */
     public function show($id)
     {
         $aviso = Aviso::findOrFail($id);
@@ -80,7 +107,14 @@ class AvisoController extends Controller
         return response()->json($aviso);
     }
 
-    // Actualizar aviso
+    /*
+    |--------------------------------------------------------------------------
+    | FUNCIÓN: update
+    |--------------------------------------------------------------------------
+    | VALIDA Y ACTUALIZA LOS DATOS DE UN AVISO EXISTENTE.
+    | SI SE SUBE UN ARCHIVO NUEVO, ELIMINA EL ANTERIOR Y GUARDA EL NUEVO.
+    | DEVUELVE JSON DE ÉXITO O ERRORES DE VALIDACIÓN.
+    */
     public function update(Request $request, $id)
     {
         $aviso = Aviso::findOrFail($id);
@@ -124,7 +158,14 @@ class AvisoController extends Controller
         ]);
     }
 
-    // Eliminar aviso (NO elimina el archivo físico para poder restaurarlo)
+    /*
+    |--------------------------------------------------------------------------
+    | FUNCIÓN: destroy
+    |--------------------------------------------------------------------------
+    | ELIMINA EL AVISO DE LA BASE DE DATOS (SOFT DELETE).
+    | EL ARCHIVO FÍSICO NO SE BORRA DEL SERVIDOR PARA PODER RESTAURARLO DESPUÉS.
+    | DEVUELVE JSON DE ÉXITO.
+    */
     public function destroy($id)
     {
         $aviso = Aviso::findOrFail($id);
@@ -140,9 +181,14 @@ class AvisoController extends Controller
         ]);
     }
 
-    /**
-     * Restaurar un aviso eliminado
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | FUNCIÓN: restaurar
+    |--------------------------------------------------------------------------
+    | RESTAURA UN AVISO QUE FUE ELIMINADO (SOFT DELETE).
+    | VERIFICA QUE NO EXISTA OTRO AVISO ACTIVO CON EL MISMO TÍTULO.
+    | AVISA SI EL ARCHIVO FÍSICO YA NO EXISTE EN EL SERVIDOR.
+    */
     public function restaurar($id)
     {
         $aviso = Aviso::withTrashed()->findOrFail($id);
@@ -175,7 +221,14 @@ class AvisoController extends Controller
         }
     }
 
-    // Ver archivo en el navegador (inline)
+    /*
+    |--------------------------------------------------------------------------
+    | FUNCIÓN: verArchivo
+    |--------------------------------------------------------------------------
+    | ABRE EL ARCHIVO DEL AVISO DIRECTAMENTE EN EL NAVEGADOR (INLINE).
+    | SI EL ARCHIVO NO EXISTE EN EL SERVIDOR → DEVUELVE ERROR 404.
+    | REGISTRA LA ACCIÓN EN EL HISTORIAL DE VERSIONES.
+    */
     public function verArchivo($id)
     {
         $aviso = Aviso::withTrashed()->findOrFail($id);
@@ -194,7 +247,14 @@ class AvisoController extends Controller
             ->header('Content-Disposition', 'inline; filename="' . $aviso->archivo_nombre . '"');
     }
 
-    // Descargar archivo del aviso
+    /*
+    |--------------------------------------------------------------------------
+    | FUNCIÓN: download
+    |--------------------------------------------------------------------------
+    | DESCARGA EL ARCHIVO DEL AVISO AL DISPOSITIVO DEL USUARIO.
+    | SI EL ARCHIVO NO EXISTE EN EL SERVIDOR → DEVUELVE ERROR 404.
+    | REGISTRA LA DESCARGA EN EL HISTORIAL DE VERSIONES.
+    */
     public function download($id)
     {
         $aviso = Aviso::withTrashed()->findOrFail($id);
@@ -208,7 +268,14 @@ class AvisoController extends Controller
         return Storage::disk('public')->download($aviso->archivo_path, $aviso->archivo_nombre);
     }
 
-    // API para obtener todos los avisos
+    /*
+    |--------------------------------------------------------------------------
+    | FUNCIÓN: getActiveAvisos
+    |--------------------------------------------------------------------------
+    | OBTIENE TODOS LOS AVISOS DEL SISTEMA ORDENADOS DEL MÁS RECIENTE AL MÁS ANTIGUO.
+    | INCLUYE LA INFORMACIÓN DEL USUARIO QUE CREÓ CADA AVISO.
+    | DEVUELVE LOS RESULTADOS EN FORMATO JSON.
+    */
     public function getActiveAvisos()
     {
         $avisos = Aviso::with('creador')

@@ -1,19 +1,24 @@
 @if($documents->count() > 0)
 @php
+    // VERIFICA SI HAY DOCUMENTOS SUBIDOS POR USUARIOS NORMALES
     $hasUserDocuments = $documents->contains(function($doc) {
         return !in_array($doc->user->role ?? null, ['superadmin', 'admin']);
     });
+    // VERIFICA SI HAY DOCUMENTOS SUBIDOS POR ADMINISTRADORES
     $hasAdminDocuments = $documents->contains(function($doc) {
         return in_array($doc->user->role ?? null, ['superadmin', 'admin']);
     });
+    // VERIFICA SI EL USUARIO ACTUAL ES ADMIN
     $esAdmin = in_array(Auth::user()->role, ['superadmin', 'admin']);
 @endphp
 @php
+    // VERIFICA SI HAY DOCUMENTOS SUBIDOS POR EL USUARIO ACTUAL
     $hayDocsMios = $documents->contains(function($doc) {
         return $doc->user_id === Auth::id()
             && !in_array($doc->user->role ?? null, ['superadmin', 'admin']);
     });
 @endphp
+{{-- TARJETA QUE CONTIENE LA TABLA DE DOCUMENTOS --}}
 <div class="card shadow-sm border-0">
     <div class="card-header bg-light py-3">
         <h6 class="mb-0 fw-bold" style="color: #000000;">
@@ -32,6 +37,7 @@
                         <th>Departamento</th>
                         <th>Tamaño</th>
                         <th>Fecha y Hora</th>
+                        {{-- COLUMNA ESTATUS - SOLO PARA ADMIN O DUEÑO DEL DOCUMENTO --}}
                         @if($esAdmin || $hayDocsMios)
                         <th>Estatus</th>
                         @endif
@@ -50,6 +56,7 @@
                         $esMiDoc = $doc->user_id === Auth::id();
                         $esValido = $estatus === 'Valido';
 
+                        // FILTRO DE VISIBILIDAD: ADMIN VE TODO, OTROS SOLO VEN LO QUE CORRESPONDE
                         if (!$esAdmin && !$uploadedByAdmin && !$esMiDoc && !$esValido) {
                             continue;
                         }
@@ -62,6 +69,7 @@
                         data-file-extension="{{ $ext }}"
                         data-tipo-documento="{{ $doc->tipo_documento ?? '' }}">
 
+                        {{-- COLUMNA: NOMBRE DEL DOCUMENTO CON ÍCONO SEGÚN EXTENSIÓN --}}
                         <td>
                             @php
                                 $icon = 'bi-file-earmark';
@@ -71,6 +79,7 @@
                                 elseif(in_array($ext, ['xls','xlsx'])) $icon = 'bi-file-excel';
                                 elseif(in_array($ext, $imageExtensions)) $icon = 'bi-file-image';
 
+                                // LIMPIA EL NOMBRE PARA MOSTRAR (QUITA NÚMEROS INICIALES)
                                 $displayName = $doc->name;
                                 if(preg_match('/^[0-9_]+(.+)$/', $displayName, $matches)) {
                                     $displayName = $matches[1];
@@ -78,6 +87,7 @@
                             @endphp
                             <i class="bi {{ $icon }} me-2" style="color: #000000;"></i>
                             <span title="{{ $doc->original_name }}">{{ $displayName }}.{{ $ext }}</span>
+                            {{-- MUESTRA OBSERVACIONES SI EXISTEN Y EL USUARIO ES ADMIN --}}
                             @if($doc->observaciones && $esAdmin)
                                 <br>
                                 <small class="text-danger">
@@ -87,9 +97,16 @@
                             @endif
                         </td>
 
+                        {{-- COLUMNA: RESPONSABLE --}}
                         <td>{{ $doc->responsable ?? $doc->user->name ?? 'N/A' }}</td>
+
+                        {{-- COLUMNA: PROCESO --}}
                         <td>{{ $doc->proceso ?? $doc->user->proceso ?? 'N/A' }}</td>
+
+                        {{-- COLUMNA: DEPARTAMENTO --}}
                         <td>{{ $doc->departamento ?? $doc->user->departamento ?? 'N/A' }}</td>
+
+                        {{-- COLUMNA: TAMAÑO DEL ARCHIVO (FORMATEADO) --}}
                         <td>
                             @if($doc->size)
                                 @if($doc->size < 1024) {{ $doc->size }} B
@@ -98,8 +115,11 @@
                                 @endif
                             @else N/A @endif
                         </td>
+
+                        {{-- COLUMNA: FECHA Y HORA DE CREACIÓN --}}
                         <td>{{ $doc->created_at->format('d/m/Y h:i A') }}</td>
 
+                        {{-- COLUMNA: ESTATUS (SOLO PARA ADMIN O DUEÑO) --}}
                         @if($esAdmin || $hayDocsMios)
                         <td>
                             @if($uploadedByAdmin)
@@ -116,6 +136,7 @@
                         </td>
                         @endif
 
+                        {{-- COLUMNA: TIPO DE DOCUMENTO (FORMATO O PROCEDIMIENTO) --}}
                         <td>
                             @if($doc->tipo_documento === 'Formato')
                                 <span class="badge" style="background-color:#0d6efd;">Formato</span>
@@ -126,6 +147,7 @@
                             @endif
                         </td>
 
+                        {{-- COLUMNA: ACCIONES (BOTONES SEGÚN PERMISOS) --}}
                         <td class="text-end" style="white-space:nowrap;">
                             <div class="d-flex justify-content-end gap-1">
                                 @php
@@ -133,6 +155,7 @@
                                     $previewExtensions = array_merge(['pdf'], $imageExtensions, $textExtensions);
                                 @endphp
 
+                                {{-- BOTÓN VER - SOLO SI LA EXTENSIÓN ES VISUALIZABLE Y TIENE PERMISO --}}
                                 @if(in_array($ext, $previewExtensions) && ($esAdmin || $esValido || $esMiDoc))
                                 <button type="button" class="btn btn-sm btn-outline-info"
                                         onclick="viewDocument({{ $doc->id }})"
@@ -141,6 +164,7 @@
                                 </button>
                                 @endif
 
+                                {{-- BOTÓN EDITAR ESTATUS - SOLO ADMIN Y SI NO ES DOCUMENTO DE ADMIN --}}
                                 @if(in_array($userRole, ['superadmin', 'admin']) && !$uploadedByAdmin)
                                 <button type="button" class="btn btn-sm btn-outline-secondary"
                                         onclick="editDocument({{ $doc->id }})" title="Editar estatus">
@@ -148,6 +172,7 @@
                                 </button>
                                 @endif
 
+                                {{-- BOTÓN MOVER - SOLO ADMIN --}}
                                 @if(in_array($userRole, ['superadmin', 'admin']))
                                 <button type="button" class="btn btn-sm btn-outline-secondary"
                                         onclick="moveDocument({{ $doc->id }}, '{{ $doc->name }}.{{ $ext }}')" title="Mover Archivo">
@@ -155,6 +180,7 @@
                                 </button>
                                 @endif
 
+                                {{-- BOTÓN DESCARGAR - ADMIN, VÁLIDOS O DUEÑO DEL DOCUMENTO --}}
                                 @if($esAdmin || $esValido || $esMiDoc)
                                 <a href="{{ route('documental.document.download', $doc->id) }}"
                                    class="btn btn-sm btn-outline-primary" title="Descargar archivo">
@@ -162,6 +188,7 @@
                                 </a>
                                 @endif
 
+                                {{-- BOTÓN ELIMINAR - SOLO ADMIN --}}
                                 @if(in_array($userRole, ['superadmin', 'admin']))
                                 <button type="button" class="btn btn-sm btn-outline-danger"
                                         onclick="deleteDocument({{ $doc->id }}, '{{ addslashes($doc->name) }}', '{{ $ext }}')"
@@ -179,8 +206,10 @@
     </div>
 </div>
 
+{{-- LIBRERÍA SWEETALERT PARA MODALES DE CONFIRMACIÓN --}}
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+// FUNCIÓN PARA VER DOCUMENTO - ABRE EL MODAL CORRESPONDIENTE
 function viewDocument(id) {
     const modalElement = document.getElementById(`viewDocumentModal${id}`);
     if (modalElement) {
@@ -197,6 +226,7 @@ function viewDocument(id) {
     }
 }
 
+// FUNCIÓN PARA EDITAR DOCUMENTO - CARGA DATOS EN EL MODAL DE EDICIÓN
 function editDocument(id) {
     fetch(`/documental/document/${id}/data`)
         .then(response => response.json())
@@ -209,6 +239,7 @@ function editDocument(id) {
             document.getElementById('edit_observaciones').value = data.observaciones || '';
             document.getElementById('edit_fecha').value         = data.fecha || '';
 
+            // CONFIGURA EL MODO USUARIO (CAMPOS BLOQUEADOS) SI LA FUNCIÓN EXISTE
             if (typeof setModoUsuario === 'function') {
                 setModoUsuario(!data.uploaded_by_admin, data.tipo_documento || '');
             }
@@ -219,6 +250,7 @@ function editDocument(id) {
         });
 }
 
+// FUNCIÓN PARA MOVER DOCUMENTO - CARGA EL ÁRBOL DE CARPETAS
 function moveDocument(id, name) {
     document.getElementById('moveDocumentName').textContent = name;
     document.getElementById('moveDocumentForm').action = `/documental/document/${id}/move`;
@@ -229,6 +261,7 @@ function moveDocument(id, name) {
 
     const currentFolder = {{ $currentFolder->id ?? 'null' }};
 
+    // OBTIENE EL ÁRBOL DE CARPETAS DESDE EL SERVIDOR
     fetch(`/documental/folders/tree?current_folder=${currentFolder}`)
         .then(response => response.json())
         .then(folders => {
@@ -245,6 +278,7 @@ function moveDocument(id, name) {
     new bootstrap.Modal(document.getElementById('moveDocumentModal')).show();
 }
 
+// FUNCIÓN PARA ELIMINAR DOCUMENTO - CON CONFIRMACIÓN
 function deleteDocument(id, name, ext) {
     event.stopPropagation();
     const fullName = name + '.' + ext;
@@ -282,5 +316,5 @@ function deleteDocument(id, name, ext) {
 }
 </script>
 @else
-
+{{-- NO HAY DOCUMENTOS PARA MOSTRAR - EL @ELSE ESTÁ VACÍO INTENCIONALMENTE --}}
 @endif

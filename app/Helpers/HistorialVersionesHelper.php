@@ -9,7 +9,8 @@ use Illuminate\Support\Facades\Request;
 class HistorialVersionesHelper
 {
     /**
-     * MAPA DE MÓDULOS PARA NOMBRES AMIGABLES
+     * ESTE ARREGLO CONVIERTE NOMBRES TECNICOS DE MODULOS EN NOMBRES PARA MOSTRAR EN EL HISTORIAL
+     * EJEMPLO: 'USUARIOS' SE MUESTRA COMO 'Usuarios', 'FORMATOS' COMO 'Lista Maestra'
      */
     private static $mapaNombresModulos = [
         'USUARIOS' => 'Usuarios',
@@ -31,7 +32,8 @@ class HistorialVersionesHelper
     ];
 
     /**
-     * MAPA DE MÓDULOS QUE SON CARPETAS (por defecto)
+     * LISTA DE MODULOS QUE SE COMPORTAN COMO CARPETAS (CONTENEDORES)
+     * ESTOS MODULOS PUEDEN CONTENER OTROS ELEMENTOS DENTRO
      */
     private static $modulosCarpeta = [
         'FOLDERS',
@@ -40,7 +42,8 @@ class HistorialVersionesHelper
     ];
 
     /**
-     * MAPA DE MÓDULOS QUE SON DOCUMENTOS (por defecto)
+     * LISTA DE MODULOS QUE SE COMPORTAN COMO DOCUMENTOS (ARCHIVOS)
+     * ESTOS SON ELEMENTOS QUE SE PUEDEN SUBIR, DESCARGAR, EDITAR
      */
     private static $modulosDocumento = [
         'DOCUMENTS',
@@ -53,12 +56,14 @@ class HistorialVersionesHelper
     ];
 
     /**
-     * Bandera estática para prevenir recursividad infinita
+     * BANDERA QUE EVITA QUE SE REGISTRE UN HISTORIAL DENTRO DE OTRO HISTORIAL
+     * PREVIENE BUCLES INFINITOS Y REGISTROS DUPLICADOS
      */
     private static $registrando = false;
 
     /**
-     * Obtiene el nombre amigable del módulo
+     * FUNCION QUE TRADUCE EL NOMBRE TECNICO DEL MODULO A UN NOMBRE LEGIBLE 
+     * SI NO EXISTE EN EL MAPA, SOLO PONE LA PRIMERA LETRA EN MAYUSCULA
      */
     private static function nombreModulo($modulo)
     {
@@ -66,11 +71,11 @@ class HistorialVersionesHelper
     }
 
     /**
-     * Determina si el elemento es una carpeta
+     * VERIFICA SI UN ELEMENTO ES UNA CARPETA SEGUN SU MODULO Y TIPO
+     * RETORNA TRUE SI EL ELEMENTO ACTUA COMO CARPETA, FALSE SI NO
      */
     private static function esCarpeta($modulo, $elemento)
     {
-        // Si es COMPETENCIAS, revisar el atributo 'tipo'
         if ($modulo === 'COMPETENCIAS' && $elemento) {
             $tipo = null;
             if (is_object($elemento) && isset($elemento->tipo)) {
@@ -81,7 +86,6 @@ class HistorialVersionesHelper
             return $tipo === 'carpeta';
         }
         
-        // Si es DOCUMENTALFOLDER (carpetas de gestión documental)
         if ($modulo === 'DOCUMENTALFOLDER') {
             return true;
         }
@@ -90,11 +94,11 @@ class HistorialVersionesHelper
     }
 
     /**
-     * Determina si el elemento es un documento
+     * VERIFICA SI UN ELEMENTO ES UN DOCUMENTO SEGUN SU MODULO Y TIPO
+     * RETORNA TRUE SI EL ELEMENTO ACTUA COMO DOCUMENTO, FALSE SI NO
      */
     private static function esDocumento($modulo, $elemento)
     {
-        // Si es COMPETENCIAS, revisar el atributo 'tipo'
         if ($modulo === 'COMPETENCIAS' && $elemento) {
             $tipo = null;
             if (is_object($elemento) && isset($elemento->tipo)) {
@@ -105,12 +109,10 @@ class HistorialVersionesHelper
             return $tipo === 'documento';
         }
         
-        // Si es DOCUMENTAL_DOCUMENTS (documentos de gestión documental)
         if ($modulo === 'DOCUMENTAL_DOCUMENTS') {
             return true;
         }
         
-        // Si es FORMATOS (Lista Maestra)
         if ($modulo === 'FORMATOS') {
             return true;
         }
@@ -119,7 +121,9 @@ class HistorialVersionesHelper
     }
 
     /**
-     * Extrae el nombre del elemento
+     * EXTRAE EL NOMBRE DEL ELEMENTO BUSCANDO EN DIFERENTES CAMPOS POSIBLES
+     * REVISA: titulo, name, nombre, nombre_archivo, archivo_original, etc.
+     * SI NO ENCUENTRA NADA, RETORNA NULL
      */
     private static function extraerNombreElemento($elemento)
     {
@@ -130,15 +134,12 @@ class HistorialVersionesHelper
         }
         
         if (is_object($elemento)) {
-            // Para Avisos - Título
             if (isset($elemento->titulo) && !empty($elemento->titulo)) {
                 return $elemento->titulo;
             }
-            // Para usuarios
             if (isset($elemento->name) && !empty($elemento->name)) {
                 return $elemento->name;
             }
-            // Para carpetas y documentos
             if (isset($elemento->nombre) && !empty($elemento->nombre)) {
                 return $elemento->nombre;
             }
@@ -169,7 +170,6 @@ class HistorialVersionesHelper
         }
         
         if (is_array($elemento)) {
-            // Para Avisos - Título
             if (isset($elemento['titulo']) && !empty($elemento['titulo'])) {
                 return $elemento['titulo'];
             }
@@ -209,16 +209,15 @@ class HistorialVersionesHelper
     }
 
     /**
-     * Verifica si ya existe un registro reciente para evitar duplicados
-     * SOLO PARA GESTIÓN DOCUMENTAL
+     * VERIFICA SI YA EXISTE UN REGISTRO MUY RECIENTE PARA EVITAR DUPLICADOS
+     * USA LOS ULTIMOS SEGUNDOS ESPECIFICADOS PARA COMPARAR
      */
     private static function yaRegistradoRecientemente($modulo, $accion, $registroId, $segundos = 3)
     {
-        // SOLO aplicar para Gestión Documental
         $modulosGestionDocumental = ['DOCUMENTALFOLDER', 'DOCUMENTAL_DOCUMENTS'];
         
         if (!in_array($modulo, $modulosGestionDocumental)) {
-            return false; // No aplicar para otros módulos
+            return false;
         }
         
         if (!$registroId) {
@@ -237,7 +236,8 @@ class HistorialVersionesHelper
     }
 
     /**
-     * Registra una acción de VISUALIZACIÓN
+     * REGISTRA UNA ACCION DE VISUALIZACION EN EL HISTORIAL
+     * SE USA CUANDO UN USUARIO VE UN MODULO, DASHBOARD O ELEMENTO ESPECIFICO
      */
     public static function ver($modulo, $elemento = null, $contexto = null)
     {
@@ -266,7 +266,8 @@ class HistorialVersionesHelper
     }
 
     /**
-     * Registra una acción de CREACIÓN
+     * REGISTRA UNA ACCION DE CREACION EN EL HISTORIAL
+     * SE USA CUANDO SE CREA ALGO NUEVO: USUARIO, CARPETA, DOCUMENTO, PROCESO, ETC
      */
     public static function crear($modulo, $elemento, $datos = [])
     {
@@ -307,7 +308,8 @@ class HistorialVersionesHelper
     }
 
     /**
-     * Registra una acción de SUBIR (documentos)
+     * REGISTRA UNA ACCION DE SUBIR DOCUMENTO EN EL HISTORIAL
+     * SE USA CUANDO UN USUARIO SUBE UN ARCHIVO AL SISTEMA
      */
     public static function subir($modulo, $elemento, $datos = [], $esEnvio = false)
     {
@@ -336,7 +338,9 @@ class HistorialVersionesHelper
     }
 
     /**
-     * Registra una acción de EDICIÓN
+     * REGISTRA UNA ACCION DE EDICION EN EL HISTORIAL
+     * COMPARA DATOS ANTERIORES VS NUEVOS Y GENERA UNA DESCRIPCION CLARA DEL CAMBIO
+     * DETECTA RENOMBRES, CAMBIOS DE ESTADO, ETC
      */
     public static function editar($modulo, $elemento, $datosAnteriores, $datosNuevos)
     {
@@ -452,7 +456,8 @@ class HistorialVersionesHelper
     }
 
     /**
-     * Registra una acción de ELIMINACIÓN
+     * REGISTRA UNA ACCION DE ELIMINACION EN EL HISTORIAL
+     * GUARDA LOS DATOS DEL ELEMENTO ELIMINADO PARA POSIBLE RESTAURACION FUTURA
      */
     public static function eliminar($modulo, $elemento, $datos = [])
     {
@@ -508,16 +513,12 @@ class HistorialVersionesHelper
     }
 
     /**
-     * Registra una acción de RESTAURACIÓN - CORREGIDO
+     * REGISTRA UNA ACCION DE RESTAURACION EN EL HISTORIAL
+     * SE USA CUANDO SE RECUPERA UN ELEMENTO QUE HABIA SIDO ELIMINADO
+     * NOTA: YA NO EXCLUYE EL MODULO FORMATOS, AHORA SI REGISTRA ESA ACCION
      */
     public static function restaurar($modulo, $elemento, $datos = [])
     {
-        // EXCLUIR FORMATOS COMPLETAMENTE
-        if ($modulo === 'FORMATOS') {
-            return null;
-        }
-        
-        // Prevenir recursividad
         if (self::$registrando) {
             return null;
         }
@@ -541,6 +542,8 @@ class HistorialVersionesHelper
                 $descripcion = "Se restauró el departamento '{$nombre}' del proceso '{$proceso}' en {$nombreModulo}";
             } elseif ($modulo === 'SOLICITUDES_MEJORA') {
                 $descripcion = "Se restauró la solicitud de mejora '{$nombre}' en {$nombreModulo}";
+            } elseif ($modulo === 'FORMATOS') {
+                $descripcion = "Se restauró el documento '{$nombre}' en la Lista Maestra";
             } elseif ($modulo === 'AVISOS') {
                 $descripcion = "Se restauró el aviso '{$nombre}' en {$nombreModulo}";
             } else {
@@ -557,7 +560,9 @@ class HistorialVersionesHelper
     }
 
     /**
-     * Registra una acción de MOVIMIENTO
+     * REGISTRA UNA ACCION DE MOVIMIENTO EN EL HISTORIAL
+     * REGISTRA CUANDO UN ELEMENTO (CARPETA O DOCUMENTO) CAMBIA DE UBICACION
+     * GUARDA EL ORIGEN Y EL DESTINO DEL MOVIMIENTO
      */
     public static function mover($modulo, $elemento, $origen, $destino)
     {
@@ -589,7 +594,8 @@ class HistorialVersionesHelper
     }
 
     /**
-     * Registra una acción de DESCARGA
+     * REGISTRA UNA ACCION DE DESCARGA EN EL HISTORIAL
+     * SE USA CUANDO UN USUARIO DESCARGA UN ARCHIVO DEL SISTEMA
      */
     public static function descargar($modulo, $elemento)
     {
@@ -618,7 +624,9 @@ class HistorialVersionesHelper
     }
 
     /**
-     * Método base para registrar en la base de datos
+     * METODO PRINCIPAL QUE GUARDA EL REGISTRO EN LA BASE DE DATOS
+     * RECIBE TODOS LOS DATOS, OBTIENE LA INFORMACION DEL USUARIO, IP, NAVEGADOR
+     * Y CREA UN NUEVO REGISTRO EN LA TABLA historial_versiones
      */
     private static function registrar($modulo, $accion, $descripcion, $elemento = null, $datosNuevos = [], $datosAnteriores = [])
     {

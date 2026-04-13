@@ -1,7 +1,9 @@
 <div class="modal fade" id="uploadFileModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
+        {{-- FORMULARIO PARA SUBIR ARCHIVO - ENVÍA DATOS AL CONTROLADOR --}}
         <form action="{{ route('documental.upload') }}" method="POST" enctype="multipart/form-data" id="uploadFileForm">
-            @csrf
+            @csrf {{-- TOKEN DE SEGURIDAD - PROTEGE CONTRA ATAQUES CSRF --}}
+            {{-- CAMPO OCULTO QUE INDICA EN QUÉ CARPETA SE SUBE EL ARCHIVO --}}
             <input type="hidden" name="folder_id" value="{{ $currentFolder->id ?? '' }}">
             <div class="modal-content">
                 <div class="modal-header">
@@ -12,13 +14,13 @@
                 </div>
                 <div class="modal-body">
 
-                    {{-- CAMPO DE ARCHIVO --}}
+                    {{-- CAMPO PARA SELECCIONAR EL ARCHIVO - OBLIGATORIO --}}
                     <div class="mb-3">
                         <label class="form-label fw-bold">Seleccionar archivo <span class="text-danger">*</span></label>
                         <input class="form-control" type="file" name="file" required>
                     </div>
 
-                    {{-- TIPO DE DOCUMENTO --}}
+                    {{-- SELECTOR DE TIPO DE DOCUMENTO - FORMATO O PROCEDIMIENTO --}}
                     <div class="mb-3">
                         <label class="form-label fw-bold">Tipo de documento <span class="text-danger">*</span></label>
                         <select class="form-select" name="tipo_documento" id="upload_tipo_documento" required>
@@ -29,9 +31,10 @@
                         <small class="text-muted">Indica si el archivo es un Formato o un Procedimiento.</small>
                     </div>
 
+                    {{-- SECCIONES SOLO VISIBLES PARA SUPERADMIN Y ADMIN --}}
                     @if(in_array(Auth::user()->role, ['superadmin', 'admin']))
 
-                    {{-- SECCIÓN FORMATO --}}
+                    {{-- SECCIÓN DE CAMPOS PARA FORMATO (CLAVE, CÓDIGO, VERSIÓN) --}}
                     <div id="upload_seccion_formato" style="display:none;">
                         <hr>
                         <p class="fw-bold mb-2" style="color:#000000; font-size:0.9rem;">
@@ -67,7 +70,7 @@
                         </div>
                     </div>
 
-                    {{-- SECCIÓN PROCEDIMIENTO --}}
+                    {{-- SECCIÓN DE CAMPOS PARA PROCEDIMIENTO (CÓDIGO Y VERSIÓN) --}}
                     <div id="upload_seccion_procedimiento" style="display:none;">
                         <hr>
                         <p class="fw-bold mb-2" style="color:#000000; font-size:0.9rem;">
@@ -95,6 +98,7 @@
                         </div>
                     </div>
 
+                    {{-- AVISO DE ENVÍO AUTOMÁTICO A LISTA MAESTRA --}}
                     <div class="alert alert-success d-flex align-items-center mt-2" style="font-size:0.85rem;">
                         <i class="bi bi-check-circle-fill me-2"></i>
                         El archivo se enviará automáticamente al módulo de <strong class="ms-1">Lista Maestra</strong>.
@@ -115,18 +119,21 @@
     </div>
 </div>
 
+{{-- JAVASCRIPT PARA MANEJAR LA LÓGICA DE SUBIDA DE ARCHIVOS --}}
 <script>
+{{-- CUANDO LA PÁGINA TERMINA DE CARGARSE --}}
 document.addEventListener('DOMContentLoaded', function () {
 
     const tipoSelect = document.getElementById('upload_tipo_documento');
 
     if (tipoSelect) {
+        {{-- CUANDO EL USUARIO CAMBIA EL TIPO DE DOCUMENTO --}}
         tipoSelect.addEventListener('change', function () {
             const tipo = this.value;
             const secFormato       = document.getElementById('upload_seccion_formato');
             const secProcedimiento = document.getElementById('upload_seccion_procedimiento');
 
-            // Ocultar ambas secciones y deshabilitar todos sus campos
+            {{-- OCULTAR AMBAS SECCIONES Y DESHABILITAR TODOS SUS CAMPOS --}}
             if (secFormato)       secFormato.style.display       = 'none';
             if (secProcedimiento) secProcedimiento.style.display = 'none';
 
@@ -136,7 +143,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (el) { el.disabled = true; el.value = ''; }
             });
 
-            // Mostrar y habilitar la sección correcta
+            {{-- MOSTRAR Y HABILITAR LA SECCIÓN CORRECTA SEGÚN EL TIPO SELECCIONADO --}}
             if (tipo === 'Formato') {
                 if (secFormato) secFormato.style.display = '';
                 ['upload_clave_formato','upload_codigo_formato','upload_version_formato'].forEach(function(id) {
@@ -153,17 +160,20 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Reset al cerrar modal
+    {{-- RESETEA EL FORMULARIO CUANDO EL MODAL SE CIERRA --}}
     const modal = document.getElementById('uploadFileModal');
     if (modal) {
         modal.addEventListener('hidden.bs.modal', function () {
+            {{-- RESETEA EL SELECTOR DE TIPO --}}
             if (tipoSelect) tipoSelect.value = '';
 
+            {{-- OCULTA LAS SECCIONES ADICIONALES --}}
             const sf = document.getElementById('upload_seccion_formato');
             const sp = document.getElementById('upload_seccion_procedimiento');
             if (sf) sf.style.display = 'none';
             if (sp) sp.style.display = 'none';
 
+            {{-- LIMPIA Y DESHABILITA TODOS LOS CAMPOS ADICIONALES --}}
             ['upload_clave_formato','upload_codigo_formato','upload_version_formato',
              'upload_codigo_procedimiento','upload_version_procedimiento'].forEach(function(id) {
                 const el = document.getElementById(id);
@@ -173,11 +183,12 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
+{{-- FUNCIÓN QUE VALIDA EL FORMULARIO ANTES DE ENVIAR --}}
 function submitUploadForm() {
     const tipoEl = document.getElementById('upload_tipo_documento');
     const tipo   = tipoEl ? tipoEl.value : '';
 
-    // Limpiar errores previos
+    {{-- LIMPIAR ERRORES PREVIOS --}}
     ['upload_tipo_documento','upload_clave_formato','upload_version_formato',
      'upload_codigo_procedimiento','upload_version_procedimiento'].forEach(function(id) {
         const el = document.getElementById(id);
@@ -191,7 +202,7 @@ function submitUploadForm() {
 
     let hayError = false;
 
-    // Validar archivo obligatorio
+    {{-- VALIDAR QUE EL ARCHIVO SEA OBLIGATORIO --}}
     const archivoInput = document.querySelector('#uploadFileForm input[type="file"]');
     if (archivoInput && !archivoInput.files.length) {
         archivoInput.classList.add('is-invalid');
@@ -203,7 +214,7 @@ function submitUploadForm() {
         hayError = true;
     }
 
-    // Validar tipo de documento obligatorio
+    {{-- VALIDAR QUE EL TIPO DE DOCUMENTO SEA OBLIGATORIO --}}
     if (!tipo) {
         tipoEl.classList.add('is-invalid');
         const msg = document.createElement('div');
@@ -214,7 +225,7 @@ function submitUploadForm() {
         hayError = true;
     }
 
-    // Si es Formato: clave y versión obligatorios
+    {{-- SI ES FORMATO: CLAVE Y VERSIÓN SON OBLIGATORIOS --}}
     if (tipo === 'Formato') {
         const claveEl   = document.getElementById('upload_clave_formato');
         const versionEl = document.getElementById('upload_version_formato');
@@ -239,7 +250,7 @@ function submitUploadForm() {
         }
     }
 
-    // Si es Procedimiento: código y versión obligatorios
+    {{-- SI ES PROCEDIMIENTO: CÓDIGO Y VERSIÓN SON OBLIGATORIOS --}}
     if (tipo === 'Procedimiento') {
         const codigoEl  = document.getElementById('upload_codigo_procedimiento');
         const versionEl = document.getElementById('upload_version_procedimiento');
@@ -264,35 +275,36 @@ function submitUploadForm() {
         }
     }
 
+    {{-- SI HAY ERRORES, DETENER EL ENVÍO --}}
     if (hayError) return;
 
-    // ── Solución al problema de names duplicados ──
-    // En lugar de habilitar todos, copiamos los valores al campo correcto
-    // según el tipo seleccionado, usando inputs hidden
+    {{-- SOLUCIÓN AL PROBLEMA DE NOMBRES DUPLICADOS --}}
+    // DESHABILITAR LA SECCIÓN QUE NO CORRESPONDE Y HABILITAR LA CORRECTA
     if (tipo === 'Formato') {
-        // Deshabilitar sección procedimiento para que no interfiera
+        {{-- DESHABILITAR SECCIÓN PROCEDIMIENTO --}}
         ['upload_codigo_procedimiento','upload_version_procedimiento'].forEach(function(id) {
             const el = document.getElementById(id);
             if (el) el.disabled = true;
         });
-        // Habilitar sección formato
+        {{-- HABILITAR SECCIÓN FORMATO --}}
         ['upload_clave_formato','upload_codigo_formato','upload_version_formato'].forEach(function(id) {
             const el = document.getElementById(id);
             if (el) el.disabled = false;
         });
     } else if (tipo === 'Procedimiento') {
-        // Deshabilitar sección formato para que no interfiera
+        {{-- DESHABILITAR SECCIÓN FORMATO --}}
         ['upload_clave_formato','upload_codigo_formato','upload_version_formato'].forEach(function(id) {
             const el = document.getElementById(id);
             if (el) el.disabled = true;
         });
-        // Habilitar sección procedimiento
+        {{-- HABILITAR SECCIÓN PROCEDIMIENTO --}}
         ['upload_codigo_procedimiento','upload_version_procedimiento'].forEach(function(id) {
             const el = document.getElementById(id);
             if (el) el.disabled = false;
         });
     }
 
+    {{-- ENVÍA EL FORMULARIO --}}
     document.getElementById('uploadFileForm').submit();
 }
 

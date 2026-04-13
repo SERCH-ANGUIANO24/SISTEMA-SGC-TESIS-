@@ -8,11 +8,24 @@ use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
 
+/*
+|--------------------------------------------------------------------------
+| CONTROLADOR: RESET PASSWORD (RESTABLECER CONTRASEÑA)
+|--------------------------------------------------------------------------
+| SE ENCARGA DE MOSTRAR EL FORMULARIO PARA CREAR UNA NUEVA CONTRASEÑA
+| Y DE PROCESAR EL CAMBIO DE CONTRASEÑA DEL USUARIO.
+*/
+
 class ResetPasswordController extends Controller
 {
-    /**
-     * Muestra formulario para restablecer contraseña
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | FUNCIÓN: showResetForm
+    |--------------------------------------------------------------------------
+    | MUESTRA LA PANTALLA DONDE EL USUARIO ESCRIBE SU NUEVA CONTRASEÑA.
+    | RECIBE EL TOKEN (CLAVE ÚNICA) Y EL EMAIL DESDE LA URL.
+    | DEVUELVE LA VISTA: pages/auth/reset-password
+    */
     public function showResetForm(Request $request, $token = null)
     {
         return view('pages.auth.reset-password')->with(
@@ -20,9 +33,19 @@ class ResetPasswordController extends Controller
         );
     }
 
-    /**
-     * Procesa el restablecimiento de contraseña
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | FUNCIÓN: reset
+    |--------------------------------------------------------------------------
+    | VALIDA LOS DATOS Y GUARDA LA NUEVA CONTRASEÑA DEL USUARIO.
+    |
+    | PASO A PASO:
+    |   1. VALIDA QUE EL TOKEN, EMAIL Y CONTRASEÑA SEAN CORRECTOS
+    |   2. ENCRIPTA Y GUARDA LA NUEVA CONTRASEÑA EN LA BASE DE DATOS
+    |   3. GENERA UN NUEVO TOKEN DE "RECUÉRDAME" POR SEGURIDAD
+    |   4. SI TODO SALIÓ BIEN  → REDIRIGE AL LOGIN CON MENSAJE DE ÉXITO
+    |   5. SI ALGO SALIÓ MAL   → REGRESA CON MENSAJE DE ERROR
+    */
     public function reset(Request $request)
     {
         $request->validate([

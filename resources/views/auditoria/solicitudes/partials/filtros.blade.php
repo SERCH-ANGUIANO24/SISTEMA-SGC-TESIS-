@@ -1,8 +1,19 @@
+{{-- ============================================================ --}}                            --}}
+{{-- BARRA DE FILTROS HORIZONTAL PARA BUSCAR Y ORDENAR           --}}
+{{-- LAS SOLICITUDES DE MEJORA EN LA TABLA PRINCIPAL.            --}}
+{{-- ============================================================ --}}
+
 <!-- FILTROS EN ORDEN HORIZONTAL -->
 <div class="row mb-4">
     <div class="col-12">
         <div class="d-flex align-items-center gap-3 flex-wrap">
-            <!-- Buscar solicitudes -->
+
+            {{-- ================================================ --}}
+            {{-- FILTRO 1: BUSCADOR DE SOLICITUDES                --}}
+            {{-- CAMPO DE TEXTO PARA BUSCAR POR PALABRAS CLAVE.   --}}
+            {{-- EL BOTÓN "X" DE LA DERECHA LIMPIA EL BUSCADOR    --}}
+            {{-- Y DISPARA EL EVENTO PARA ACTUALIZAR LA TABLA.    --}}
+            {{-- ================================================ --}}
             <div class="d-flex align-items-center position-relative" style="width: 700px;">
                 <div class="position-relative flex-grow-1">
                     <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted" style="font-size: 1rem;"></i>
@@ -17,7 +28,12 @@
                 </button>
             </div>
 
-            <!-- Ordenar por -->
+            {{-- ================================================ --}}
+            {{-- FILTRO 2: ORDENAR POR                            --}}
+            {{-- DROPDOWN PARA ORDENAR LA TABLA POR:              --}}
+            {{--   · NOMBRE A-Z / Z-A                             --}}
+            {{--   · FECHA MÁS ANTIGUO / MÁS RECIENTE            --}}
+            {{-- ================================================ --}}
             <div class="dropdown">
                 <button class="btn btn-light border dropdown-toggle" type="button" data-bs-toggle="dropdown" id="btnOrdenar" style="height: 42px; background-color: white;">
                     <i class="bi bi-arrow-up-short"></i> <span id="ordenarTexto">Ordenar por</span>
@@ -30,7 +46,12 @@
                 </ul>
             </div>
 
-            <!-- Filtrar por Año -->
+            {{-- ================================================ --}}
+            {{-- FILTRO 3: FILTRAR POR AÑO                        --}}
+            {{-- DROPDOWN QUE CARGA DINÁMICAMENTE LOS AÑOS        --}}
+            {{-- DISPONIBLES DESDE LA VARIABLE $anios DE BLADE.   --}}
+            {{-- TAMBIÉN TIENE LA OPCIÓN "TODOS LOS AÑOS".        --}}
+            {{-- ================================================ --}}
             <div class="dropdown">
                 <button class="btn btn-light border dropdown-toggle" type="button" data-bs-toggle="dropdown" id="btnAnio" style="height: 42px; background-color: white;">
                     <i class="bi bi-calendar"></i> <span id="anioTexto">Filtrar por Año</span>
@@ -43,7 +64,14 @@
                 </ul>
             </div>
 
-            <!-- Filtrar por Estatus -->
+            {{-- ================================================ --}}
+            {{-- FILTRO 4: FILTRAR POR ESTATUS                    --}}
+            {{-- DROPDOWN PARA FILTRAR POR ESTADO DE LA SOLICITUD: --}}
+            {{--   · TODOS LOS ESTATUS                            --}}
+            {{--   · NO ATENDIDA                                  --}}
+            {{--   · EN PROCESO                                   --}}
+            {{--   · CERRADO                                      --}}
+            {{-- ================================================ --}}
             <div class="dropdown">
                 <button class="btn btn-light border dropdown-toggle" type="button" data-bs-toggle="dropdown" id="btnEstatus" style="height: 42px; background-color: white;">
                     <i class="bi bi-rectangle-fill"></i> <span id="estatusTexto">Estatus</span>
@@ -56,17 +84,26 @@
                 </ul>
             </div>
 
-            <!-- Botón Ver Estadísticas (ahora visible para todos los usuarios) -->
+            {{-- ================================================ --}}
+            {{-- BOTÓN: VER ESTADÍSTICAS                          --}}
+            {{-- ABRE EL MODAL DE GRÁFICAS (MODAL_GRAFICAS).      --}}
+            {{-- VISIBLE PARA TODOS LOS USUARIOS.                 --}}
+            {{-- ================================================ --}}
             <button class="btn" type="button" onclick="abrirModalGraficas()"
                 style="height: 42px; background-color: #0dcaf0; color: white; border: none; border-radius: 4px;">
                 <i class="bi bi-pie-chart-fill me-1"></i> Estadísticas
             </button>
 
-            <!-- Botón Histórico (ahora visible para todos los usuarios) -->
+            {{-- ================================================ --}}
+            {{-- BOTÓN: VER HISTÓRICO                             --}}
+            {{-- ABRE EL MODAL DE HISTÓRICO (MODAL_HISTORICO).    --}}
+            {{-- VISIBLE PARA TODOS LOS USUARIOS.                 --}}
+            {{-- ================================================ --}}
             <button class="btn" type="button" onclick="abrirModalHistorico()"
                 style="height: 42px; background-color: #0d6efd; color: white; border: none; border-radius: 4px;">
                 <i class="bi bi-bar-chart-line-fill me-1"></i> Histórico
             </button>
+
         </div>
     </div>
 </div>
@@ -103,6 +140,11 @@
 </style>
 
 <script>
+// ============================================================
+// FUNCIÓN: limpiarBuscador
+// VACÍA EL CAMPO DE BÚSQUEDA Y DISPARA EL EVENTO "keyup"
+// PARA QUE LA TABLA SE ACTUALICE AUTOMÁTICAMENTE.
+// ============================================================
 function limpiarBuscador() {
     const buscador = document.getElementById('buscadorArchivos');
     if (buscador) {
@@ -111,6 +153,11 @@ function limpiarBuscador() {
     }
 }
 
+// ============================================================
+// FUNCIÓN: seleccionarOrden
+// ACTUALIZA EL TEXTO DEL BOTÓN "ORDENAR POR" Y LLAMA
+// A LA FUNCIÓN GLOBAL DEL MISMO NOMBRE PARA APLICAR EL ORDEN.
+// ============================================================
 function seleccionarOrden(valor, texto) {
     document.getElementById('ordenarTexto').innerText = texto;
     if (window.seleccionarOrden) {
@@ -118,6 +165,11 @@ function seleccionarOrden(valor, texto) {
     }
 }
 
+// ============================================================
+// FUNCIÓN: seleccionarAnio
+// ACTUALIZA EL TEXTO DEL BOTÓN "FILTRAR POR AÑO" Y LLAMA
+// A LA FUNCIÓN GLOBAL DEL MISMO NOMBRE PARA APLICAR EL FILTRO.
+// ============================================================
 function seleccionarAnio(valor, texto) {
     document.getElementById('anioTexto').innerText = texto;
     if (window.seleccionarAnio) {
@@ -125,6 +177,11 @@ function seleccionarAnio(valor, texto) {
     }
 }
 
+// ============================================================
+// FUNCIÓN: seleccionarEstatus
+// ACTUALIZA EL TEXTO DEL BOTÓN "ESTATUS" Y LLAMA
+// A LA FUNCIÓN GLOBAL DEL MISMO NOMBRE PARA APLICAR EL FILTRO.
+// ============================================================
 function seleccionarEstatus(valor, texto) {
     document.getElementById('estatusTexto').innerText = texto;
     if (window.seleccionarEstatus) {

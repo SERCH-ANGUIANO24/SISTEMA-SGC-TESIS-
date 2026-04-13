@@ -1,11 +1,13 @@
-{{-- resources/views/dashboard.blade.php --}}
+{{-- RESOURCES/VIEWS/DASHBOARD.BLADE --}}
 @extends('layouts.app')
 
 @section('title', 'Dashboard - Sistema de Gestión de la Calidad')
 
 @section('content')
 <div class="container-fluid">
-    <!-- Dashboard Header -->
+    <!-- =====================================================
+         DASHBOARD HEADER - ENCABEZADO DEL PANEL PRINCIPAL
+         ===================================================== -->
     <div class="row mb-4">
         <div class="col-12">
             <div class="text-center">
@@ -15,12 +17,14 @@
         </div>
     </div>
 
-    <!-- Dashboard Grid - Tarjetas de módulos (RESPONSIVO) -->
+    <!-- =====================================================
+         DASHBOARD GRID - TARJETAS DE MÓDULOS (RESPONSIVO)
+         ===================================================== -->
     <div class="row row-cols-1 row-cols-sm-2 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-4">
         @php
             $userRole = Auth::user()->role;
 
-            // Conteo de notificaciones sin leer
+            // CONTEO DE NOTIFICACIONES SIN LEER
             $notificacionesSinLeer = \App\Models\Notificacion::deUsuario(Auth::id())
                                     ->noLeidas()
                                     ->count();
@@ -80,7 +84,7 @@
                     'description' => 'Alertas y notificaciones',
                     'color' => '#ea580c',
                     'route' => route('notificaciones.index'),
-                    'visible' => true //TODOS PUEDEN VER
+                    'visible' => true // TODOS PUEDEN VER
                 ],
                 [
                     'title' => 'Avisos',
@@ -88,7 +92,7 @@
                     'description' => 'Gestión de avisos y comunicados',
                     'color' => '#4f46e5',
                     'route' => route('avisos.index'),
-                    'visible' => in_array($userRole, ['superadmin', 'admin'])//ESTE MODULO SOLO ESTA VISIBLE PARA ADMINISTRADOR Y SUPERAMINISTRADOR
+                    'visible' => in_array($userRole, ['superadmin', 'admin']) // ESTE MODULO SOLO ESTA VISIBLE PARA ADMINISTRADOR Y SUPERAMINISTRADOR
                 ]
             ];
             
@@ -128,7 +132,9 @@
     </div>
 </div>
 
-<!-- MODAL CARRUSEL PARA AVISOS -->
+<!-- =====================================================
+     MODAL CARRUSEL PARA AVISOS
+     ===================================================== -->
 <div class="modal fade" id="modalAvisosCarousel" tabindex="-1" aria-labelledby="modalAvisosCarouselLabel" aria-hidden="true" data-bs-backdrop="static">
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
@@ -169,7 +175,9 @@
     </div>
 </div>
 
-<!-- MODAL PARA EXPANDIR VISTA DE ARCHIVO -->
+<!-- =====================================================
+     MODAL PARA EXPANDIR VISTA DE ARCHIVO
+     ===================================================== -->
 <div class="modal fade" id="modalExpandirArchivo" tabindex="-1" aria-labelledby="modalExpandirArchivoLabel" aria-hidden="true">
     <div class="modal-dialog modal-fullscreen">
         <div class="modal-content">
@@ -201,7 +209,9 @@
 @push('styles')
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <style>
-    /* Dashboard Card Styles */
+    /* =====================================================
+       DASHBOARD CARD STYLES - ESTILOS DE LAS TARJETAS
+       ===================================================== */
     .dashboard-card {
         transition: all 0.3s ease;
         border-radius: 12px;
@@ -255,7 +265,9 @@
         flex-grow: 1;
     }
 
-    /* Estilos para el carrusel de avisos */
+    /* =====================================================
+       ESTILOS PARA EL CARRUSEL DE AVISOS
+       ===================================================== */
     .aviso-carousel-item {
         padding: 30px;
         min-height: 600px;
@@ -320,7 +332,9 @@
         position: relative;
     }
     
-    /* Botón de lupa para expandir */
+    /* =====================================================
+       BOTÓN DE LUPA PARA EXPANDIR
+       ===================================================== */
     .btn-expandir {
         position: absolute;
         top: 20px;
@@ -344,7 +358,9 @@
         transform: scale(1.1);
     }
     
-    /* Mejoras para PDF */
+    /* =====================================================
+       MEJORAS PARA PDF
+       ===================================================== */
     .pdf-container {
         width: 100%;
         height: 500px;
@@ -360,7 +376,9 @@
         border: none;
     }
     
-    /* Mejoras para imágenes */
+    /* =====================================================
+       MEJORAS PARA IMÁGENES
+       ===================================================== */
     .preview-content img {
         max-width: 100%;
         height: auto;
@@ -370,7 +388,9 @@
         margin: 0 auto;
     }
     
-    /* Mejoras para texto */
+    /* =====================================================
+       MEJORAS PARA TEXTO
+       ===================================================== */
     .preview-content pre {
         background-color: #f8f9fa;
         padding: 20px;
@@ -385,7 +405,9 @@
         margin: 0;
     }
     
-    /* Botón de descarga mejorado */
+    /* =====================================================
+       BOTÓN DE DESCARGA MEJORADO
+       ===================================================== */
     .btn-descargar {
         background-color: #737372;
         color: white;
@@ -431,7 +453,9 @@
         height: 40px;
     }
     
-    /* Estilos para el modal expandido */
+    /* =====================================================
+       ESTILOS PARA EL MODAL EXPANDIDO
+       ===================================================== */
     .fullscreen-content {
         width: 100%;
         height: 100%;
@@ -459,7 +483,9 @@
         margin: 0;
     }
     
-    /* Responsive */
+    /* =====================================================
+       RESPONSIVE - MEDIA QUERIES
+       ===================================================== */
     @media (max-width: 768px) {
         .dashboard-card {
             margin-bottom: 15px;
@@ -535,7 +561,9 @@
         }
     }
 
-    /* Animation for cards */
+    /* =====================================================
+       ANIMATION FOR CARDS - ANIMACIÓN DE ENTRADA
+       ===================================================== */
     @keyframes fadeInUp {
         from {
             opacity: 0;
@@ -561,7 +589,9 @@
     .dashboard-card:nth-child(7) { animation-delay: 0.7s; }
     .dashboard-card:nth-child(8) { animation-delay: 0.8s; }
 
-    /* Custom Toast Notification */
+    /* =====================================================
+       CUSTOM TOAST NOTIFICATION - NOTIFICACIONES PERSONALIZADAS
+       ===================================================== */
     .custom-toast {
         position: fixed;
         top: 100px;
@@ -598,14 +628,20 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+    // =====================================================
+    // VARIABLES GLOBALES
+    // =====================================================
     let modalMostrado = false;
     let currentExpandUrl = '';
     let currentExpandType = '';
     let currentExpandNombre = '';
     
-    // Lista de extensiones que NO se pueden visualizar (solo se puede descargar)
+    // LISTA DE EXTENSIONES QUE NO SE PUEDEN VISUALIZAR (SOLO SE PUEDE DESCARGAR)
     const extensionesSinVista = ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'csv', 'zip', 'rar', '7z'];
 
+    // =====================================================
+    // FUNCIÓN PARA MOSTRAR TOAST (NOTIFICACIÓN TEMPORAL)
+    // =====================================================
     function showToast(moduleName) {
         const toast = document.createElement('div');
         toast.className = 'custom-toast';
@@ -627,6 +663,9 @@
         toast.querySelector('.btn-close').addEventListener('click', () => toast.remove());
     }
 
+    // =====================================================
+    // FUNCIÓN PARA MANEJAR CLICK EN TARJETAS DEL DASHBOARD
+    // =====================================================
     function handleDashboardClick(module, route) {
         const card = event.currentTarget;
         card.style.transform = 'scale(0.98)';
@@ -635,6 +674,9 @@
         else showToast(module);
     }
 
+    // =====================================================
+    // FUNCIÓN PARA OBTENER ICONO SEGÚN EXTENSIÓN DE ARCHIVO
+    // =====================================================
     function getIconoPorExtension(filename) {
         if (!filename) return 'bi-file-earmark';
         const ext = filename.split('.').pop().toLowerCase();
@@ -657,6 +699,9 @@
         return icons[ext] || 'bi-file-earmark';
     }
 
+    // =====================================================
+    // FUNCIÓN PARA FORMATEAR FECHA
+    // =====================================================
     function formatFecha(dateString) {
         const date = new Date(dateString);
         return date.toLocaleDateString('es-MX', { 
@@ -665,6 +710,9 @@
         });
     }
 
+    // =====================================================
+    // FUNCIÓN PARA ESCAPAR HTML (SEGURIDAD)
+    // =====================================================
     function escapeHtml(text) {
         if (!text) return '';
         const div = document.createElement('div');
@@ -672,7 +720,9 @@
         return div.innerHTML;
     }
 
-    // Función para expandir archivo (lupa)
+    // =====================================================
+    // FUNCIÓN PARA EXPANDIR ARCHIVO (LUPA)
+    // =====================================================
     function expandirArchivo(url, tipo, nombre) {
         currentExpandUrl = url;
         currentExpandType = tipo;
@@ -709,7 +759,9 @@
         modal.show();
     }
 
-    // Función para descargar archivo
+    // =====================================================
+    // FUNCIÓN PARA DESCARGAR ARCHIVO
+    // =====================================================
     function descargarArchivo(id, nombreArchivo) {
         const downloadUrl = `{{ url('avisos') }}/${id}/download`;
         
@@ -764,6 +816,9 @@
         });
     }
 
+    // =====================================================
+    // FUNCIÓN PARA CARGAR CONTENIDO DE ARCHIVO (VISTA PREVIA)
+    // =====================================================
     async function cargarContenidoArchivo(aviso) {
         const extension = aviso.archivo_nombre ? aviso.archivo_nombre.split('.').pop().toLowerCase() : '';
         const url = `{{ url('avisos') }}/${aviso.id}/ver`;
@@ -853,6 +908,9 @@
         }
     }
 
+    // =====================================================
+    // FUNCIÓN PRINCIPAL PARA CARGAR Y MOSTRAR AVISOS
+    // =====================================================
     async function cargarYMostrarAvisos() {
         try {
             const response = await fetch('/api/avisos/activos', {
@@ -952,6 +1010,9 @@
         }
     }
 
+    // =====================================================
+    // EVENTO DOMContentLoaded - INICIALIZACIÓN
+    // =====================================================
     document.addEventListener('DOMContentLoaded', function() {
         cargarYMostrarAvisos();
         

@@ -4,24 +4,30 @@
 
 @section('content')
 <style>
-    /* Definir una variable para el color Guinda base y el Guinda oscuro */
+    /* =====================================================
+       DEFINIR UNA VARIABLE PARA EL COLOR GUINDA BASE Y EL GUINDA OSCURO
+       ===================================================== */
     :root {
-        --guinda-base: #800000; /* Guinda */
-        --guinda-darker: #5b0000; /* Guinda más oscuro para hover/activos */
-        --guinda-light: #ac3939; /* Guinda un poco más claro para bordes secundarios */
+        --guinda-base: #800000; /* GUINDA */
+        --guinda-darker: #5b0000; /* GUINDA MÁS OSCURO PARA HOVER/ACTIVOS */
+        --guinda-light: #ac3939; /* GUINDA UN POCO MÁS CLARO PARA BORDES SECUNDARIOS */
     }
 
-    /* Estilos del contenedor de autenticación */
+    /* =====================================================
+       ESTILOS DEL CONTENEDOR DE AUTENTICACIÓN
+       ===================================================== */
     .auth-container {
         display: flex;
         justify-content: center;
         align-items: center;
         min-height: 100vh;
-        background-color: #ffffffff; /* Un fondo claro para la página de login */
+        background-color: #ffffffff; /* UN FONDO CLARO PARA LA PÁGINA DE LOGIN */
         padding: 20px;
     }
 
-    /* Estilos de la tarjeta de autenticación (el formulario) */
+    /* =====================================================
+       ESTILOS DE LA TARJETA DE AUTENTICACIÓN (EL FORMULARIO)
+       ===================================================== */
     .auth-card {
         background-color: #ffffff;
         border-radius: 10px;
@@ -32,15 +38,19 @@
         text-align: center;
     }
 
-    /* Estilos del logo/título principal */
+    /* =====================================================
+       ESTILOS DEL LOGO/TÍTULO PRINCIPAL
+       ===================================================== */
     .auth-logo h1 {
-        color: #000000; /* Color guinda para el título */
+        color: #000000; /* COLOR GUINDA PARA EL TÍTULO */
         font-size: 2.2rem;
         margin-bottom: 25px;
         font-weight: 700;
     }
 
-    /* Título del formulario */
+    /* =====================================================
+       TÍTULO DEL FORMULARIO
+       ===================================================== */
     .auth-title {
         color: #333;
         margin-bottom: 30px;
@@ -48,7 +58,9 @@
         font-size: 1.8rem;
     }
 
-    /* Mensajes de alerta/error */
+    /* =====================================================
+       MENSAJES DE ALERTA/ERROR
+       ===================================================== */
     .auth-alert {
         padding: 15px 20px;
         border-radius: 8px;
@@ -71,7 +83,9 @@
         color: #dc3545;
     }
     
-    /* Grupos de formulario */
+    /* =====================================================
+       GRUPOS DE FORMULARIO
+       ===================================================== */
     .auth-form-group {
         margin-bottom: 20px;
         text-align: left;
@@ -87,13 +101,15 @@
 
     .auth-form-label .bi {
         margin-right: 8px;
-        color: var(--guinda-base); /* Iconos de label en guinda */
+        color: var(--guinda-base); /* ICONOS DE LABEL EN GUINDA */
     }
 
-    /* Campos de entrada */
+    /* =====================================================
+       CAMPOS DE ENTRADA
+       ===================================================== */
     .auth-form-control {
         width: 100%;
-        padding: 12px 40px 12px 15px; /* Espacio para el icono */
+        padding: 12px 40px 12px 15px; /* ESPACIO PARA EL ICONO */
         border: 1px solid #ced4da;
         border-radius: 8px;
         font-size: 1rem;
@@ -102,14 +118,14 @@
     }
 
     .auth-form-control:focus {
-        border-color: var(#737373); /* Borde gris al enfocar */
-        box-shadow: 0 0 0 0.25rem #b8c9da; /* Sombra azul*/
+        border-color: var(#737373); /* BORDE GRIS AL ENFOCAR */
+        box-shadow: 0 0 0 0.25rem #b8c9da; /* SOMBRA AZUL*/
         outline: none;
     }
 
     .auth-form-control.is-invalid {
         border-color: #dc3545;
-        padding-right: 15px; /* Ajuste para el icono si Bootstrap ya lo agrega */
+        padding-right: 15px; /* AJUSTE PARA EL ICONO SI BOOTSTRAP YA LO AGREGA */
     }
     
     .auth-input-icon {
@@ -122,12 +138,14 @@
     }
 
     .auth-form-control:focus + .auth-input-icon {
-        color: var(--guinda-base); /* Icono guinda al enfocar */
+        color: var(--guinda-base); /* ICONO GUINDA AL ENFOCAR */
     }
 
-    /* Botón principal (Iniciar Sesión) */
+    /* =====================================================
+       BOTÓN PRINCIPAL (INICIAR SESIÓN)
+       ===================================================== */
     .auth-btn-primary {
-        background-color: #800000; /* Guinda */
+        background-color: #800000; /* GUINDA */
         color: white;
         border: none;
         border-radius: 8px;
@@ -148,19 +166,21 @@
     }
 
     .auth-btn-primary:hover {
-        background-color: #800000; /* Guinda más oscuro en hover */
+        background-color: #800000; /* GUINDA MÁS OSCURO EN HOVER */
         transform: translateY(-2px);
         box-shadow: 0 6px 15px rgba(128, 0, 0, 0.3);
     }
 
     .auth-btn-primary:disabled {
-        background-color: #a87e7e; /* Un guinda más claro para deshabilitado */
+        background-color: #a87e7e; /* UN GUINDA MÁS CLARO PARA DESHABILITADO */
         cursor: not-allowed;
         transform: none;
         box-shadow: none;
     }
 
-    /* Divisor */
+    /* =====================================================
+       DIVISOR
+       ===================================================== */
     .auth-divider {
         margin: 30px 0;
         position: relative;
@@ -186,11 +206,13 @@
         color: #777;
     }
 
-    /* Botón secundario (Registrarse) */
+    /* =====================================================
+       BOTÓN SECUNDARIO (REGISTRARSE)
+       ===================================================== */
     .auth-btn-secondary {
-        background-color: #f0f0f0; /* Fondo claro para el botón secundario */
-        color: var(--guinda-base); /* Texto guinda */
-        border: 1px solid var(--guinda-light); /* Borde guinda más claro */
+        background-color: #f0f0f0; /* FONDO CLARO PARA EL BOTÓN SECUNDARIO */
+        color: var(--guinda-base); /* TEXTO GUINDA */
+        border: 1px solid var(--guinda-light); /* BORDE GUINDA MÁS CLARO */
         border-radius: 8px;
         padding: 12px 25px;
         width: 100%;
@@ -201,7 +223,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        text-decoration: none; /* Asegura que no tenga subrayado */
+        text-decoration: none; /* ASEGURA QUE NO TENGA SUBRAYADO */
     }
 
     .auth-btn-secondary .bi {
@@ -209,14 +231,16 @@
     }
 
     .auth-btn-secondary:hover {
-        background-color: #800000; /* Fondo guinda más claro en hover */
-        color: white; /* Texto blanco en hover */
+        background-color: #800000; /* FONDO GUINDA MÁS CLARO EN HOVER */
+        color: white; /* TEXTO BLANCO EN HOVER */
         border-color: var(--guinda-light);
         transform: translateY(-2px);
         box-shadow: 0 6px 15px rgba(128, 0, 0, 0.1);
     }
 
-    /* Pie de página del formulario (Volver al inicio) */
+    /* =====================================================
+       PIE DE PÁGINA DEL FORMULARIO (VOLVER AL INICIO)
+       ===================================================== */
     .auth-footer {
         margin-top: 30px;
     }
@@ -244,31 +268,178 @@
         color: #000; 
     }
 
-    /* Estilos para el estado de carga */
+    /* =====================================================
+       ESTILOS PARA EL ESTADO DE CARGA
+       ===================================================== */
     .auth-loading .auth-btn-primary {
         background-color:#800000;
         cursor: progress;
     }
 
-    /* Feedback de validación */
+    /* =====================================================
+       FEEDBACK DE VALIDACIÓN
+       ===================================================== */
     .field-error {
         color: #dc3545;
         font-size: 0.875em;
         margin-top: 5px;
         text-align: left;
     }
+
+    /* =====================================================
+       ESTILOS RESPONSIVOS - LOGIN
+       (MISMO PATRÓN QUE LOS MÓDULOS ANTERIORES)
+    ===================================================== */
+
+    /* TABLETS (769PX A 992PX) */
+    @media (min-width: 769px) and (max-width: 992px) {
+        .auth-card {
+            padding: 30px !important;
+            max-width: 380px !important;
+        }
+        .auth-logo h1 {
+            font-size: 1.8rem !important;
+        }
+        .auth-title {
+            font-size: 1.5rem !important;
+            margin-bottom: 25px !important;
+        }
+        .auth-form-label {
+            font-size: 0.9rem !important;
+        }
+        .auth-form-control {
+            padding: 10px 35px 10px 12px !important;
+            font-size: 0.9rem !important;
+        }
+        .auth-btn-primary {
+            padding: 10px 20px !important;
+            font-size: 1rem !important;
+        }
+        .auth-link {
+            font-size: 0.85rem !important;
+        }
+    }
+
+    /* MÓVILES (768PX Y MENOS) */
+    @media (max-width: 768px) {
+        .auth-container {
+            padding: 15px !important;
+        }
+        .auth-card {
+            padding: 25px 20px !important;
+            max-width: 100% !important;
+            border-radius: 12px !important;
+        }
+        .auth-logo h1 {
+            font-size: 1.5rem !important;
+            margin-bottom: 20px !important;
+        }
+        .auth-title {
+            font-size: 1.3rem !important;
+            margin-bottom: 20px !important;
+        }
+        .auth-form-group {
+            margin-bottom: 15px !important;
+        }
+        .auth-form-label {
+            font-size: 0.85rem !important;
+            margin-bottom: 5px !important;
+        }
+        .auth-form-label .bi {
+            font-size: 0.85rem !important;
+        }
+        .auth-form-control {
+            padding: 10px 35px 10px 12px !important;
+            font-size: 0.85rem !important;
+        }
+        .auth-input-icon {
+            font-size: 0.9rem !important;
+            right: 12px !important;
+        }
+        .auth-btn-primary {
+            padding: 10px 15px !important;
+            font-size: 0.9rem !important;
+            margin-top: 5px !important;
+        }
+        .auth-btn-primary .bi {
+            font-size: 0.9rem !important;
+        }
+        .auth-footer {
+            margin-top: 20px !important;
+        }
+        .auth-link {
+            font-size: 0.8rem !important;
+        }
+        .auth-link .bi {
+            font-size: 0.8rem !important;
+        }
+        .auth-alert {
+            padding: 10px 12px !important;
+            font-size: 0.8rem !important;
+        }
+        .auth-alert .bi {
+            font-size: 1.1rem !important;
+            margin-right: 10px !important;
+        }
+        .field-error {
+            font-size: 0.75rem !important;
+        }
+    }
+
+    /* MÓVILES MUY PEQUEÑOS (480PX Y MENOS) */
+    @media (max-width: 480px) {
+        .auth-card {
+            padding: 20px 15px !important;
+        }
+        .auth-logo h1 {
+            font-size: 1.3rem !important;
+        }
+        .auth-title {
+            font-size: 1.2rem !important;
+        }
+        .auth-form-control {
+            padding: 8px 30px 8px 10px !important;
+            font-size: 0.8rem !important;
+        }
+        .auth-form-label {
+            font-size: 0.8rem !important;
+        }
+        .auth-btn-primary {
+            padding: 8px 12px !important;
+            font-size: 0.85rem !important;
+        }
+        .auth-link {
+            font-size: 0.75rem !important;
+        }
+        .auth-link .bi {
+            font-size: 0.75rem !important;
+        }
+    }
 </style>
 
+<!-- =====================================================
+     CONTENEDOR PRINCIPAL DEL LOGIN
+     ===================================================== -->
 <div class="auth-container">
     <div class="auth-card">
+        
+        <!-- =====================================================
+             LOGO/TÍTULO DEL SISTEMA
+             ===================================================== -->
         <div class="auth-logo">
             <h1>
                 Sistema de Gestión de la Calidad
             </h1>
         </div>
         
+        <!-- =====================================================
+             TÍTULO DEL FORMULARIO DE LOGIN
+             ===================================================== -->
         <h2 class="auth-title">Iniciar Sesión</h2>
         
+        <!-- =====================================================
+             MUESTRA DE ERRORES DEL SERVIDOR (VALIDACIÓN DE LARAVEL)
+             ===================================================== -->
         @if($errors->any())
             <div class="auth-alert auth-alert-danger">
                 <i class="bi bi-exclamation-triangle"></i>
@@ -280,9 +451,15 @@
             </div>
         @endif
         
+        <!-- =====================================================
+             FORMULARIO DE LOGIN - ENVÍA LOS DATOS A LA RUTA 'LOGIN'
+             ===================================================== -->
         <form method="POST" action="{{ route('login') }}" id="loginForm">
-            @csrf
+            @csrf  <!-- TOKEN DE SEGURIDAD DE LARAVEL -->
             
+            <!-- =====================================================
+                 CAMPO: CORREO ELECTRÓNICO (EMAIL)
+                 ===================================================== -->
             <div class="auth-form-group">
                 <label for="email" class="auth-form-label">
                     <i class="bi bi-envelope"></i> Email
@@ -302,6 +479,9 @@
                 </div>
             </div>
             
+            <!-- =====================================================
+                 CAMPO: CONTRASEÑA (PASSWORD)
+                 ===================================================== -->
             <div class="auth-form-group">
                 <label for="password" class="auth-form-label">
                     <i class="bi bi-lock"></i> Contraseña
@@ -318,6 +498,9 @@
                     <i class="bi bi-lock auth-input-icon"></i>
                 </div>
                 
+                <!-- =====================================================
+                     ENLACE PARA RECUPERAR CONTRASEÑA (SI EXISTE LA RUTA)
+                     ===================================================== -->
                 <div class="auth-form-group" style="text-align: right; margin-top: 5px;">
                     @if (Route::has('password.request'))
                         <a href="{{ route('password.request') }}" class="auth-link" style="font-size: 0.9rem;">
@@ -327,11 +510,17 @@
                 </div>
             </div>
             
+            <!-- =====================================================
+                 BOTÓN PARA ENVIAR EL FORMULARIO (INICIAR SESIÓN)
+                 ===================================================== -->
             <button type="submit" class="auth-btn-primary" id="loginBtn">
                 <i class="bi bi-box-arrow-in-right"></i>
                 Iniciar Sesión
             </button>
             
+            <!-- =====================================================
+                 ENLACE PARA VOLVER A LA PÁGINA DE INICIO
+                 ===================================================== -->
             <div class="auth-footer">
                 <p>
                     <a href="{{ route('home') }}" class="auth-link">
@@ -343,20 +532,30 @@
     </div>
 </div>
 
+<!-- =====================================================
+     JAVASCRIPT - VALIDACIONES EN TIEMPO REAL Y ESTADO DE CARGA
+     ===================================================== -->
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // =====================================================
+    // OBTENER REFERENCIAS A LOS ELEMENTOS DEL FORMULARIO
+    // =====================================================
     const form = document.getElementById('loginForm');
     const submitBtn = document.getElementById('loginBtn');
     const originalBtnText = submitBtn.innerHTML;
     
-    // Form submission with loading state
+    // =====================================================
+    // FORM SUBMISSION WITH LOADING STATE
+    // CAMBIA EL TEXTO DEL BOTÓN Y LO DESHABILITA MIENTRAS SE ENVÍA
+    // =====================================================
     form.addEventListener('submit', function() {
         submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Iniciando...';
         submitBtn.disabled = true;
         form.classList.add('auth-loading');
         
-        // Re-enable if there's an error (page doesn't redirect)
+        // RE-ENABLE IF THERE'S AN ERROR (PAGE DOESN'T REDIRECT)
+        // RESTAURA EL BOTÓN SI HAY UN ERROR (LA PÁGINA NO REDIRIGE)
         setTimeout(() => {
             submitBtn.innerHTML = originalBtnText;
             submitBtn.disabled = false;
@@ -364,18 +563,26 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 5000);
     });
     
-    // Real-time validation
+    // =====================================================
+    // REAL-TIME VALIDATION
+    // VALIDACIONES EN TIEMPO REAL PARA EMAIL Y CONTRASEÑA
+    // =====================================================
     const emailInput = document.getElementById('email');
     const passwordInput = document.getElementById('password');
     
+    // VALIDAR EMAIL CUANDO PIERDE EL FOCO (BLUR)
     emailInput.addEventListener('blur', function() {
         validateEmail(this);
     });
     
+    // VALIDAR CONTRASEÑA CUANDO PIERDE EL FOCO (BLUR)
     passwordInput.addEventListener('blur', function() {
         validatePassword(this);
     });
     
+    // =====================================================
+    // FUNCIÓN PARA VALIDAR EL FORMATO DEL EMAIL
+    // =====================================================
     function validateEmail(input) {
         const email = input.value.trim();
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -390,6 +597,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
+    // =====================================================
+    // FUNCIÓN PARA VALIDAR LA LONGITUD DE LA CONTRASEÑA (MÍNIMO 8 CARACTERES)
+    // =====================================================
     function validatePassword(input) {
         const password = input.value;
         
@@ -403,6 +613,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
+    // =====================================================
+    // FUNCIÓN PARA MOSTRAR UN MENSAJE DE ERROR DEBAJO DEL CAMPO
+    // =====================================================
     function showFieldError(input, message) {
         let errorDiv = input.parentNode.parentNode.querySelector('.field-error');
         if (!errorDiv) {
@@ -414,6 +627,9 @@ document.addEventListener('DOMContentLoaded', function() {
         errorDiv.textContent = message;
     }
     
+    // =====================================================
+    // FUNCIÓN PARA ELIMINAR EL MENSAJE DE ERROR
+    // =====================================================
     function hideFieldError(input) {
         const errorDiv = input.parentNode.parentNode.querySelector('.field-error');
         if (errorDiv) {

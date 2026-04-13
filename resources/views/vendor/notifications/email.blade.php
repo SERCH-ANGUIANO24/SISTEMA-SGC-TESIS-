@@ -1,8 +1,10 @@
+{{--ESTE CODIGO ES DEL MENSAJE QUE SE ENVIA POR CORREO ELECTRONICO PARA EL REESTABLEICMIENTO DE CONTRASEÑA---}}
 <!DOCTYPE html>
 <html lang='es'>
 <head>
   <meta charset='UTF-8'>
   <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+  {{--ESTILOS DEL MENSAJE QUE SE ENVIA POR CORREO--}}
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: Arial, sans-serif; background: #f5f5f5; }
@@ -41,13 +43,13 @@
 <body>
 <div class='wrap'>
 
-  {{-- HEADER --}}
+  {{-- HEADER, APARECE AL PRINCIPIO DEL CORREO --}}
   <div class='header'>
     <h1>🔐 Restablecer Contraseña</h1>
     <p>Sistema de Gestión de la Calidad — UPTEX</p>
   </div>
 
-  {{-- BODY --}}
+  {{-- CUERPO DEL CORREO ELECTRONICO --}}
   <div class='body'>
 
     <p class='greeting'>Hola Estimado, <strong>{{ $notifiable->name ?? 'Usuario' }}</strong></p>
@@ -61,7 +63,7 @@
       Este enlace expirará en <strong>{{ config('auth.passwords.'.config('auth.defaults.passwords').'.expire', 60) }} minutos</strong>.
     </p>
 
-    {{-- BOTÓN RESET --}}
+    {{-- BOTÓN DE RESETEO DE CONTRASEÑA --}}
     <a href='{{ $actionUrl }}' class='btn'>
       Restablecer contraseña →
     </a>
@@ -81,7 +83,7 @@
       </div>
     </div>
 
-    {{-- URL FALLBACK --}}
+    {{-- URL FALLBACK, ESTE URL LO COPIAS Y SE PEGA EN EL NAVEGADOR EN CASO DE QUE EL BOTON DE RESTABLECER CONTRASEÑA NO FUNCIONE --}}
     <p class='url-fallback'>
       Si el botón no funciona, copia y pega este enlace en tu navegador:<br>
       {{ $actionUrl }}
@@ -89,7 +91,7 @@
 
   </div>
 
-  {{-- FOOTER --}}
+  {{-- PIE DEL CORREO ELETRONICO --}}
   <div class='footer'>
     Este mensaje fue generado automáticamente por el SGC. Por favor no respondas.<br>
     © {{ date('Y') }} SAMS Infinity. Todos los derechos reservados.

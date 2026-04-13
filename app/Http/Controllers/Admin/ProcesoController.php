@@ -7,6 +7,8 @@ use App\Models\ProcesoCustom;
 use App\Helpers\HistorialVersionesHelper;
 use Illuminate\Http\Request;
 
+// CONTROLADOR QUE GESTIONA LOS PROCESOS Y DEPARTAMENTOS PERSONALIZADOS DEL SISTEMA
+// PERMITE CREAR, AGREGAR Y ELIMINAR PROCESOS CON SUS DEPARTAMENTOS ASOCIADOS
 class ProcesoController extends Controller
 {
     /**
@@ -14,19 +16,24 @@ class ProcesoController extends Controller
      */
     public function store(Request $request)
     {
+        // VALIDA QUE EL PROCESO Y EL DEPARTAMENTO SEAN OBLIGATORIOS Y NO EXCEDAN 255 CARACTERES
         $request->validate([
             'proceso'      => ['required', 'string', 'max:255'],
             'departamento' => ['required', 'string', 'max:255'],
         ]);
 
+        // LIMPIA ESPACIOS EN BLANCO AL INICIO Y AL FINAL DE LOS VALORES RECIBIDOS
         $proceso = trim($request->proceso);
         $departamento = trim($request->departamento);
 
+        // VERIFICA SI YA EXISTE ESA COMBINACIÓN DE PROCESO + DEPARTAMENTO EN LA BASE DE DATOS
+        // ESTO EVITA DUPLICADOS
         $existe = ProcesoCustom::where('proceso', $proceso)
             ->where('departamento', $departamento)
             ->exists();
 
         if (!$existe) {
+            // SI NO EXISTE, CREA EL NUEVO REGISTRO EN LA BASE DE DATOS
             ProcesoCustom::create([
                 'proceso' => $proceso,
                 'departamento' => $departamento,
@@ -44,6 +51,7 @@ class ProcesoController extends Controller
             HistorialVersionesHelper::crear('DEPARTAMENTOS', $deptoData);
         }
 
+        // REDIRIGE DE VUELTA CON UN MENSAJE DE ÉXITO INDICANDO EL PROCESO CREADO
         return back()->with('success', "Proceso \"{$proceso}\" agregado correctamente.");
     }
 
@@ -52,22 +60,27 @@ class ProcesoController extends Controller
      */
     public function addDepartamento(Request $request)
     {
+        // VALIDA QUE EL PROCESO Y EL DEPARTAMENTO SEAN OBLIGATORIOS Y NO EXCEDAN 255 CARACTERES
         $request->validate([
             'proceso'      => ['required', 'string', 'max:255'],
             'departamento' => ['required', 'string', 'max:255'],
         ]);
 
+        // LIMPIA ESPACIOS EN BLANCO AL INICIO Y AL FINAL DE LOS VALORES RECIBIDOS
         $proceso      = trim($request->proceso);
         $departamento = trim($request->departamento);
 
+        // VERIFICA SI EL DEPARTAMENTO YA EXISTE DENTRO DEL PROCESO PARA EVITAR DUPLICADOS
         $existe = ProcesoCustom::where('proceso', $proceso)
                                ->where('departamento', $departamento)
                                ->exists();
 
+        // SI YA EXISTE ESA COMBINACIÓN, REGRESA CON UN MENSAJE DE ERROR SIN CREAR NADA
         if ($existe) {
             return back()->with('error', "El departamento \"{$departamento}\" ya existe en el proceso \"{$proceso}\".");
         }
 
+        // SI NO EXISTE, CREA EL NUEVO DEPARTAMENTO ASOCIADO AL PROCESO EN LA BASE DE DATOS
         ProcesoCustom::create([
             'proceso'      => $proceso,
             'departamento' => $departamento,
@@ -80,6 +93,7 @@ class ProcesoController extends Controller
         ];
         HistorialVersionesHelper::crear('DEPARTAMENTOS', $deptoData);
 
+        // REDIRIGE DE VUELTA CON MENSAJE DE ÉXITO INDICANDO EL DEPARTAMENTO Y PROCESO AFECTADO
         return back()->with('success', "Departamento \"{$departamento}\" agregado al proceso \"{$proceso}\".");
     }
 
@@ -88,6 +102,7 @@ class ProcesoController extends Controller
      */
     public function destroyDepartamento(ProcesoCustom $proceso)
     {
+        // GUARDA EL NOMBRE DEL DEPARTAMENTO Y DEL PROCESO ANTES DE ELIMINAR (PARA EL HISTORIAL)
         $depto  = $proceso->departamento;
         $nombre = $proceso->proceso;
         
@@ -96,11 +111,13 @@ class ProcesoController extends Controller
             'departamento' => $depto
         ];
         
+        // ELIMINA SOLO ESTE REGISTRO (UN SOLO DEPARTAMENTO DEL PROCESO)
         $proceso->delete();
 
         // REGISTRAR EN HISTORIAL - ELIMINACIÓN DE DEPARTAMENTO
         HistorialVersionesHelper::eliminar('DEPARTAMENTOS', $deptoData);
 
+        // REDIRIGE DE VUELTA CON MENSAJE DE ÉXITO INDICANDO EL DEPARTAMENTO Y PROCESO AFECTADO
         return back()->with('success', "Departamento \"{$depto}\" eliminado del proceso \"{$nombre}\".");
     }
 
@@ -109,15 +126,18 @@ class ProcesoController extends Controller
      */
     public function destroyProceso(Request $request)
     {
+        // VALIDA QUE EL NOMBRE DEL PROCESO SEA OBLIGATORIO Y NO EXCEDA 255 CARACTERES
         $request->validate([
             'proceso' => ['required', 'string', 'max:255'],
         ]);
 
+        // LIMPIA ESPACIOS EN BLANCO AL INICIO Y AL FINAL DEL NOMBRE DEL PROCESO
         $nombre = trim($request->proceso);
         
+        // OBTIENE TODOS LOS DEPARTAMENTOS ASOCIADOS A ESTE PROCESO ANTES DE ELIMINARLOS
         $departamentos = ProcesoCustom::where('proceso', $nombre)->get();
         
-        // Registrar cada departamento eliminado
+        // REGISTRA EN EL HISTORIAL CADA DEPARTAMENTO QUE SERÁ ELIMINADO UNO POR UNO
         foreach ($departamentos as $depto) {
             $deptoData = (object)[
                 'proceso' => $nombre,
@@ -126,8 +146,10 @@ class ProcesoController extends Controller
             HistorialVersionesHelper::eliminar('DEPARTAMENTOS', $deptoData);
         }
         
+        // ELIMINA TODOS LOS REGISTROS DEL PROCESO (TODOS SUS DEPARTAMENTOS) DE LA BASE DE DATOS
         $count = ProcesoCustom::where('proceso', $nombre)->delete();
 
+        // SI NO SE ENCONTRÓ NINGÚN REGISTRO CON ESE NOMBRE, REGRESA CON UN MENSAJE DE ERROR
         if ($count === 0) {
             return back()->with('error', "No se encontró el proceso \"{$nombre}\".");
         }
@@ -136,6 +158,7 @@ class ProcesoController extends Controller
         $procesoData = (object)['nombre' => $nombre];
         HistorialVersionesHelper::eliminar('PROCESOS', $procesoData);
 
+        // REDIRIGE DE VUELTA CON MENSAJE DE ÉXITO INDICANDO EL PROCESO COMPLETAMENTE ELIMINADO
         return back()->with('success', "Proceso \"{$nombre}\" y todos sus departamentos fueron eliminados.");
     }
 
@@ -144,6 +167,8 @@ class ProcesoController extends Controller
      */
     public function destroy(ProcesoCustom $proceso)
     {
+        // ESTE MÉTODO ES UN ALIAS QUE DELEGA DIRECTAMENTE AL MÉTODO destroyDepartamento
+        // SE USA PARA MANTENER COMPATIBILIDAD CON LAS RUTAS RESOURCEFUL DE LARAVEL
         return $this->destroyDepartamento($proceso);
     }
 }

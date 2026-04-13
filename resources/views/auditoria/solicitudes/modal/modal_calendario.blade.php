@@ -1,4 +1,6 @@
 <!-- MODAL VER CALENDARIO (DETALLE DE FECHAS) -->
+{{--ESTE CODIGO ABRE EL MODAL DE DETALLES DE FECHAS EL CUAL MUESTRA DETLLES DEL PERIODO DE APLICACION
+ASI COMO LA INFOMACION DE CUANTO TIEMPO FALTA DE LOS 15 DIAS PARA ENTREGAR UNA SOLICITUD DE MEJORA --}}
 <div class="modal fade" id="calendarioModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">

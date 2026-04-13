@@ -1,8 +1,15 @@
+{{-- COMPONENTE VISOR DE DOCUMENTOS DEL MÓDULO DE COMPETENCIAS --}}
+{{-- MUESTRA EL CONTENIDO DEL ARCHIVO SEGÚN SU EXTENSIÓN USANDO EL MÉTODO MÁS ADECUADO --}}
 <div class="container-fluid p-0">
+
+    {{-- CONVIERTE LA EXTENSIÓN A MINÚSCULAS PARA HACER LAS COMPARACIONES SIN IMPORTAR EL FORMATO --}}
     @php
         $extension = strtolower($extension ?? '');
     @endphp
 
+    {{-- CASO 1: ARCHIVOS CSV --}}
+    {{-- LOS CSV NO SON PREVISUALIZABLES EN EL NAVEGADOR, SE MUESTRA UN MENSAJE INFORMATIVO --}}
+    {{-- Y UN BOTÓN PARA DESCARGAR EL ARCHIVO EN SU LUGAR --}}
     @if(in_array($extension, ['csv']))
         <div class="d-flex flex-column justify-content-center align-items-center h-100" style="min-height: 60vh;">
             <i class="bi bi-file-earmark-spreadsheet" style="font-size: 5rem; color: #800000;"></i>
@@ -18,14 +25,24 @@
                 <i class="bi bi-download me-1"></i> Descargar CSV
             </a>
         </div>
+
+    {{-- CASO 2: ARCHIVOS DE OFFICE (WORD, EXCEL, POWERPOINT) --}}
+    {{-- SE USA EL VISOR EN LÍNEA DE MICROSOFT OFFICE APPS PARA MOSTRARLOS EN UN IFRAME --}}
+    {{-- LA URL DEL ARCHIVO SE CODIFICA PARA PASARLA COMO PARÁMETRO AL VISOR DE MICROSOFT --}}
     @elseif(in_array($extension, ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx']))
         <iframe src="https://view.officeapps.live.com/op/embed.aspx?src={{ urlencode($fileUrl) }}"
                 style="width: 100%; height: 80vh; border: none;">
         </iframe>
+
+    {{-- CASO 3: ARCHIVOS DE IMAGEN (JPG, JPEG, PNG, GIF, BMP, SVG) --}}
+    {{-- SE MUESTRA LA IMAGEN DIRECTAMENTE CENTRADA Y AJUSTADA AL CONTENEDOR --}}
     @elseif(in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg']))
         <div class="d-flex justify-content-center align-items-center h-100">
             <img src="{{ $fileUrl }}" class="img-fluid" style="max-height: 80vh; object-fit: contain;">
         </div>
+
+    {{-- CASO 4: CUALQUIER OTRO FORMATO (PDF, TXT, ETC.) --}}
+    {{-- SE INTENTA MOSTRAR EL ARCHIVO DIRECTAMENTE EN UN IFRAME DEL NAVEGADOR --}}
     @else
         <iframe src="{{ $fileUrl }}"
                 style="width: 100%; height: 80vh; border: none;">

@@ -9,26 +9,35 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Storage;
 use App\Traits\RegistraHistorialVersiones;
 
+/**
+ * MODELO PARA LOS AVISOS O COMUNICADOS DEL SISTEMA
+ * PUEDEN TENER ARCHIVOS ADJUNTOS Y FECHAS DE VIGENCIA
+ * SE REGISTRA AUTOMÁTICAMENTE EN EL HISTORIAL
+ */
 class Aviso extends Model
 {
+    // HASFACTORY: DATOS DE PRUEBA | SOFTDELETES: ELIMINACIÓN  | REGISTRAHISTORIAL: GUARDA ACCIONES
     use HasFactory, SoftDeletes, RegistraHistorialVersiones;
 
+    // NOMBRE DE LA TABLA EN LA BASE DE DATOS
     protected $table = 'avisos';
 
+    // CAMPOS QUE SE PUEDEN LLENAR DE FORMA MASIVA
     protected $fillable = [
-        'titulo',
-        'descripcion',
-        'archivo_path',
-        'archivo_nombre',
-        'tipo_archivo',
-        'tamano_archivo',
-        'fecha_inicio',
-        'fecha_fin',
-        'activo',
-        'visitas',
-        'created_by'
+        'titulo',           // TÍTULO DEL AVISO
+        'descripcion',      // DESCRIPCIÓN COMPLETA
+        'archivo_path',     // RUTA DEL ARCHIVO EN EL SERVIDOR
+        'archivo_nombre',   // NOMBRE ORIGINAL DEL ARCHIVO
+        'tipo_archivo',     // EXTENSIÓN DEL ARCHIVO
+        'tamano_archivo',   // TAMAÑO EN BYTES
+        'fecha_inicio',     // FECHA QUE EMPIEZA A MOSTRARSE
+        'fecha_fin',        // FECHA QUE DEJA DE MOSTRARSE
+        'activo',           // ENCENDIDO O APAGADO
+        'visitas',          // CONTADOR DE VISTAS
+        'created_by'        // ID DEL USUARIO QUE LO CREÓ
     ];
 
+    // CONVIERTE AUTOMÁTICAMENTE ESTOS CAMPOS AL TIPO CORRECTO
     protected $casts = [
         'fecha_inicio' => 'datetime',
         'fecha_fin' => 'datetime',
@@ -37,13 +46,13 @@ class Aviso extends Model
         'deleted_at' => 'datetime',
     ];
 
-    // Relación con el usuario que creó el aviso
+    // RELACIÓN: QUIÉN CREÓ ESTE AVISO (PERTENECE A UN USUARIO)
     public function creador()
     {
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    // Verificar si el aviso está actualmente activo
+    // VERIFICA SI EL AVISO ESTÁ VIGENTE AHORA MISMO
     public function isActive()
     {
         $now = now();
@@ -52,7 +61,7 @@ class Aviso extends Model
                $now <= $this->fecha_fin;
     }
 
-    // Obtener el icono según el tipo de archivo
+    // DEVUELVE EL ÍCONO SEGÚN EL TIPO DE ARCHIVO (PDF, WORD, IMAGEN, ETC)
     public function getIconoArchivo()
     {
         $extensiones = [
@@ -76,13 +85,13 @@ class Aviso extends Model
         return $extensiones[$extension] ?? 'bi-file-earmark';
     }
 
-    // Obtener URL del archivo
+    // DEVUELVE LA URL PARA VER O DESCARGAR EL ARCHIVO
     public function getArchivoUrl()
     {
         return $this->archivo_path ? Storage::url($this->archivo_path) : null;
     }
 
-    // Scope para avisos activos
+    // FILTRO PARA OBTENER SOLO LOS AVISOS VIGENTES (SCOPE REUTILIZABLE)
     public function scopeActivos($query)
     {
         $now = now();

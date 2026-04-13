@@ -12,8 +12,25 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
 use App\Helpers\HistorialVersionesHelper;
 
+/*
+|--------------------------------------------------------------------------
+| CONTROLADOR: DOCUMENTAL (GESTIÓN DOCUMENTAL)
+|--------------------------------------------------------------------------
+| SE ENCARGA DE GESTIONAR CARPETAS Y DOCUMENTOS DEL SISTEMA:
+| SUBIR, VER, EDITAR, MOVER, ELIMINAR Y RESTAURAR ARCHIVOS.
+*/
+
 class DocumentalController extends Controller
 {
+    /*
+    |--------------------------------------------------------------------------
+    | FUNCIÓN: index
+    |--------------------------------------------------------------------------
+    | MUESTRA LA PANTALLA PRINCIPAL DE GESTIÓN DOCUMENTAL.
+    | SI SE PASA UN FOLDER ID, MUESTRA EL CONTENIDO DE ESA CARPETA.
+    | SI NO, MUESTRA LAS CARPETAS Y DOCUMENTOS DE LA RAÍZ.
+    | TAMBIÉN CARGA LOS FILTROS DE VERSIÓN, CÓDIGO Y CLAVE.
+    */
     public function index(Request $request)
     {
         $folderId      = $request->get('folder');
@@ -118,6 +135,7 @@ class DocumentalController extends Controller
             'Gestión de Recursos'                 => ['Recursos Financieros', 'Almacén'],
             'Laboratorios y Talleres'             => ['Encargado/a de Laboratorios'],
             'Centro de Información'               => ['Biblioteca'],
+            'Sistema de Gestión de la Calidad'   => ['Rectoría', 'Auditoría', 'Coordinador del SGC'],
         ];
 
         $usuariosProcesos = \App\Models\User::whereNotNull('proceso')
@@ -174,9 +192,14 @@ class DocumentalController extends Controller
         ));
     }
 
-    /**
-     * Construir breadcrumbs de forma SEGURA (protegido contra ciclos)
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | FUNCIÓN: buildBreadcrumbsSafe
+    |--------------------------------------------------------------------------
+    | CONSTRUYE EL RASTRO DE NAVEGACIÓN (MIGAS DE PAN) DE FORMA SEGURA.
+    | DETECTA Y PREVIENE CICLOS INFINITOS ENTRE CARPETAS.
+    | TIENE UN LÍMITE MÁXIMO DE 50 NIVELES DE PROFUNDIDAD.
+    */
     private function buildBreadcrumbsSafe($folder)
     {
         $breadcrumbs = [];
@@ -225,14 +248,26 @@ class DocumentalController extends Controller
         return $breadcrumbs;
     }
 
-    /**
-     * Método original (deprecado) - mantener por compatibilidad pero no usar
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | FUNCIÓN: buildBreadcrumbs
+    |--------------------------------------------------------------------------
+    | VERSIÓN ANTERIOR (DEPRECADA) - SE MANTIENE POR COMPATIBILIDAD.
+    | INTERNAMENTE LLAMA A buildBreadcrumbsSafe.
+    */
     private function buildBreadcrumbs($folder)
     {
         return $this->buildBreadcrumbsSafe($folder);
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | FUNCIÓN: storeFolder
+    |--------------------------------------------------------------------------
+    | CREA UNA NUEVA CARPETA EN EL SISTEMA.
+    | SOLO PUEDEN HACERLO ADMINISTRADORES Y SUPERADMINS.
+    | VERIFICA QUE LA CARPETA PADRE NO ESTÉ ELIMINADA.
+    */
     public function storeFolder(Request $request)
     {
         if (!in_array(Auth::user()->role, ['superadmin', 'admin'])) {
@@ -265,6 +300,14 @@ class DocumentalController extends Controller
         return redirect()->back()->with('success', 'Carpeta creada exitosamente.');
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | FUNCIÓN: renameFolder
+    |--------------------------------------------------------------------------
+    | CAMBIA EL NOMBRE DE UNA CARPETA EXISTENTE.
+    | SOLO PUEDEN HACERLO ADMINISTRADORES Y SUPERADMINS.
+    | SI OCURRE UN ERROR, LO REGISTRA Y DEVUELVE MENSAJE DE FALLO.
+    */
     public function renameFolder(Request $request, $id)
     {
         if (!in_array(Auth::user()->role, ['superadmin', 'admin'])) {
@@ -287,6 +330,15 @@ class DocumentalController extends Controller
         }
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | FUNCIÓN: moveFolder
+    |--------------------------------------------------------------------------
+    | MUEVE UNA CARPETA A OTRA UBICACIÓN DENTRO DEL SISTEMA.
+    | SOLO PUEDEN HACERLO ADMINISTRADORES Y SUPERADMINS.
+    | VERIFICA QUE NO SE CREEN CICLOS (UNA CARPETA DENTRO DE SÍ MISMA).
+    | REGISTRA EL MOVIMIENTO EN EL HISTORIAL DE VERSIONES.
+    */
     public function moveFolder(Request $request, $id)
     {
         if (!in_array(Auth::user()->role, ['superadmin', 'admin'])) {
@@ -330,9 +382,14 @@ class DocumentalController extends Controller
         }
     }
 
-    /**
-     * ELIMINAR CARPETA - CORREGIDO (SIN REGISTRO DUPLICADO)
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | FUNCIÓN: destroyFolder
+    |--------------------------------------------------------------------------
+    | ELIMINA UNA CARPETA (SOFT DELETE) Y TODO SU CONTENIDO.
+    | SOLO PUEDEN HACERLO ADMINISTRADORES Y SUPERADMINS.
+    | EL TRAIT REGISTRA LA ELIMINACIÓN AUTOMÁTICAMENTE EN EL HISTORIAL.
+    */
     public function destroyFolder($id)
     {
         if (!in_array(Auth::user()->role, ['superadmin', 'admin'])) {
@@ -359,9 +416,14 @@ class DocumentalController extends Controller
         }
     }
 
-    /**
-     * Limpiar caché de Gestión Documental
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | FUNCIÓN: limpiarCache
+    |--------------------------------------------------------------------------
+    | LIMPIA LA CACHÉ DE GESTIÓN DOCUMENTAL DEL USUARIO ACTUAL.
+    | SI SE PASA UN FOLDER ID, TAMBIÉN LIMPIA LA CACHÉ DE ESA CARPETA.
+    | DEVUELVE JSON DE ÉXITO.
+    */
     public function limpiarCache(Request $request)
     {
         $folderId = $request->get('folder');
@@ -380,6 +442,16 @@ class DocumentalController extends Controller
         return response()->json(['success' => true]);
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | FUNCIÓN: upload
+    |--------------------------------------------------------------------------
+    | SUBE UN NUEVO ARCHIVO AL SISTEMA DE GESTIÓN DOCUMENTAL.
+    | ADMINS: EL DOCUMENTO SE MARCA COMO "VÁLIDO" Y SE ENVÍA A LISTA MAESTRA.
+    |         ADEMÁS SE NOTIFICA A TODOS LOS USUARIOS DEL SISTEMA.
+    | USUARIOS NORMALES: EL DOCUMENTO SE MARCA COMO "PENDIENTE"
+    |                    Y SE NOTIFICA A LOS ADMINISTRADORES PARA REVISIÓN.
+    */
     public function upload(Request $request)
     {
         $isAdmin = in_array(Auth::user()->role, ['superadmin', 'admin']);
@@ -502,6 +574,14 @@ class DocumentalController extends Controller
         return redirect()->back()->with('success', 'Archivo subido exitosamente.');
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | FUNCIÓN: getDocumentData
+    |--------------------------------------------------------------------------
+    | DEVUELVE EN JSON LOS DATOS DE UN DOCUMENTO PARA EDITARLO.
+    | SI EL USUARIO NO ES ADMIN, SOLO PUEDE VER SUS PROPIOS DOCUMENTOS.
+    | TAMBIÉN INDICA SI EL DOCUMENTO FUE SUBIDO POR UN ADMINISTRADOR.
+    */
     public function getDocumentData($id)
     {
         $query = DocumentalDocument::whereNull('deleted_at');
@@ -533,6 +613,17 @@ class DocumentalController extends Controller
         ]);
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | FUNCIÓN: updateDocument
+    |--------------------------------------------------------------------------
+    | ACTUALIZA LOS DATOS DE UN DOCUMENTO EXISTENTE.
+    | SOLO PUEDEN HACERLO ADMINISTRADORES Y SUPERADMINS.
+    | SI EL DOC FUE SUBIDO POR ADMIN → SOLO SE PUEDE RENOMBRAR.
+    | SI FUE SUBIDO POR USUARIO → SE PUEDE EDITAR TODO (ESTATUS, PROCESO, ETC.)
+    | SI SE VALIDA COMO "VÁLIDO" Y TIENE CÓDIGO → SE ENVÍA A LISTA MAESTRA.
+    | ENVÍA NOTIFICACIONES AL USUARIO SEGÚN EL ESTATUS ASIGNADO.
+    */
     public function updateDocument(Request $request, $id)
     {
         if (!in_array(Auth::user()->role, ['superadmin', 'admin'])) {
@@ -683,6 +774,15 @@ class DocumentalController extends Controller
         return redirect()->back()->with('success', 'Documento actualizado exitosamente.');
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | FUNCIÓN: moveDocument
+    |--------------------------------------------------------------------------
+    | MUEVE UN DOCUMENTO A OTRA CARPETA DENTRO DEL SISTEMA.
+    | SOLO PUEDEN HACERLO ADMINISTRADORES Y SUPERADMINS.
+    | VERIFICA QUE LA CARPETA DESTINO EXISTA Y NO ESTÉ ELIMINADA.
+    | REGISTRA EL MOVIMIENTO EN EL HISTORIAL DE VERSIONES.
+    */
     public function moveDocument(Request $request, $id)
     {
         if (!in_array(Auth::user()->role, ['superadmin', 'admin'])) {
@@ -716,9 +816,14 @@ class DocumentalController extends Controller
         return redirect()->back()->with('success', 'Documento movido exitosamente.');
     }
 
-    /**
-     * DESCARGAR DOCUMENTO - SOLO descarga (NO muestra)
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | FUNCIÓN: downloadDocument
+    |--------------------------------------------------------------------------
+    | DESCARGA EL ARCHIVO AL DISPOSITIVO DEL USUARIO (NO LO MUESTRA).
+    | SI EL ARCHIVO NO EXISTE EN EL SERVIDOR → DEVUELVE ERROR.
+    | REGISTRA LA DESCARGA EN EL HISTORIAL DE VERSIONES.
+    */
     public function downloadDocument($id)
     {
         $document = DocumentalDocument::whereNull('deleted_at')->findOrFail($id);
@@ -734,9 +839,15 @@ class DocumentalController extends Controller
         return Storage::disk('public')->download($document->file_path, $document->original_name);
     }
 
-    /**
-     * VER DOCUMENTO - MUESTRA en el navegador (NO descarga)
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | FUNCIÓN: viewDocument
+    |--------------------------------------------------------------------------
+    | MUESTRA EL ARCHIVO EN EL NAVEGADOR (SIN DESCARGARLO).
+    | SI EL ARCHIVO NO ESTÁ EN SU RUTA ORIGINAL, LO BUSCA EN OTRAS UBICACIONES.
+    | SI NO SE ENCUENTRA EN NINGÚN LADO, GENERA UN CONTENIDO DE RESPALDO.
+    | REGISTRA LA VISUALIZACIÓN EN EL HISTORIAL (SOLO LA PRIMERA VEZ).
+    */
     public function viewDocument($id)
     {
         try {
@@ -826,9 +937,14 @@ class DocumentalController extends Controller
         }
     }
 
-    /**
-     * Obtener el MIME type correcto para mostrar en el navegador
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | FUNCIÓN: getMimeType
+    |--------------------------------------------------------------------------
+    | DEVUELVE EL TIPO MIME CORRECTO SEGÚN LA EXTENSIÓN DEL ARCHIVO.
+    | ESTO PERMITE QUE EL NAVEGADOR SEPA CÓMO MOSTRAR EL ARCHIVO.
+    | SI NO RECONOCE LA EXTENSIÓN, USA EL MIME DEL DOCUMENTO O UNO GENÉRICO.
+    */
     private function getMimeType($extension, $defaultMime = null)
     {
         $mimeTypes = [
@@ -862,9 +978,14 @@ class DocumentalController extends Controller
         return $defaultMime ?: 'application/octet-stream';
     }
 
-    /**
-     * BUSCAR ARCHIVO EN UBICACIONES ALTERNATIVAS PARA GESTIÓN DOCUMENTAL
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | FUNCIÓN: buscarArchivoDocumental
+    |--------------------------------------------------------------------------
+    | BUSCA UN ARCHIVO EN UBICACIONES ALTERNATIVAS CUANDO NO SE ENCUENTRA
+    | EN SU RUTA ORIGINAL. ÚTIL PARA DOCUMENTOS RESTAURADOS O MOVIDOS.
+    | DEVUELVE LA NUEVA RUTA SI LO ENCUENTRA, O NULL SI NO LO ENCUENTRA.
+    */
     private function buscarArchivoDocumental($document)
     {
         $userId = $document->user_id;
@@ -919,9 +1040,14 @@ class DocumentalController extends Controller
         return null;
     }
 
-    /**
-     * CREAR CONTENIDO DE RESPALDO PARA DOCUMENTO RESTAURADO
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | FUNCIÓN: crearContenidoRespaldo
+    |--------------------------------------------------------------------------
+    | GENERA UN TEXTO DE RESPALDO CUANDO EL ARCHIVO FÍSICO NO EXISTE.
+    | INCLUYE LOS DATOS DEL DOCUMENTO Y SU HISTORIAL DE VERSIONES.
+    | SE USA PRINCIPALMENTE PARA DOCUMENTOS RESTAURADOS SIN ARCHIVO.
+    */
     private function crearContenidoRespaldo($document)
     {
         $contenido = "========================================\n";
@@ -965,9 +1091,15 @@ class DocumentalController extends Controller
         return $contenido;
     }
 
-    /**
-     * ELIMINAR DOCUMENTO - CORREGIDO (SIN REGISTRO DUPLICADO)
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | FUNCIÓN: destroyDocument
+    |--------------------------------------------------------------------------
+    | ELIMINA UN DOCUMENTO (SOFT DELETE) DEL SISTEMA.
+    | SOLO PUEDEN HACERLO ADMINISTRADORES Y SUPERADMINS.
+    | EL TRAIT REGISTRA LA ELIMINACIÓN AUTOMÁTICAMENTE EN EL HISTORIAL.
+    | DEVUELVE JSON DE ÉXITO O ERROR.
+    */
     public function destroyDocument($id)
     {
         if (!in_array(Auth::user()->role, ['superadmin', 'admin'])) {
@@ -994,6 +1126,14 @@ class DocumentalController extends Controller
         }
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | FUNCIÓN: getFoldersTree
+    |--------------------------------------------------------------------------
+    | DEVUELVE EN JSON EL ÁRBOL DE CARPETAS DISPONIBLES PARA MOVER ARCHIVOS.
+    | EXCLUYE LA CARPETA ACTUAL Y LAS CARPETAS ELIMINADAS.
+    | SI NO ES ADMIN, SOLO MUESTRA LAS CARPETAS DEL USUARIO.
+    */
     public function getFoldersTree(Request $request)
     {
         $currentFolderId = $request->get('current_folder');
@@ -1016,6 +1156,14 @@ class DocumentalController extends Controller
         return response()->json($folders);
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | FUNCIÓN: wouldCreateCycle
+    |--------------------------------------------------------------------------
+    | VERIFICA SI MOVER UNA CARPETA A UN NUEVO PADRE CREARÍA UN CICLO.
+    | EJEMPLO: MOVER "CARPETA A" DENTRO DE "SUBCARPETA DE A" ES UN CICLO.
+    | DEVUELVE TRUE SI HABRÍA CICLO, FALSE SI ES SEGURO MOVER.
+    */
     private function wouldCreateCycle($folder, $newParentId)
     {
         $parent = DocumentalFolder::find($newParentId);

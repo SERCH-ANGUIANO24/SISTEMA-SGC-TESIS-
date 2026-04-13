@@ -10,8 +10,25 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use App\Helpers\HistorialVersionesHelper;
 
+/*
+|--------------------------------------------------------------------------
+| CONTROLADOR: FORMATOS (LISTA MAESTRA DE DOCUMENTOS)
+|--------------------------------------------------------------------------
+| SE ENCARGA DE GESTIONAR LOS FORMATOS Y PROCEDIMIENTOS DEL SISTEMA:
+| MOSTRARLOS, SUBIRLOS, EDITARLOS, ELIMINARLOS Y DESCARGARLOS.
+*/
+
 class FormatoController extends Controller
 {
+    /*
+    |--------------------------------------------------------------------------
+    | FUNCIÓN: index
+    |--------------------------------------------------------------------------
+    | MUESTRA LA LISTA DE TODOS LOS FORMATOS CON FILTROS DE BÚSQUEDA.
+    | SE PUEDE FILTRAR POR NOMBRE, VERSIÓN, CÓDIGO, CLAVE, PROCESO,
+    | DEPARTAMENTO Y TIPO DE DOCUMENTO.
+    | TAMBIÉN CARGA LOS VALORES ÚNICOS PARA LOS SELECTORES DE FILTROS.
+    */
     public function index(Request $request)
     {
         $query = Formato::query();
@@ -95,6 +112,16 @@ class FormatoController extends Controller
         ));
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | FUNCIÓN: store
+    |--------------------------------------------------------------------------
+    | SUBE UN NUEVO FORMATO AL SISTEMA.
+    | SOLO PUEDEN HACERLO ADMINISTRADORES Y SUPERADMINS.
+    | GUARDA EL ARCHIVO EN EL SERVIDOR Y REGISTRA SUS DATOS EN LA BASE DE DATOS.
+    | SI LA CLAVE DE FORMATO ESTÁ REPETIDA → AVISA CON UN MENSAJE DE ADVERTENCIA.
+    | REGISTRA LA SUBIDA EN EL HISTORIAL DE VERSIONES.
+    */
     public function store(Request $request)
     {
         $user = Auth::user();
@@ -145,6 +172,16 @@ class FormatoController extends Controller
             ->with('success', 'Formato subido correctamente.');
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | FUNCIÓN: update
+    |--------------------------------------------------------------------------
+    | ACTUALIZA LOS DATOS DE UN FORMATO EXISTENTE.
+    | SOLO PUEDEN HACERLO ADMINISTRADORES Y SUPERADMINS.
+    | SI SE SUBE UN ARCHIVO NUEVO → ELIMINA EL ANTERIOR Y GUARDA EL NUEVO.
+    | SI SE CAMBIA SOLO EL NOMBRE → ACTUALIZA EL NOMBRE SIN TOCAR EL ARCHIVO.
+    | SI LA CLAVE DE FORMATO ESTÁ REPETIDA → AVISA CON UN MENSAJE DE ADVERTENCIA.
+    */
     public function update(Request $request, Formato $formato)
     {
         $user = Auth::user();
@@ -209,6 +246,15 @@ class FormatoController extends Controller
             ->with('success', 'Formato actualizado correctamente.');
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | FUNCIÓN: destroy
+    |--------------------------------------------------------------------------
+    | ELIMINA UN FORMATO DEL SISTEMA.
+    | SOLO PUEDEN HACERLO ADMINISTRADORES Y SUPERADMINS.
+    | SI LA PETICIÓN ES AJAX → DEVUELVE JSON.
+    | SI NO ES AJAX          → REDIRIGE CON MENSAJE DE ÉXITO O ERROR.
+    */
     public function destroy(Formato $formato)
     {
         $user = Auth::user();
@@ -251,6 +297,14 @@ class FormatoController extends Controller
         }
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | FUNCIÓN: download
+    |--------------------------------------------------------------------------
+    | DESCARGA EL ARCHIVO DEL FORMATO AL DISPOSITIVO DEL USUARIO.
+    | SI EL ARCHIVO NO EXISTE EN EL SERVIDOR → DEVUELVE ERROR.
+    | REGISTRA LA DESCARGA EN EL HISTORIAL DE VERSIONES.
+    */
     public function download(Formato $formato)
     {
         $rutaCompleta = storage_path('app/public/' . $formato->ruta_archivo);
@@ -264,6 +318,16 @@ class FormatoController extends Controller
         return response()->download($rutaCompleta, $formato->nombre_archivo);
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | FUNCIÓN: show
+    |--------------------------------------------------------------------------
+    | MUESTRA EL ARCHIVO DEL FORMATO EN EL NAVEGADOR (SIN DESCARGARLO).
+    | SI EL ARCHIVO NO EXISTE → DEVUELVE ERROR.
+    | SI ES IMAGEN, PDF O TXT → LO MUESTRA DIRECTAMENTE EN EL NAVEGADOR.
+    | SI ES OTRO TIPO (OFFICE, ETC.) → LO DESCARGA AUTOMÁTICAMENTE.
+    | REGISTRA LA VISUALIZACIÓN EN EL HISTORIAL DE VERSIONES.
+    */
     public function show(Formato $formato)
     {
         $rutaCompleta = storage_path('app/public/' . $formato->ruta_archivo);
@@ -287,6 +351,14 @@ class FormatoController extends Controller
         return response()->download($rutaCompleta, $formato->nombre_archivo);
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | FUNCIÓN: departamentos
+    |--------------------------------------------------------------------------
+    | DEVUELVE EN JSON LOS DEPARTAMENTOS QUE PERTENECEN A UN PROCESO.
+    | USADA PARA CARGAR DINÁMICAMENTE EL SELECTOR DE DEPARTAMENTOS
+    | CUANDO EL USUARIO ELIGE UN PROCESO EN EL FORMULARIO.
+    */
     public function departamentos(Request $request)
     {
         $proceso = $request->get('proceso');
@@ -295,6 +367,18 @@ class FormatoController extends Controller
         return response()->json($deps);
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | FUNCIÓN: tipoArchivo
+    |--------------------------------------------------------------------------
+    | DETERMINA EL TIPO DE ARCHIVO SEGÚN SU EXTENSIÓN.
+    | DEVUELVE UNO DE ESTOS VALORES:
+    |   · "imagen"  → JPG, PNG, GIF, SVG, ETC.
+    |   · "pdf"     → PDF
+    |   · "office"  → EXCEL, WORD, POWERPOINT, ETC.
+    |   · "txt"     → TXT
+    |   · "otro"    → CUALQUIER OTRA EXTENSIÓN
+    */
     public static function tipoArchivo(?string $extension): string
     {
         $ext = strtoupper((string) $extension);

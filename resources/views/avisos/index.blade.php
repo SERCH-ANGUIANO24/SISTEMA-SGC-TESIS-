@@ -1,11 +1,10 @@
-{{-- resources/views/avisos/index.blade.php --}}
 @extends('layouts.app')
 
 @section('title', 'Gestión de Avisos')
 
 @section('content')
 <div class="container-fluid py-4">
-    <!-- Header -->
+    {{-- HEADER - TÍTULO Y BOTÓN PARA CREAR NUEVO AVISO --}}
     <div class="row mb-4">
         <div class="col-12">
             <div class="d-flex align-items-center justify-content-between">
@@ -15,6 +14,7 @@
                         Avisos
                     </h1>
                 </a>
+                {{-- BOTÓN NUEVO AVISO - SOLO PARA ADMIN Y SUPERADMIN --}}
                 @if(in_array(Auth::user()->role, ['admin', 'superadmin']))
                     <button class="btn" type="button" data-bs-toggle="modal" data-bs-target="#modalNuevoAviso" style="background-color: #737373; color: white; border: none;">
                         <i class="bi bi-plus-circle"></i> Nuevo Aviso
@@ -24,11 +24,11 @@
         </div>
     </div>
 
-    <!-- FILTROS -->
+    {{-- SECCIÓN DE FILTROS: BÚSQUEDA, ORDENAMIENTO Y FILTRO POR ESTADO --}}
     <div class="row mb-4">
         <div class="col-12">
             <div class="d-flex align-items-center gap-3 flex-wrap">
-                <!-- Buscar -->
+                {{-- BUSCADOR CON BOTÓN PARA LIMPIAR --}}
                 <div class="d-flex align-items-center position-relative" style="width: 700px;">
                     <div class="position-relative flex-grow-1">
                         <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted" style="font-size: 1rem;"></i>
@@ -43,7 +43,7 @@
                     </button>
                 </div>
 
-                <!-- Ordenar por -->
+                {{-- DROPDOWN PARA ORDENAR POR TÍTULO O FECHA --}}
                 <div class="dropdown">
                     <button class="btn btn-light border dropdown-toggle" type="button" data-bs-toggle="dropdown" id="btnOrdenar" style="height: 42px; background-color: white;">
                         <i class="bi bi-arrow-up-short"></i> <span id="ordenarTexto">Ordenar por</span>
@@ -56,7 +56,7 @@
                     </ul>
                 </div>
 
-                <!-- Filtrar por Estado -->
+                {{-- DROPDOWN PARA FILTRAR POR ESTADO (ACTIVO, PROGRAMADO, EXPIRADO) --}}
                 <div class="dropdown">
                     <button class="btn btn-light border dropdown-toggle" type="button" data-bs-toggle="dropdown" id="btnEstado" style="height: 42px; background-color: white;">
                         <i class="bi bi-funnel"></i> <span id="estadoTexto">Filtrar por Estado</span>
@@ -72,7 +72,7 @@
         </div>
     </div>
 
-    <!-- Tabla de Avisos -->
+    {{-- TABLA QUE MUESTRA TODOS LOS AVISOS --}}
     <div class="row mb-4">
         <div class="col-12">
             <div class="table-responsive">
@@ -90,6 +90,7 @@
                         </tr>
                     </thead>
                     <tbody id="tablaBody">
+                        {{-- MENSAJE MIENTRAS SE CARGAN LOS DATOS --}}
                         <tr>
                             <td colspan="8" class="text-center">Cargando avisos...</td>
                         </tr>
@@ -100,7 +101,7 @@
     </div>
 </div>
 
-<!-- MODAL PARA REGISTRAR/EDITAR AVISO -->
+{{-- MODAL PARA CREAR O EDITAR AVISOS - SOLO PARA ADMIN Y SUPERADMIN --}}
 @if(in_array(Auth::user()->role, ['admin', 'superadmin']))
 <div class="modal fade" id="modalNuevoAviso" tabindex="-1" aria-labelledby="modalNuevoAvisoLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
@@ -114,6 +115,7 @@
             <form id="formAviso" enctype="multipart/form-data">
                 @csrf
                 <div class="modal-body">
+                    {{-- CAMPO OCULTO PARA GUARDAR EL ID CUANDO SE EDITA --}}
                     <input type="hidden" id="aviso_id" name="aviso_id">
 
                     <div class="row mb-4">
@@ -121,18 +123,21 @@
                             <h6 class="fw-bold mb-3" style="color: #000000;">DATOS DEL AVISO</h6>
                         </div>
 
+                        {{-- CAMPO TÍTULO - OBLIGATORIO --}}
                         <div class="col-md-12 mb-3">
                             <label class="form-label">Título del Aviso *</label>
                             <input type="text" class="form-control" id="titulo" name="titulo" placeholder="Ej: Nuevo proceso de inscripción 2026">
                             <div class="msg-error" id="err-titulo">El título es requerido</div>
                         </div>
 
+                        {{-- CAMPO FECHA DE INICIO - OBLIGATORIO --}}
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Fecha de Inicio *</label>
                             <input type="datetime-local" class="form-control" id="fecha_inicio" name="fecha_inicio">
                             <div class="msg-error" id="err-fecha_inicio">La fecha de inicio es requerida</div>
                         </div>
 
+                        {{-- CAMPO FECHA DE FIN - OBLIGATORIO --}}
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Fecha de Fin *</label>
                             <input type="datetime-local" class="form-control" id="fecha_fin" name="fecha_fin">
@@ -140,6 +145,7 @@
                         </div>
                     </div>
 
+                    {{-- SECCIÓN PARA SUBIR ARCHIVO ADJUNTO --}}
                     <div class="row mb-4">
                         <div class="col-12">
                             <h6 class="fw-bold mb-3" style="color: #000000;">ARCHIVO ADJUNTO</h6>
@@ -153,6 +159,7 @@
                                     <input type="file" class="form-control" id="archivo" name="archivo" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.txt,.zip,.rar">
                                 </div>
                                 <div class="msg-error mt-2" id="err-archivo">El archivo es requerido</div>
+                                {{-- MUESTRA EL NOMBRE DEL ARCHIVO ACTUAL CUANDO SE EDITA --}}
                                 <div id="nombreArchivoActual" class="text-center mt-2 text-muted" style="display: none;">
                                     Archivo actual: <span id="nombreArchivo"></span>
                                 </div>
@@ -172,10 +179,10 @@
 </div>
 @endif
 
-<!-- CONTENEDOR PARA MODALES DE VISUALIZACIÓN -->
+{{-- CONTENEDOR PARA MODALES DINÁMICOS --}}
 <div id="modalesContainer"></div>
 
-<!-- MODAL ÚNICO PARA VISUALIZAR ARCHIVOS (IGUAL QUE PLAN DE AUDITORÍAS) -->
+{{-- MODAL PARA VISUALIZAR ARCHIVOS (PDF, IMÁGENES, TXT) --}}
 <div class="modal fade" id="modalVerArchivo" tabindex="-1" aria-labelledby="modalVerArchivoLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
@@ -193,6 +200,7 @@
 </div>
 @endsection
 
+{{-- ESTILOS CSS DE LA PÁGINA --}}
 @push('styles')
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <style>
@@ -303,7 +311,7 @@
         color: white !important;
     }
     
-    /* ===== ESTILOS DE SWEETALERT (IGUAL QUE PLAN DE AUDITORÍAS) ===== */
+    {{-- ESTILOS DE SWEETALERT --}}
     .swal2-popup {
         font-size: 1.2rem !important;
     }
@@ -316,32 +324,253 @@
     .swal2-cancel {
         background-color: #6c757d !important;
     }
+
+    {{-- ESTILOS RESPONSIVOS PARA TABLETS --}}
+    @media (min-width: 769px) and (max-width: 992px) {
+        .table-responsive {
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch !important;
+        }
+        .table {
+            min-width: 950px !important;
+            width: max-content !important;
+        }
+        .table th, .table td {
+            white-space: nowrap !important;
+            font-size: 0.75rem !important;
+            padding: 8px 6px !important;
+        }
+        .btn-sm {
+            padding: 0.15rem 0.3rem !important;
+            font-size: 0.65rem !important;
+        }
+        .badge-activo, .badge-programado, .badge-expirado {
+            font-size: 0.65rem !important;
+            padding: 0.2rem 0.4rem !important;
+        }
+        .nombre-archivo {
+            max-width: 120px !important;
+        }
+        .border.rounded.p-4.bg-light {
+            padding: 15px 10px !important;
+        }
+        .border.rounded.p-4.bg-light i {
+            font-size: 2rem !important;
+        }
+        .border.rounded.p-4.bg-light p.mt-2 strong {
+            font-size: 0.75rem !important;
+        }
+        .border.rounded.p-4.bg-light .small {
+            font-size: 0.65rem !important;
+        }
+        .modal-dialog {
+            max-width: 95% !important;
+            margin: 1rem auto !important;
+        }
+        .d-flex.align-items-center.gap-3.flex-wrap {
+            flex-wrap: wrap !important;
+            gap: 0.5rem !important;
+        }
+        .d-flex.align-items-center.position-relative[style*="width: 700px"] {
+            width: 100% !important;
+            min-width: auto !important;
+        }
+        .dropdown .btn, #btnOrdenar, #btnEstado {
+            font-size: 0.75rem !important;
+            padding: 0.375rem 0.75rem !important;
+            height: 38px !important;
+        }
+    }
+
+    {{-- ESTILOS RESPONSIVOS PARA MÓVILES --}}
+    @media (max-width: 768px) {
+        .container-fluid {
+            padding-left: 12px !important;
+            padding-right: 12px !important;
+        }
+        .h3 {
+            font-size: 1.5rem !important;
+        }
+        .h3 i {
+            font-size: 2rem !important;
+        }
+        .d-flex.align-items-center.justify-content-between {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 1rem !important;
+        }
+        .d-flex.align-items-center.justify-content-between .btn {
+            width: 100% !important;
+        }
+        .d-flex.align-items-center.gap-3.flex-wrap {
+            flex-direction: column !important;
+            align-items: stretch !important;
+            gap: 0.75rem !important;
+        }
+        .d-flex.align-items-center.position-relative[style*="width: 700px"] {
+            width: 100% !important;
+        }
+        .dropdown {
+            width: 100% !important;
+        }
+        .dropdown .btn, #btnOrdenar, #btnEstado {
+            width: 100% !important;
+            height: 38px !important;
+            font-size: 0.8rem !important;
+        }
+        .table-responsive {
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch !important;
+        }
+        .table {
+            min-width: 800px !important;
+            width: max-content !important;
+        }
+        .table th, .table td {
+            white-space: nowrap !important;
+            font-size: 0.7rem !important;
+            padding: 6px 4px !important;
+        }
+        .btn-sm {
+            padding: 0.15rem 0.25rem !important;
+            font-size: 0.6rem !important;
+        }
+        .btn-sm i {
+            font-size: 0.65rem !important;
+        }
+        .badge-activo, .badge-programado, .badge-expirado {
+            font-size: 0.6rem !important;
+            padding: 0.15rem 0.3rem !important;
+        }
+        .nombre-archivo {
+            max-width: 100px !important;
+            font-size: 0.7rem !important;
+        }
+        .border.rounded.p-4.bg-light {
+            padding: 12px 8px !important;
+        }
+        .border.rounded.p-4.bg-light i {
+            font-size: 1.8rem !important;
+        }
+        .border.rounded.p-4.bg-light p.mt-2 strong {
+            font-size: 0.7rem !important;
+        }
+        .border.rounded.p-4.bg-light .small {
+            font-size: 0.6rem !important;
+        }
+        .modal-dialog {
+            margin: 0.5rem !important;
+        }
+        .modal-body {
+            padding: 0.75rem !important;
+        }
+        .modal-footer {
+            flex-wrap: wrap !important;
+            gap: 0.5rem !important;
+        }
+        .modal-footer .btn {
+            flex: 1 !important;
+        }
+        .d-flex.justify-content-end.gap-1 {
+            flex-wrap: wrap !important;
+            justify-content: center !important;
+        }
+        
+        {{-- CORRECCIÓN PARA INPUT FILE EN MÓVIL --}}
+        #archivo {
+            width: 100% !important;
+            padding: 8px 10px !important;
+            font-size: 0.7rem !important;
+            margin-top: 8px !important;
+            margin-bottom: 8px !important;
+            box-sizing: border-box !important;
+            display: block !important;
+        }
+        
+        #archivo::file-selector-button {
+            background-color: #737373 !important;
+            color: white !important;
+            border: none !important;
+            padding: 4px 8px !important;
+            font-size: 0.65rem !important;
+            margin-right: 6px !important;
+            border-radius: 4px !important;
+        }
+        
+        #nombreArchivoActual {
+            font-size: 0.7rem !important;
+            padding: 5px !important;
+        }
+    }
+
+    {{-- ESTILOS RESPONSIVOS PARA MÓVILES MUY PEQUEÑOS --}}
+    @media (max-width: 480px) {
+        .table th, .table td {
+            font-size: 0.65rem !important;
+            padding: 4px 3px !important;
+        }
+        .btn-sm {
+            padding: 0.1rem 0.2rem !important;
+            font-size: 0.55rem !important;
+        }
+        .btn-sm i {
+            font-size: 0.55rem !important;
+        }
+        .nombre-archivo {
+            max-width: 70px !important;
+        }
+        .badge-activo, .badge-programado, .badge-expirado {
+            font-size: 0.55rem !important;
+        }
+        .border.rounded.p-4.bg-light i {
+            font-size: 1.5rem !important;
+        }
+        .border.rounded.p-4.bg-light p.mt-2 strong {
+            font-size: 0.65rem !important;
+        }
+        
+        #archivo {
+            padding: 6px 8px !important;
+            font-size: 0.65rem !important;
+        }
+        
+        #archivo::file-selector-button {
+            padding: 3px 6px !important;
+            font-size: 0.6rem !important;
+            margin-right: 5px !important;
+        }
+    }
 </style>
 @endpush
 
+{{-- JAVASCRIPT - TODA LA LÓGICA DEL SISTEMA --}}
 @push('scripts')
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/min/moment.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
+    {{-- VARIABLES GLOBALES --}}
     let avisosData = [];
     let estadoSeleccionado = '';
     let ordenSeleccionado = '';
     const userRole = '{{ Auth::user()->role }}';
     
-    // Lista de extensiones que NO se pueden visualizar
+    {{-- EXTENSIONES QUE NO SE PUEDEN VISUALIZAR EN EL NAVEGADOR --}}
     const extensionesSinVista = ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'csv', 'zip', 'rar', '7z'];
 
+    {{-- INICIALIZA LA PÁGINA CUANDO EL DOCUMENTO ESTÁ LISTO --}}
     $(document).ready(function() {
         cargarAvisos();
         configurarEventos();
 
+        {{-- CUANDO EL MODAL SE CIERRA, RESETEA EL FORMULARIO --}}
         $('#modalNuevoAviso').on('hidden.bs.modal', function () {
             resetForm();
             limpiarErrores();
         });
         
+        {{-- CUANDO EL MODAL SE ABRE, CAMBIA EL TÍTULO SEGÚN SEA NUEVO O EDICIÓN --}}
         $('#modalNuevoAviso').on('show.bs.modal', function () {
             if ($('#aviso_id').val()) {
                 $('#modalNuevoAvisoLabel').html('<i class="bi bi-pencil-square me-2" style="color: #000000;"></i> Editar Aviso');
@@ -351,6 +580,7 @@
         });
     });
 
+    {{-- CONFIGURA TODOS LOS EVENTOS DE LA PÁGINA --}}
     function configurarEventos() {
         $('#btnGuardarAviso').on('click', guardarAviso);
 
@@ -363,6 +593,7 @@
             filtrarPorBusqueda('');
         });
 
+        {{-- VALIDACIÓN EN TIEMPO REAL DE LOS CAMPOS --}}
         $('#titulo, #fecha_inicio, #fecha_fin').on('input change', function() {
             const id = $(this).attr('id');
             if ($(this).val().trim()) {
@@ -376,6 +607,7 @@
         });
     }
 
+    {{-- CARGA LOS AVISOS DESDE LA API --}}
     function cargarAvisos() {
         let url = '/api/avisos/activos';
 
@@ -393,10 +625,11 @@
         })
         .catch(error => {
             console.error('Error al cargar avisos:', error);
-            $('#tablaBody').html('<tr><td colspan="8" class="text-center text-danger">Error al cargar datos</td></tr>');
+            $('#tablaBody').html('<tr><td colspan="8" class="text-center text-danger">Error al cargar datos</td</tr>');
         });
     }
 
+    {{-- DETERMINA EL ESTADO ACTUAL DEL AVISO --}}
     function getEstadoAviso(aviso) {
         const now = moment();
         const fechaInicio = moment(aviso.fecha_inicio);
@@ -408,6 +641,7 @@
         return 'activo';
     }
 
+    {{-- DEVUELVE LA ETIQUETA HTML SEGÚN EL ESTADO --}}
     function getEstadoBadge(estado) {
         switch(estado) {
             case 'activo':
@@ -421,12 +655,13 @@
         }
     }
 
+    {{-- RENDERIZA LA TABLA CON LOS DATOS DE AVISOS --}}
     function renderizarTabla(data) {
         const tbody = $('#tablaBody');
         tbody.empty();
 
         if (data.length === 0) {
-            tbody.html('<tr><td colspan="8" class="text-center py-4">No hay avisos registrados</td></tr>');
+            tbody.html('<tr><td colspan="8" class="text-center py-4">No hay avisos registrados</td</tr>');
             return;
         }
 
@@ -446,11 +681,10 @@
                 else if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg'].includes(ext)) iconoArchivo = 'bi-file-image';
                 else if (ext === 'txt') iconoArchivo = 'bi-file-text';
                 
-                // Verificar si se puede visualizar (NO está en la lista de extensiones sin vista)
                 puedeVisualizar = !extensionesSinVista.includes(ext);
             }
 
-            // ACCIONES: Solo botón Ver (ojo) si se puede visualizar, Editar y Eliminar
+            {{-- BOTONES DE ACCIÓN SEGÚN EL ROL DEL USUARIO --}}
             let acciones = '';
             @if(in_array(Auth::user()->role, ['admin', 'superadmin']))
                 acciones = `
@@ -497,7 +731,7 @@
         });
     }
 
-    // Función para ver archivo - IGUAL QUE PLAN DE AUDITORÍAS
+    {{-- ABRE EL MODAL PARA VISUALIZAR EL ARCHIVO --}}
     function verArchivo(id) {
         const aviso = avisosData.find(a => a.id === id);
         if (!aviso || !aviso.archivo_nombre) {
@@ -513,19 +747,16 @@
         const url = `{{ url('avisos') }}/${id}/ver`;
         const extension = aviso.archivo_nombre.split('.').pop().toLowerCase();
         
-        // Para imágenes, mostrar directamente en iframe
         if (['jpg','jpeg','png','gif','bmp','webp'].includes(extension)) {
             $('#modalVerArchivoLabel').text(aviso.archivo_nombre);
             $('#visorArchivo').attr('src', url);
             $('#modalVerArchivo').modal('show');
         } 
-        // Para PDF y TXT
         else if (extension === 'pdf' || extension === 'txt') {
             $('#modalVerArchivoLabel').text(aviso.archivo_nombre);
             $('#visorArchivo').attr('src', url);
             $('#modalVerArchivo').modal('show');
         }
-        // Para otros tipos, mostrar mensaje
         else {
             Swal.fire({
                 icon: 'info',
@@ -536,6 +767,7 @@
         }
     }
 
+    {{-- VALIDA QUE TODOS LOS CAMPOS OBLIGATORIOS ESTÉN LLENOS --}}
     function validarFormulario() {
         let valido = true;
         const campos = ['titulo', 'fecha_inicio', 'fecha_fin'];
@@ -571,12 +803,14 @@
         return valido;
     }
 
+    {{-- LIMPIA LOS MENSAJES DE ERROR --}}
     function limpiarErrores() {
         $('.msg-error').hide();
         $('.campo-invalido').removeClass('campo-invalido');
         $('#err-fecha_fin').text('La fecha de fin es requerida');
     }
 
+    {{-- RESETEA EL FORMULARIO A SU ESTADO INICIAL --}}
     function resetForm() {
         $('#formAviso')[0].reset();
         $('#aviso_id').val('');
@@ -584,6 +818,7 @@
         limpiarErrores();
     }
 
+    {{-- GUARDA O ACTUALIZA UN AVISO --}}
     function guardarAviso() {
         if (!validarFormulario()) return;
 
@@ -639,6 +874,7 @@
         });
     }
 
+    {{-- CARGA LOS DATOS DEL AVISO EN EL MODAL PARA EDITAR --}}
     function editarAviso(id) {
         const aviso = avisosData.find(a => a.id === id);
         if (!aviso) return;
@@ -658,6 +894,7 @@
         $('#modalNuevoAviso').modal('show');
     }
 
+    {{-- ELIMINA UN AVISO CON CONFIRMACIÓN --}}
     function eliminarAviso(id, titulo) {
         Swal.fire({
             title: '¿Eliminar aviso?',
@@ -722,6 +959,7 @@
         });
     }
 
+    {{-- MUESTRA UN MENSAJE DE ÉXITO EN LA PARTE SUPERIOR --}}
     function mostrarMensajeExito(mensaje) {
         const alerta = `
             <div class="alert alert-success alert-dismissible fade show mb-3" role="alert">
@@ -733,18 +971,21 @@
         setTimeout(() => $('.alert-success').alert('close'), 5000);
     }
 
+    {{-- SELECCIONA EL CRITERIO DE ORDENAMIENTO --}}
     function seleccionarOrden(criterio, texto) {
         ordenSeleccionado = criterio;
         $('#ordenarTexto').text(texto);
         filtrarYRenderizar();
     }
 
+    {{-- SELECCIONA EL FILTRO POR ESTADO --}}
     function seleccionarEstado(estado, texto) {
         estadoSeleccionado = estado;
         $('#estadoTexto').text(texto);
         filtrarYRenderizar();
     }
 
+    {{-- APLICA FILTROS Y ORDENAMIENTO, Y VUELVE A RENDERIZAR --}}
     function filtrarYRenderizar() {
         let datos = [...avisosData];
 

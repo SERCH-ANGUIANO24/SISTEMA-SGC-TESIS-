@@ -1,24 +1,10 @@
-{{-- ============================================================ --}}
-{{-- ARCHIVO: INDEX.BLADE.PHP                                    --}}
-{{-- MÓDULO: SOLICITUDES DE MEJORA                               --}}
-{{-- VISTA PRINCIPAL DEL MÓDULO. CARGA TODOS LOS COMPONENTES:    --}}
-{{-- FILTROS, TABLA, MODALES, ESTILOS Y SCRIPTS.                 --}}
-{{-- ============================================================ --}}
-
 @extends('layouts.app')
 
 @section('title', 'Solicitudes de Mejora - Sistema de Gestión de la Calidad')
 
 @section('content')
 <div class="container-fluid py-4">
-
-    {{-- ================================================ --}}
-    {{-- ENCABEZADO DE LA PÁGINA                          --}}
-    {{-- MUESTRA EL TÍTULO CON ÍCONO Y EL BOTÓN PARA      --}}
-    {{-- REGISTRAR UNA NUEVA SOLICITUD.                   --}}
-    {{-- EL BOTÓN SOLO ES VISIBLE PARA ADMIN/SUPERADMIN.  --}}
-    {{-- AL HACER CLIC EN EL TÍTULO → VA AL DASHBOARD.    --}}
-    {{-- ================================================ --}}
+    <!-- Header con ícono de carpeta -->
     <div class="row mb-4">
         <div class="col-12">
             <!-- MENSAJE DE ÉXITO -->
@@ -42,55 +28,31 @@
         </div>
     </div>
 
-    {{-- ================================================ --}}
-    {{-- SECCIÓN: FILTROS                                 --}}
-    {{-- INCLUYE LA BARRA DE FILTROS (BUSCAR, ORDENAR,    --}}
-    {{-- AÑO, ESTATUS, ESTADÍSTICAS E HISTÓRICO).         --}}
-    {{-- ================================================ --}}
+    <!-- FILTROS -->
     @include('auditoria.solicitudes.partials.filtros')
 
-    {{-- ================================================ --}}
-    {{-- SECCIÓN: TABLA DE SOLICITUDES                    --}}
-    {{-- INCLUYE LA TABLA DONDE SE MUESTRAN TODAS         --}}
-    {{-- LAS SOLICITUDES DE MEJORA. SE LLENA              --}}
-    {{-- DINÁMICAMENTE VÍA JAVASCRIPT.                    --}}
-    {{-- ================================================ --}}
+    <!-- TABLA DE SOLICITUDES -->
     @include('auditoria.solicitudes.partials.tabla')
 </div>
 
-{{-- ================================================ --}}
-{{-- MODAL: REGISTRAR / EDITAR SOLICITUD              --}}
-{{-- SOLO VISIBLE PARA ADMIN Y SUPERADMIN.            --}}
-{{-- ================================================ --}}
+<!-- MODAL PARA REGISTRAR/EDITAR SOLICITUD (solo admin y superadmin) -->
 @can('auditoria-access')
 @include('auditoria.solicitudes.modal.modal_solicitud')
 @endcan
 
-{{-- ================================================ --}}
-{{-- MODAL: VER ARCHIVO ADJUNTO                       --}}
-{{-- VISIBLE PARA TODOS LOS USUARIOS.                 --}}
-{{-- ================================================ --}}
+<!-- MODAL PARA VER ARCHIVOS (visible para todos) -->
 @include('auditoria.solicitudes.modal.modal_ver_archivo')
 
-{{-- ================================================ --}}
-{{-- MODAL: VER CALENDARIO DE FECHAS                  --}}
-{{-- VISIBLE PARA TODOS LOS USUARIOS.                 --}}
-{{-- ================================================ --}}
+<!-- MODAL PARA VER CALENDARIO (visible para todos) -->
 @include('auditoria.solicitudes.modal.modal_calendario')
 
-{{-- CONTENEDOR PARA MODALES GENERADOS DINÁMICAMENTE --}}
+<!-- CONTENEDOR PARA MODALES DINÁMICOS -->
 <div id="modalesContainer"></div>
 
-{{-- ================================================ --}}
-{{-- MODAL: GRÁFICAS / ESTADÍSTICAS                   --}}
-{{-- VISIBLE PARA TODOS LOS USUARIOS.                 --}}
-{{-- ================================================ --}}
+<!-- MODAL GRÁFICAS (visible para todos) -->
 @include('auditoria.solicitudes.modal.modal_graficas')
 
-{{-- ================================================ --}}
-{{-- MODAL: HISTÓRICO DE SOLICITUDES                  --}}
-{{-- VISIBLE PARA TODOS LOS USUARIOS.                 --}}
-{{-- ================================================ --}}
+<!-- MODAL HISTÓRICO (visible para todos) -->
 @include('auditoria.solicitudes.modal.modal_historico')
 
 @endsection
@@ -121,8 +83,7 @@
         padding: 12px 8px;
     }
     
-    /* ===== BADGES DE ESTATUS ===== */
-    /* NARANJA → NO ATENDIDA */
+    /* Badges */
     .badge-no-atendida {
         background-color: #fd7e14;
         color: white;
@@ -133,7 +94,6 @@
         display: inline-block;
     }
     
-    /* AMARILLO → EN PROCESO */
     .badge-proceso {
         background-color: #ffc107;
         color: white;
@@ -144,7 +104,6 @@
         display: inline-block;
     }
     
-    /* ROJO → CERRADO */
     .badge-cerrado {
         background-color: #dc3545;
         color: white;
@@ -249,7 +208,7 @@
         font-size: 0.9rem;
     }
     
-    /* ===== ESTILOS DE BOTONES DE ACCIÓN ===== */
+    /* ===== ESTILOS DE BOTONES ===== */
     .btn-outline-info {
         color: #0dcaf0;
         border-color: #0dcaf0;
@@ -334,7 +293,6 @@
         --bs-btn-active-border-color: #6f42c1;
     }
 
-    /* ===== ESTILOS DE SWEETALERT2 ===== */
     .swal2-popup {
         font-size: 1.2rem !important;
     }
@@ -353,8 +311,7 @@
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 
-    /* ===== ESTILOS DEL CRONÓMETRO DE FECHAS ===== */
-    /* GRIS CLARO → SIN INICIAR */
+    /* ===== ESTILOS MEJORADOS PARA EL CRONÓMETRO ===== */
     .cronometro-info {
         background-color: #e9ecef;
         border-left: 4px solid #6c757d;
@@ -363,7 +320,6 @@
         box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
     
-    /* BLANCO → EN CURSO */
     .cronometro-activo {
         background-color: #f8f9fa;
         border-left: 4px solid #6c757d;
@@ -372,7 +328,6 @@
         box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
     
-    /* GRIS OSCURO → COMPLETADO */
     .cronometro-completado {
         background-color: #f1f3f5;
         border-left: 4px solid #495057;
@@ -394,7 +349,7 @@
         margin-bottom: 10px;
     }
     
-    /* ===== ALERTAS PERSONALIZADAS ===== */
+    /* Estilo para alertas en gris */
     .alert-info-custom {
         background-color: #e9ecef;
         border: 1px solid #ced4da;
@@ -419,7 +374,7 @@
         padding: 12px 15px;
     }
 
-    /* ===== ESTILO SOLICITUD CERRADA ===== */
+    /* Estilo para solicitud cerrada */
     .solicitud-cerrada {
         background-color: #f8f9fa;
         border: 2px solid #6c757d;
@@ -447,8 +402,7 @@
         font-size: 1.1rem;
         margin-bottom: 5px;
     }
-
-    /* ===== CORRECCIÓN MODAL DE TEMA ===== */
+    /* ===== FORZAR TAMAÑO CORRECTO DEL MODAL DE TEMA EN SOLICITUDES ===== */
     #modalTema .modal-body {
         height: auto !important;
         max-height: none !important;
@@ -472,7 +426,7 @@
        ESTILOS RESPONSIVOS - SOLICITUDES DE MEJORA
     ===================================================== */
 
-    /* TABLETS (769px a 992px) */
+    /* Tablets (769px a 992px) */
     @media (min-width: 769px) and (max-width: 992px) {
         .table-responsive {
             overflow-x: auto !important;
@@ -532,7 +486,7 @@
         }
     }
 
-    /* MÓVILES (768px y menos) */
+    /* Móviles (768px y menos) */
     @media (max-width: 768px) {
         .container-fluid {
             padding-left: 12px !important;
@@ -655,7 +609,7 @@
             font-size: 1.1rem !important;
         }
         
-        /* CORRECCIÓN PARA INPUT FILE EN MÓVIL */
+        /* ===== CORRECCIÓN PARA INPUT FILE EN MÓVIL ===== */
         #archivo_plan {
             width: 100% !important;
             padding: 8px 10px !important;
@@ -681,7 +635,7 @@
         }
     }
 
-    /* MÓVILES MUY PEQUEÑOS (480px y menos) */
+    /* Móviles muy pequeños (480px y menos) */
     @media (max-width: 480px) {
         .table th, .table td {
             font-size: 0.65rem !important;
@@ -713,6 +667,7 @@
             font-size: 0.8rem !important;
         }
         
+        /* Input file en móviles muy pequeños */
         #archivo_plan {
             padding: 6px 8px !important;
             font-size: 0.65rem !important;
@@ -724,14 +679,18 @@
             margin-right: 5px !important;
         }
     }
-
-    /* CORRECCIÓN FORZADA PARA INPUT FILE EN MÓVIL */
+        /* =====================================================
+       CORRECCIÓN FORZADA PARA INPUT FILE EN MÓVIL
+    ===================================================== */
+    
+    /* Eliminar el flex del contenedor problemático */
     .border.rounded.p-4.bg-light .d-flex.justify-content-center {
         display: block !important;
         width: 100% !important;
         text-align: left !important;
     }
     
+    /* Forzar que el input file ocupe todo el ancho y esté alineado */
     .border.rounded.p-4.bg-light .d-flex.justify-content-center .form-control,
     .border.rounded.p-4.bg-light .d-flex.justify-content-center #archivo_plan {
         display: block !important;
@@ -741,11 +700,13 @@
         box-sizing: border-box !important;
     }
     
+    /* Móviles (768px y menos) - corrección específica */
     @media (max-width: 768px) {
         .border.rounded.p-4.bg-light {
             padding: 12px !important;
         }
         
+        /* Forzar input file en móvil */
         .border.rounded.p-4.bg-light .d-flex.justify-content-center {
             display: block !important;
             width: 100% !important;
@@ -779,30 +740,16 @@
 @endpush
 
 @push('scripts')
-{{-- LIBRERÍAS EXTERNAS NECESARIAS --}}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-    // ============================================================
-    // VARIABLES GLOBALES
-    // solicitudesData    → ARRAY CON TODAS LAS SOLICITUDES CARGADAS
-    // estatusSeleccionado → FILTRO DE ESTATUS ACTIVO
-    // anioSeleccionado   → FILTRO DE AÑO ACTIVO
-    // ordenSeleccionado  → CRITERIO DE ORDEN ACTIVO
-    // userRole           → ROL DEL USUARIO CONECTADO
-    // ============================================================
     let solicitudesData = [];
     let estatusSeleccionado = '';
     let anioSeleccionado = '';
     let ordenSeleccionado = '';
     const userRole = '{{ Auth::user()->role }}';
 
-    // ============================================================
-    // AL CARGAR LA PÁGINA
-    // CARGA LAS SOLICITUDES Y CONFIGURA LOS EVENTOS.
-    // SOLO PARA ADMIN/SUPERADMIN: RESETEA EL FORMULARIO AL CERRAR.
-    // ============================================================
     document.addEventListener('DOMContentLoaded', function() {
         cargarSolicitudes();
         configurarEventos();
@@ -817,10 +764,6 @@
         @endif
     });
 
-    // ============================================================
-    // FUNCIÓN: configurarEventos
-    // ENLAZA LOS EVENTOS DEL FORMULARIO Y DEL BUSCADOR.
-    // ============================================================
     function configurarEventos() {
         @if(in_array(Auth::user()->role, ['admin', 'superadmin']))
         const form = document.getElementById('formSolicitud');
@@ -840,10 +783,6 @@
         }
     }
 
-    // ============================================================
-    // FUNCIÓN: limpiarBuscador
-    // VACÍA EL CAMPO DE BÚSQUEDA Y ACTUALIZA LA TABLA.
-    // ============================================================
     function limpiarBuscador() {
         const buscador = document.getElementById('buscadorArchivos');
         if (buscador) {
@@ -853,11 +792,6 @@
         }
     }
 
-    // ============================================================
-    // FUNCIÓN: seleccionarOrden
-    // GUARDA EL CRITERIO SELECCIONADO, ACTUALIZA EL BOTÓN
-    // Y ORDENA LA TABLA.
-    // ============================================================
     function seleccionarOrden(criterio, texto) {
         ordenSeleccionado = criterio;
         document.getElementById('ordenarTexto').innerText = texto;
@@ -865,11 +799,6 @@
         ordenarPor(criterio);
     }
 
-    // ============================================================
-    // FUNCIÓN: seleccionarEstatus
-    // GUARDA EL ESTATUS SELECCIONADO, ACTUALIZA EL BOTÓN
-    // Y RECARGA LAS SOLICITUDES CON EL FILTRO APLICADO.
-    // ============================================================
     function seleccionarEstatus(estatus, texto) {
         estatusSeleccionado = estatus;
         document.getElementById('estatusTexto').innerText = texto;
@@ -877,11 +806,6 @@
         cargarSolicitudes();
     }
 
-    // ============================================================
-    // FUNCIÓN: seleccionarAnio
-    // GUARDA EL AÑO SELECCIONADO, ACTUALIZA EL BOTÓN
-    // Y RECARGA LAS SOLICITUDES CON EL FILTRO APLICADO.
-    // ============================================================
     function seleccionarAnio(anio, texto) {
         anioSeleccionado = anio;
         document.getElementById('anioTexto').innerText = texto;
@@ -895,11 +819,6 @@
         cargarSolicitudes();
     }
 
-    // ============================================================
-    // FUNCIÓN: ordenarPor
-    // ORDENA EL ARRAY DE SOLICITUDES SEGÚN EL CRITERIO Y
-    // VUELVE A RENDERIZAR LA TABLA.
-    // ============================================================
     function ordenarPor(criterio) {
         if (!solicitudesData || solicitudesData.length === 0) return;
         
@@ -923,11 +842,6 @@
         renderizarTabla(datosOrdenados);
     }
 
-    // ============================================================
-    // FUNCIÓN: filtrarPorBusqueda
-    // FILTRA LAS SOLICITUDES POR RESPONSABLE O FOLIO EN TIEMPO REAL.
-    // SI EL TEXTO ESTÁ VACÍO → MUESTRA TODAS LAS SOLICITUDES.
-    // ============================================================
     function filtrarPorBusqueda(texto) {
         if (!solicitudesData || solicitudesData.length === 0) return;
         
@@ -946,11 +860,6 @@
         renderizarTabla(datosFiltrados);
     }
 
-    // ============================================================
-    // FUNCIÓN: cargarSolicitudes
-    // CONSULTA AL SERVIDOR LAS SOLICITUDES APLICANDO LOS FILTROS
-    // DE ESTATUS Y AÑO ACTIVOS. LUEGO RENDERIZA LA TABLA.
-    // ============================================================
     function cargarSolicitudes() {
         let url = '{{ route("auditoria.solicitudes.data") }}';
         let params = new URLSearchParams();
@@ -985,11 +894,11 @@
         });
     }
 
-    // ============================================================
-    // FUNCIÓN: esArchivoVisualizable
-    // VERIFICA SI UN ARCHIVO PUEDE MOSTRARSE EN EL NAVEGADOR.
-    // DEVUELVE TRUE PARA: PDF, IMÁGENES Y TXT.
-    // ============================================================
+    /**
+     * Determina si un archivo se puede visualizar en el navegador.
+     * @param {string} filename Nombre del archivo con extensión.
+     * @returns {boolean}
+     */
     function esArchivoVisualizable(filename) {
         if (!filename) return false;
         const ext = filename.split('.').pop().toLowerCase();
@@ -997,15 +906,6 @@
         return visualizables.includes(ext);
     }
 
-    // ============================================================
-    // FUNCIÓN: renderizarTabla
-    // GENERA DINÁMICAMENTE LAS FILAS DE LA TABLA CON LOS DATOS
-    // DE CADA SOLICITUD. MUESTRA ÍCONO Y NOMBRE DEL ARCHIVO.
-    // LOS BOTONES DE ACCIÓN VARÍAN SEGÚN EL ROL DEL USUARIO:
-    //   · ADMIN/SUPERADMIN/AUDITOR → VER, EDITAR, CALENDARIO,
-    //                                DESCARGAR Y ELIMINAR
-    //   · USUARIO NORMAL           → VER, CALENDARIO Y DESCARGAR
-    // ============================================================
     function renderizarTabla(data) {
         const tbody = document.getElementById('tablaBody');
         if (!tbody) return;
@@ -1022,7 +922,7 @@
             
             const fechaSolicitud = solicitud.fecha_solicitud ? new Date(solicitud.fecha_solicitud).toLocaleDateString('es-ES') : '';
             
-            // PERIODOS: EXTRAER MES Y AÑO (MM/YYYY)
+            // Periodos: extraer mes y año (MM/YYYY)
             const periodoAplicacion = solicitud.fecha_aplicacion 
                 ? new Date(solicitud.fecha_aplicacion).toLocaleDateString('es-ES', { year: 'numeric', month: '2-digit' }).replace(/\//g, '/')
                 : '';
@@ -1030,13 +930,13 @@
                 ? new Date(solicitud.fecha_verificacion).toLocaleDateString('es-ES', { year: 'numeric', month: '2-digit' }).replace(/\//g, '/')
                 : '-';
             
-            // BADGE DE ESTATUS
+            // Badge según estatus
             let badgeClass = '';
             if (solicitud.estatus === 'No Atendida') badgeClass = 'badge-no-atendida';
             else if (solicitud.estatus === 'En Proceso') badgeClass = 'badge-proceso';
             else if (solicitud.estatus === 'Cerrado') badgeClass = 'badge-cerrado';
             
-            // CELDA DE DOCUMENTO CON ÍCONO SEGÚN EXTENSIÓN
+            // Construir celda de documento con ícono y nombre
             let documentoHtml = '';
             if (solicitud.archivo_nombre) {
                 const ext = solicitud.archivo_nombre.split('.').pop().toLowerCase();
@@ -1077,13 +977,14 @@
                 documentoHtml = '<span class="text-muted">—</span>';
             }
             
+            // Determinar si se muestra el botón "Ver"
             const visualizable = esArchivoVisualizable(solicitud.archivo_nombre);
             
-            // BOTONES DE ACCIÓN SEGÚN ROL
+            // Acciones según el rol del usuario
             let acciones = '';
             
-            if (userRole === 'admin' || userRole === 'superadmin' || userRole === 'auditor_lider') {
-                // ADMIN/SUPERADMIN/AUDITOR: VER + EDITAR + CALENDARIO + DESCARGAR + ELIMINAR
+            if (userRole === 'admin' || userRole === 'superadmin') {
+                // Admin y superadmin tienen todas las acciones
                 acciones = `
                     <div class="d-flex justify-content-end gap-1">
                         ${solicitud.archivo_nombre && visualizable ? 
@@ -1120,7 +1021,7 @@
                     </div>
                 `;
             } else {
-                // USUARIO NORMAL: SOLO VER + CALENDARIO + DESCARGAR
+                // Usuario normal solo puede ver calendario, ver archivo y descargar
                 acciones = `
                     <div class="d-flex justify-content-end gap-1">
                         ${solicitud.archivo_nombre && visualizable ? 
@@ -1169,12 +1070,7 @@
         });
     }
 
-    // ============================================================
-    // FUNCIÓN: verArchivo
-    // ABRE UN MODAL DINÁMICO PARA VISUALIZAR EL ARCHIVO ADJUNTO.
-    // SI ES PDF, IMAGEN O TXT → LO MUESTRA EN UN IFRAME O IMG.
-    // SI ES OTRO TIPO → MUESTRA BOTÓN PARA DESCARGAR.
-    // ============================================================
+    // ===== FUNCIÓN VER ARCHIVO CORREGIDA =====
     function verArchivo(id) {
         const solicitud = solicitudesData.find(s => s.id === id);
         if (!solicitud) return;
@@ -1233,11 +1129,9 @@
         modal.show();
     }
 
-    // ============================================================
-    // FUNCIÓN: businessDaysBetween
-    // CALCULA LOS DÍAS HÁBILES (LUNES A VIERNES) ENTRE DOS FECHAS.
-    // EXCLUYE SÁBADOS Y DOMINGOS.
-    // ============================================================
+    /**
+     * Calcula los días hábiles entre dos fechas (excluye sábados y domingos)
+     */
     function businessDaysBetween(start, end) {
         let count = 0;
         const cur = new Date(start);
@@ -1256,11 +1150,9 @@
         return count;
     }
 
-    // ============================================================
-    // FUNCIÓN: addBusinessDays
-    // CALCULA LA FECHA RESULTANTE DESPUÉS DE SUMAR N DÍAS HÁBILES
-    // A UNA FECHA INICIAL. EXCLUYE SÁBADOS Y DOMINGOS.
-    // ============================================================
+    /**
+     * Calcula la fecha después de sumar días hábiles
+     */
     function addBusinessDays(startDate, days) {
         let result = new Date(startDate);
         result.setHours(0, 0, 0, 0);
@@ -1276,15 +1168,6 @@
         return result;
     }
 
-    // ============================================================
-    // FUNCIÓN: verCalendario
-    // ABRE EL MODAL DE FECHAS CON EL DETALLE DE LA SOLICITUD.
-    // MANEJA 4 CASOS:
-    //   1. SOLICITUD CERRADA → MUESTRA MENSAJE DE CIERRE
-    //   2. NO ATENDIDA Y PLAZO VENCIDO → ALERTA DE VENCIMIENTO
-    //   3. SIN PERIODO DE APLICACIÓN → MUESTRA DATOS DISPONIBLES
-    //   4. CON PERIODO DE APLICACIÓN → MUESTRA CRONÓMETRO COMPLETO
-    // ============================================================
     function verCalendario(id) {
         const solicitud = solicitudesData.find(s => s.id === id);
         if (!solicitud) return;
@@ -1295,7 +1178,7 @@
         const fechaSolicitud = solicitud.fecha_solicitud ? new Date(solicitud.fecha_solicitud) : null;
         if (fechaSolicitud) fechaSolicitud.setHours(0, 0, 0, 0);
 
-        // CASO 1: SOLICITUD CERRADA
+        // ===== SOLICITUD CERRADA =====
         if (solicitud.estatus === 'Cerrado') {
             const contenidoCerrado = `
                 <div class="p-4 text-center">
@@ -1312,7 +1195,7 @@
             return;
         }
 
-        // CASO 2: NO ATENDIDA CON PLAZO VENCIDO
+                // ===== SOLICITUD NO ATENDIDA - VERIFICAR SI VENCIÓ EL PLAZO =====
         if (solicitud.estatus === 'No Atendida') {
             const fechaInforme = solicitud.fecha_informe 
                 ? (() => { const d = new Date(solicitud.fecha_informe); d.setHours(0,0,0,0); return d; })()
@@ -1321,11 +1204,13 @@
             let vencidoPor15Dias = false;
             let vencidoPor27 = false;
 
+            // Verificar si pasaron 15 días hábiles desde el informe
             if (fechaInforme) {
                 const diasHabiles = businessDaysBetween(fechaInforme, hoy);
                 if (diasHabiles >= 15) vencidoPor15Dias = true;
             }
 
+            // Verificar si ya pasó el día 27 del mes de aplicación
             if (solicitud.fecha_aplicacion) {
                 const fechaApli = new Date(solicitud.fecha_aplicacion);
                 const dia27MesApli = new Date(fechaApli.getFullYear(), fechaApli.getMonth(), 27);
@@ -1358,7 +1243,7 @@
             }
         }
 
-        // ALERTA SI FALTAN 3 DÍAS O MENOS PARA EL DÍA 27
+        // ===== NOTIFICACIÓN: 3 DÍAS ANTES DEL 27 DE CADA MES =====
         let alertaDia27 = '';
         const dia27Actual = new Date(hoy.getFullYear(), hoy.getMonth(), 27);
         dia27Actual.setHours(0, 0, 0, 0);
@@ -1375,12 +1260,14 @@
             `;
         }
 
-        // BLOQUE CRONÓMETRO: ENTREGADA O EN CONTEO DE 15 DÍAS HÁBILES
+        // ===== BLOQUE CRONÓMETRO / ENTREGADA =====
+        // Si ya tiene fecha_solicitud → "Tu solicitud fue entregada"
+        // Si no → mostrar cronómetro de 15 días hábiles
         let cronometroHTML = '';
         let cronometroClass = 'cronometro-info';
 
         if (solicitud.fecha_solicitud) {
-            // YA TIENE FECHA DE ENTREGA → MOSTRAR COMO ENTREGADA
+            // Ya tiene fecha de solicitud → entregada
             const fechaEntrega = new Date(solicitud.fecha_solicitud);
             cronometroHTML = `
                 <div class="text-center">
@@ -1391,7 +1278,7 @@
             `;
             cronometroClass = 'cronometro-completado';
         } else {
-            // SIN FECHA → MOSTRAR CRONÓMETRO DE 15 DÍAS HÁBILES
+            // Sin fecha de solicitud → mostrar cronómetro 15 días hábiles
             const fechaInicioCronometro = solicitud.fecha_informe
                 ? (() => { const d = new Date(solicitud.fecha_informe); d.setHours(0,0,0,0); return d; })()
                 : null;
@@ -1437,7 +1324,7 @@
             }
         }
 
-        // CASO 3: SIN PERIODO DE APLICACIÓN
+        // ===== SIN PERIODO DE APLICACIÓN =====
         if (!solicitud.fecha_aplicacion) {
             const contenidoSinFecha = `
                 <div class="p-3">
@@ -1470,11 +1357,12 @@
             return;
         }
 
-        // CASO 4: CON PERIODO DE APLICACIÓN
+        // ===== CON PERIODO DE APLICACIÓN =====
         const fechaAplicacion = new Date(solicitud.fecha_aplicacion);
         fechaAplicacion.setDate(1);
         fechaAplicacion.setHours(0, 0, 0, 0);
 
+        // Alerta de inicio del periodo de aplicación
         const diffInicioApli = Math.ceil((fechaAplicacion - hoy) / (1000 * 60 * 60 * 24));
         let alertaAplicacion = '';
         if (diffInicioApli > 0) {
@@ -1532,14 +1420,7 @@
         const modal = new bootstrap.Modal(document.getElementById('calendarioModal'));
         modal.show();
     }
-
-    // ============================================================
-    // FUNCIÓN: guardarSolicitud
-    // ENVÍA EL FORMULARIO AL SERVIDOR VÍA FETCH.
-    // POST → NUEVA SOLICITUD / PUT → EDITAR SOLICITUD EXISTENTE.
-    // AL GUARDAR EXITOSAMENTE → CIERRA MODAL Y RECARGA LA TABLA.
-    // SI HAY ERRORES → LOS MUESTRA EN CADA CAMPO CORRESPONDIENTE.
-    // ============================================================
+    // ===== FUNCIÓN GUARDAR SOLICITUD =====
     function guardarSolicitud() {
         const id = document.getElementById('solicitud_id').value;
         const url = id ? 
@@ -1602,12 +1483,7 @@
         });
     }
 
-    // ============================================================
-    // FUNCIÓN: eliminarSolicitud
-    // MUESTRA CONFIRMACIÓN CON SWEETALERT2 ANTES DE ELIMINAR.
-    // SI EL USUARIO CONFIRMA → ENVÍA DELETE AL SERVIDOR.
-    // MUESTRA SPINNER MIENTRAS PROCESA Y MENSAJE AL FINALIZAR.
-    // ============================================================
+    // ===== FUNCIÓN ELIMINAR SOLICITUD CORREGIDA (SIN BOTÓN OK) =====
     function eliminarSolicitud(id, identificador) {
         event.stopPropagation();
         event.preventDefault();
@@ -1634,6 +1510,7 @@
                     timer: null
                 });
 
+                // CORRECCIÓN: Usar la ruta correcta con barra
                 fetch(`/auditoria/solicitudes/${id}`, {
                     method: 'DELETE',
                     headers: {
@@ -1682,12 +1559,7 @@
             }
         });
     }
-
-    // ============================================================
-    // FUNCIÓN: mostrarMensajeExito
-    // MUESTRA UN MENSAJE VERDE DE ÉXITO EN LA PARTE SUPERIOR.
-    // DESAPARECE AUTOMÁTICAMENTE DESPUÉS DE 5 SEGUNDOS.
-    // ============================================================
+    
     function mostrarMensajeExito(mensaje) {
         const container = document.getElementById('mensajeExitoContainer');
         const alertDiv = document.createElement('div');
@@ -1709,11 +1581,7 @@
         }, 5000);
     }
 
-    // ============================================================
-    // FUNCIÓN: editarSolicitud
-    // BUSCA LA SOLICITUD EN EL ARRAY GLOBAL Y LLENA EL FORMULARIO
-    // CON TODOS SUS DATOS. ABRE EL MODAL EN MODO EDICIÓN.
-    // ============================================================
+// ===== FUNCIÓN EDITAR SOLICITUD =====
     function editarSolicitud(id) {
         const solicitud = solicitudesData.find(s => s.id === id);
         if (solicitud) {
@@ -1722,7 +1590,7 @@
             document.getElementById('responsable_accion').value = solicitud.responsable_accion || '';
             document.getElementById('actividades_verificacion').value = solicitud.actividades_verificacion || '';
 
-            // CARGA Y SELECCIONA EL ESTATUS CORRECTO
+            // ===== ESTATUS =====
             const estatusValue  = solicitud.estatus ? solicitud.estatus.trim() : '';
             const estatusSelect = document.getElementById('estatus');
             let optionExists = false;
@@ -1734,19 +1602,19 @@
             }
             estatusSelect.value = (optionExists && estatusValue !== '') ? estatusValue : '';
 
-            // SELECCIONA EL PROCESO AUDITADO
+            // ===== PROCESOS AUDITADOS =====
             const selectProcesos = document.getElementById('procesos_auditados');
             if (selectProcesos) {
                 selectProcesos.value = solicitud.procesos_auditados || '';
             }
 
-            // SELECCIONA EL TIPO DE SOLICITUD
+            // ===== TIPO DE SOLICITUD =====
             const selectTipo = document.getElementById('tipo_solicitud');
             if (selectTipo) {
                 selectTipo.value = solicitud.tipo_solicitud || '';
             }
 
-            // CARGA LA FECHA DE SOLICITUD EN FORMATO YYYY-MM-DD
+            // ===== FECHAS =====
             if (solicitud.fecha_solicitud) {
                 const fecha = new Date(solicitud.fecha_solicitud);
                 const año   = fecha.getFullYear();
@@ -1757,7 +1625,6 @@
                 document.getElementById('fecha_solicitud').value = '';
             }
 
-            // CARGA EL PERIODO DE APLICACIÓN EN FORMATO YYYY-MM
             if (solicitud.fecha_aplicacion) {
                 const fecha = new Date(solicitud.fecha_aplicacion);
                 const año   = fecha.getFullYear();
@@ -1767,7 +1634,6 @@
                 document.getElementById('fecha_aplicacion').value = '';
             }
 
-            // CARGA EL PERIODO DE VERIFICACIÓN EN FORMATO YYYY-MM
             if (solicitud.fecha_verificacion) {
                 const fecha = new Date(solicitud.fecha_verificacion);
                 const año   = fecha.getFullYear();
@@ -1777,7 +1643,8 @@
                 document.getElementById('fecha_verificacion').value = '';
             }
 
-            // CARGA EL INFORME RELACIONADO Y SU FECHA
+            // ===== INFORME RELACIONADO Y FECHA DEL INFORME =====
+            // Llama a la función del modal para cargar el informe y su fecha
             if (window.cargarInformeEnModal) {
                 window.cargarInformeEnModal(
                     solicitud.informe_id || '',
@@ -1785,7 +1652,7 @@
                 );
             }
 
-            // MUESTRA EL ARCHIVO ACTUAL SI EXISTE
+            // ===== ARCHIVO =====
             const nombreArchivoActual = document.getElementById('nombreArchivoActual');
             const nombreArchivo       = document.getElementById('nombreArchivo');
             if (solicitud.archivo_nombre) {
@@ -1802,11 +1669,6 @@
         }
     }
 
-    // ============================================================
-    // FUNCIÓN: resetForm
-    // LIMPIA TODOS LOS CAMPOS DEL FORMULARIO Y RESETEA EL TÍTULO
-    // DEL MODAL A "REGISTRAR NUEVA SOLICITUD DE MEJORA".
-    // ============================================================
     function resetForm() {
         const form = document.getElementById('formSolicitud');
         if (form) form.reset();
@@ -1817,10 +1679,7 @@
         document.getElementById('modalNuevaSolicitudLabel').textContent = 'Registrar Nueva Solicitud de Mejora';
     }
 
-    // ============================================================
-    // CORRECCIÓN DEL MODAL DE TEMA
-    // FUERZA EL TAMAÑO CORRECTO DEL MODAL AL ABRIRSE.
-    // ============================================================
+        // Forzar tamaño del modal de tema
     document.addEventListener('DOMContentLoaded', function() {
         const modalTema = document.getElementById('modalTema');
         if (modalTema) {

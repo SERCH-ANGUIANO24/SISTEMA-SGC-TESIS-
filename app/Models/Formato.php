@@ -8,23 +8,33 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Traits\RegistraHistorialVersiones;
 
+/**
+ * MODELO PARA LA LISTA MAESTRA DE FORMATOS
+ * ALMACENA DOCUMENTOS ORGANIZADOS POR PROCESO, DEPARTAMENTO Y CLAVES
+ * REGISTRA AUTOMÁTICAMENTE LAS ACCIONES EN EL HISTORIAL
+ */
 class Formato extends Model
 {
-    use HasFactory, SoftDeletes, RegistraHistorialVersiones;
+    use HasFactory, SoftDeletes, RegistraHistorialVersiones;  // SOFTDELETES: ELIMINACIÓN 
 
+    // NOMBRE DE LA TABLA EN BASE DE DATOS
+    protected $table = 'formatos';
+
+    // CAMPOS QUE SE PUEDEN LLENAR DE FORMA MASIVA
     protected $fillable = [
-        'proceso',
-        'departamento',
-        'clave_formato',
-        'codigo_procedimiento',
-        'version_procedimiento',
-        'nombre_archivo',
-        'ruta_archivo',
-        'extension_archivo',
-        'tamanio_archivo',
-        'tipo_documento',
+        'proceso',               // NOMBRE DEL PROCESO (EJ: PLANEACION, INSCRIPCION)
+        'departamento',          // DEPARTAMENTO RESPONSABLE
+        'clave_formato',         // CLAVE ÚNICA DEL FORMATO
+        'codigo_procedimiento',  // CÓDIGO DEL PROCEDIMIENTO ASOCIADO
+        'version_procedimiento', // VERSIÓN DEL PROCEDIMIENTO
+        'nombre_archivo',        // NOMBRE DEL ARCHIVO GUARDADO
+        'ruta_archivo',          // RUTA DONDE ESTÁ EL ARCHIVO
+        'extension_archivo',     // EXTENSIÓN (PDF, DOC, XLS, ETC)
+        'tamanio_archivo',       // TAMAÑO EN BYTES
+        'tipo_documento',        // CLASIFICACIÓN DEL DOCUMENTO
     ];
 
+    // CONVIERTE AUTOMÁTICAMENTE ESTOS CAMPOS AL TIPO CORRECTO
     protected $casts = [
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
@@ -32,7 +42,9 @@ class Formato extends Model
     ];
 
     /**
-     * Mapa de procesos y sus departamentos correspondientes.
+     * MAPA DE PROCESOS Y SUS DEPARTAMENTOS CORRESPONDIENTES
+     * SIRVE PARA VALIDAR Y MOSTRAR LAS OPCIONES EN FORMULARIOS
+     * CADA PROCESO TIENE UNO O MÁS DEPARTAMENTOS ASIGNADOS
      */
     public static function procesosYDepartamentos(): array
     {
@@ -77,11 +89,14 @@ class Formato extends Model
             'CENTRO DE INFORMACION' => [
                 'BIBLIOTECA',
             ],
+            
         ];
     }
 
     /**
-     * Verifica si la clave de formato ya existe (excluyendo un ID específico).
+     * VERIFICA SI UNA CLAVE DE FORMATO YA EXISTE EN LA BASE DE DATOS
+     * SE USA PARA EVITAR DUPLICADOS AL CREAR O EDITAR
+     * EXCLUDEID SIRVE PARA IGNORAR EL PROPIO REGISTRO CUANDO SE EDITA
      */
     public static function claveExiste(string $clave, ?int $excludeId = null): bool
     {

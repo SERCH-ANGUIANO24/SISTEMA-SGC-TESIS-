@@ -1,3 +1,11 @@
+{{-- ============================================================ --}}
+{{-- ARCHIVO: MODAL_SOLICITUD.BLADE.PHP                          --}}
+{{-- MÓDULO: SOLICITUDES DE MEJORA                               --}}
+{{-- MODAL PARA REGISTRAR UNA NUEVA SOLICITUD O EDITAR UNA       --}}
+{{-- EXISTENTE. CONTIENE EL FORMULARIO COMPLETO CON VALIDACIONES --}}
+{{-- Y CARGA DINÁMICA DE DATOS DESDE EL SERVIDOR.                --}}
+{{-- ============================================================ --}}
+
 <!-- MODAL PARA REGISTRAR/EDITAR SOLICITUD DE MEJORA -->
 <div class="modal fade" id="modalNuevaSolicitud" tabindex="-1" aria-labelledby="modalNuevaSolicitudLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
@@ -11,9 +19,25 @@
             <form id="formSolicitud" enctype="multipart/form-data" novalidate>
                 @csrf
                 <div class="modal-body">
+                    {{-- CAMPO OCULTO QUE GUARDA EL ID DE LA SOLICITUD AL EDITAR --}}
                     <input type="hidden" id="solicitud_id" name="solicitud_id">
 
-                    <!-- DATOS DE LA SOLICITUD -->
+                    {{-- ================================================ --}}
+                    {{-- SECCIÓN 1: DATOS DE LA SOLICITUD                 --}}
+                    {{-- CONTIENE TODOS LOS CAMPOS DEL FORMULARIO:        --}}
+                    {{--   · INFORME RELACIONADO (OBLIGATORIO)            --}}
+                    {{--   · FECHA DEL INFORME (SE LLENA AUTOMÁTICAMENTE) --}}
+                    {{--   · NO. DE IDENTIFICACIÓN                        --}}
+                    {{--   · FECHA DE SOLICITUD                           --}}
+                    {{--   · RESPONSABLE DE LA ACCIÓN                     --}}
+                    {{--   · PERIODO DE APLICACIÓN                        --}}
+                    {{--   · PERIODO DE VERIFICACIÓN                      --}}
+                    {{--   · ESTATUS                                       --}}
+                    {{--   · PROCESOS AUDITADOS (OBLIGATORIO)             --}}
+                    {{--   · INDICADORES NC/OM (SE CARGA DINÁMICAMENTE)   --}}
+                    {{--   · TIPO DE SOLICITUD (OBLIGATORIO)              --}}
+                    {{--   · ACTIVIDADES DE VERIFICACIÓN                  --}}
+                    {{-- ================================================ --}}
                     <div class="row mb-4">
                         <div class="col-12">
                             <h6 class="fw-bold mb-3" style="color: #000000;">DATOS DE LA SOLICITUD</h6>
@@ -100,7 +124,13 @@
                             <div class="invalid-feedback" id="error-procesos_auditados">Debes seleccionar un proceso auditado.</div>
                         </div>
 
-                        <!-- Indicadores NC/OM del proceso (se muestra al seleccionar proceso + informe) -->
+                        {{-- ================================================ --}}
+                        {{-- INDICADORES NC/OM                                 --}}
+                        {{-- SE MUESTRA SOLO CUANDO SE SELECCIONA UN PROCESO   --}}
+                        {{-- Y UN INFORME. CARGA DINÁMICAMENTE LOS TOTALES DE  --}}
+                        {{-- NO CONFORMIDADES Y OPORTUNIDADES DE MEJORA        --}}
+                        {{-- DEL PROCESO E INFORME SELECCIONADOS.              --}}
+                        {{-- ================================================ --}}
                         <div class="col-12 mb-3" id="indicadoresNcOm" style="display:none;">
                             <div class="rounded p-3 d-flex gap-3 justify-content-center" style="background:#fff;border:1px solid #bab2b2;">
                                 <div class="text-center">
@@ -136,7 +166,13 @@
                         </div>
                     </div>
 
-                    <!-- ARCHIVO ADJUNTO -->
+                    {{-- ================================================ --}}
+                    {{-- SECCIÓN 2: DOCUMENTO ADJUNTO                      --}}
+                    {{-- ZONA DE ARRASTRAR Y SOLTAR ARCHIVOS.              --}}
+                    {{-- ACEPTA: PDF, WORD, EXCEL, CSV, IMÁGENES Y TXT.    --}}
+                    {{-- TAMAÑO MÁXIMO: 20 MB.                             --}}
+                    {{-- SI YA TIENE UN ARCHIVO, MUESTRA EL NOMBRE ACTUAL. --}}
+                    {{-- ================================================ --}}
                     <div class="row mb-4">
                         <div class="col-12">
                             <h6 class="fw-bold mb-3" style="color: #000000;">DOCUMENTO ADJUNTO</h6>
@@ -180,7 +216,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     document.querySelectorAll('#formSolicitud [required]').forEach(c => c.removeAttribute('required'));
 
-    // ===== FUNCIÓN PARA CAMBIAR TÍTULO DEL MODAL =====
+    // ============================================================
+    // FUNCIÓN: setModalTitle
+    // CAMBIA EL TÍTULO DEL MODAL SEGÚN SI SE ESTÁ CREANDO
+    // UNA NUEVA SOLICITUD O EDITANDO UNA EXISTENTE.
+    // ============================================================
     function setModalTitle(tipo) {
         const titleElement = document.getElementById('modalNuevaSolicitudLabel');
         if (tipo === 'editar') {
@@ -190,7 +230,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // ===== FUNCIÓN PARA LIMPIAR EL FORMULARIO =====
+    // ============================================================
+    // FUNCIÓN: limpiarFormulario
+    // RESETEA TODOS LOS CAMPOS DEL FORMULARIO Y OCULTA LOS
+    // MENSAJES DE ERROR. SE USA AL ABRIR Y CERRAR EL MODAL.
+    // ============================================================
     function limpiarFormulario() {
         document.getElementById('formSolicitud').reset();
         solicitudId.value = '';
@@ -207,7 +251,11 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('#formSolicitud .invalid-feedback').forEach(m => m.style.display = 'none');
     }
 
-    // ===== EVENTO AL ABRIR EL MODAL =====
+    // ============================================================
+    // EVENTO: AL ABRIR EL MODAL
+    // SI ES NUEVO → LIMPIA EL FORMULARIO Y PONE TÍTULO "REGISTRAR".
+    // SI ES EDICIÓN → SOLO CAMBIA EL TÍTULO A "EDITAR".
+    // ============================================================
     modal.addEventListener('show.bs.modal', function() {
         if (!solicitudId.value) {
             setModalTitle('nuevo');
@@ -217,13 +265,21 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // ===== EVENTO AL CERRAR EL MODAL =====
+    // ============================================================
+    // EVENTO: AL CERRAR EL MODAL
+    // SIEMPRE LIMPIA EL FORMULARIO Y RESETEA EL TÍTULO.
+    // ============================================================
     modal.addEventListener('hidden.bs.modal', function() {
         limpiarFormulario();
         setModalTitle('nuevo');
     });
 
-    // ── Función para cargar NC/OM según informe + proceso ──
+    // ============================================================
+    // FUNCIÓN: cargarNcOm
+    // CONSULTA AL SERVIDOR LOS INDICADORES DE NO CONFORMIDADES
+    // Y OPORTUNIDADES DE MEJORA SEGÚN EL INFORME Y PROCESO
+    // SELECCIONADOS. SE OCULTA SI FALTA ALGUNO DE LOS DOS.
+    // ============================================================
     function cargarNcOm() {
         const informeId = informeSelect.value;
         const proceso   = procesoSelect.value;
@@ -251,7 +307,11 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Al seleccionar informe → llenar fecha + cargar NC/OM
+    // ============================================================
+    // EVENTO: AL SELECCIONAR UN INFORME
+    // LLENA AUTOMÁTICAMENTE LA FECHA DEL INFORME Y CARGA NC/OM.
+    // TAMBIÉN LIMPIA EL ERROR DEL CAMPO INFORME.
+    // ============================================================
     informeSelect.addEventListener('change', function() {
         const selected     = this.options[this.selectedIndex];
         const fecha        = selected.dataset.fecha || '';
@@ -274,20 +334,30 @@ document.addEventListener('DOMContentLoaded', function() {
         cargarNcOm();
     });
 
-    // Al seleccionar proceso → cargar NC/OM + limpiar error
+    // ============================================================
+    // EVENTO: AL SELECCIONAR UN PROCESO
+    // CARGA LOS INDICADORES NC/OM Y LIMPIA EL ERROR DEL CAMPO.
+    // ============================================================
     procesoSelect.addEventListener('change', function() {
         this.classList.remove('is-invalid');
         document.getElementById('error-procesos_auditados').style.display = 'none';
         cargarNcOm();
     });
 
-    // Al seleccionar tipo solicitud → limpiar error
+    // ============================================================
+    // EVENTO: AL SELECCIONAR TIPO DE SOLICITUD
+    // LIMPIA EL MENSAJE DE ERROR DEL CAMPO.
+    // ============================================================
     document.getElementById('tipo_solicitud').addEventListener('change', function() {
         this.classList.remove('is-invalid');
         document.getElementById('error-tipo_solicitud').style.display = 'none';
     });
 
-    // Drag and drop
+    // ============================================================
+    // EVENTOS: DRAG AND DROP DEL ARCHIVO
+    // PERMITE ARRASTRAR Y SOLTAR UN ARCHIVO EN LA ZONA GRIS.
+    // CAMBIA EL COLOR DE FONDO AL ARRASTRAR SOBRE LA ZONA.
+    // ============================================================
     if (dropZone) {
         dropZone.addEventListener('dragover', (e) => {
             e.preventDefault();
@@ -309,6 +379,10 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // ============================================================
+    // EVENTO: AL SELECCIONAR UN ARCHIVO CON EL INPUT
+    // LIMPIA EL MENSAJE DE ERROR DEL CAMPO DE ARCHIVO.
+    // ============================================================
     if (archivoInput) {
         archivoInput.addEventListener('change', function() {
             if (archivoInput.files && archivoInput.files.length > 0) {
@@ -318,7 +392,14 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ===== VALIDACIÓN DEL FORMULARIO =====
+    // ============================================================
+    // FUNCIÓN: validarFormulario
+    // VERIFICA QUE LOS CAMPOS OBLIGATORIOS ESTÉN LLENOS:
+    //   · INFORME RELACIONADO
+    //   · PROCESOS AUDITADOS
+    //   · TIPO DE SOLICITUD
+    // DEVUELVE TRUE SI TODO ES VÁLIDO, FALSE SI HAY ERRORES.
+    // ============================================================
     function validarFormulario() {
         let valido = true;
 
@@ -361,11 +442,19 @@ document.addEventListener('DOMContentLoaded', function() {
         return valido;
     }
 
+    // ============================================================
+    // EVENTO: BOTÓN GUARDAR
+    // VALIDA EL FORMULARIO Y SI TODO ESTÁ BIEN, GUARDA LA SOLICITUD.
+    // ============================================================
     btnGuardar.addEventListener('click', function() {
         if (validarFormulario()) guardarSolicitud();
     });
 
-    // Función global para cargar informe al editar
+    // ============================================================
+    // FUNCIÓN: cargarInformeEnModal (GLOBAL)
+    // CARGA EL INFORME Y SU FECHA EN EL FORMULARIO AL EDITAR.
+    // SE USA DESDE LA FUNCIÓN editarSolicitud() AL ABRIR EL MODAL.
+    // ============================================================
     window.cargarInformeEnModal = function(informeId, fechaInformeRaw) {
         const select = document.getElementById('informe_id');
         select.value = informeId || '';
@@ -393,6 +482,16 @@ document.addEventListener('DOMContentLoaded', function() {
         cargarNcOm();
     };
 
+    // ============================================================
+    // FUNCIÓN: guardarSolicitud (GLOBAL)
+    // ENVÍA EL FORMULARIO AL SERVIDOR VÍA FETCH (AJAX).
+    // SI ES NUEVA → HACE POST. SI ES EDICIÓN → HACE PUT.
+    // AL GUARDAR EXITOSAMENTE:
+    //   · CIERRA EL MODAL
+    //   · RECARGA LA LISTA DE SOLICITUDES
+    //   · MUESTRA MENSAJE DE ÉXITO POR 5 SEGUNDOS
+    // SI HAY ERRORES → LOS MUESTRA EN CADA CAMPO CORRESPONDIENTE.
+    // ============================================================
     window.guardarSolicitud = function() {
         const id  = document.getElementById('solicitud_id').value;
         const url = id ?
@@ -467,7 +566,12 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 });
 
-// ===== FUNCIÓN EDITAR SOLICITUD =====
+// ============================================================
+// FUNCIÓN: editarSolicitud (GLOBAL)
+// BUSCA LA SOLICITUD EN EL ARRAY GLOBAL "solicitudesData"
+// Y LLENA TODOS LOS CAMPOS DEL FORMULARIO CON SUS DATOS.
+// AL FINAL ABRE EL MODAL EN MODO EDICIÓN.
+// ============================================================
 function editarSolicitud(id) {
     const solicitud = solicitudesData.find(s => s.id === id);
     if (solicitud) {
@@ -476,7 +580,7 @@ function editarSolicitud(id) {
         document.getElementById('responsable_accion').value  = solicitud.responsable_accion || '';
         document.getElementById('actividades_verificacion').value = solicitud.actividades_verificacion || '';
 
-        // ===== ESTATUS =====
+        // CARGA Y SELECCIONA EL ESTATUS CORRECTO EN EL SELECTOR
         const estatusValue  = solicitud.estatus ? solicitud.estatus.trim() : '';
         const estatusSelect = document.getElementById('estatus');
         let optionExists = false;
@@ -488,15 +592,15 @@ function editarSolicitud(id) {
         }
         estatusSelect.value = (optionExists && estatusValue !== '') ? estatusValue : '';
 
-        // ===== PROCESOS AUDITADOS =====
+        // SELECCIONA EL PROCESO AUDITADO CORRESPONDIENTE
         const selectProcesos = document.getElementById('procesos_auditados');
         if (selectProcesos) selectProcesos.value = solicitud.procesos_auditados || '';
 
-        // ===== TIPO DE SOLICITUD =====
+        // SELECCIONA EL TIPO DE SOLICITUD CORRESPONDIENTE
         const selectTipo = document.getElementById('tipo_solicitud');
         if (selectTipo) selectTipo.value = solicitud.tipo_solicitud || '';
 
-        // ===== FECHAS =====
+        // CARGA LA FECHA DE SOLICITUD EN FORMATO YYYY-MM-DD
         if (solicitud.fecha_solicitud) {
             const fecha = new Date(solicitud.fecha_solicitud);
             const año   = fecha.getFullYear();
@@ -507,6 +611,7 @@ function editarSolicitud(id) {
             document.getElementById('fecha_solicitud').value = '';
         }
 
+        // CARGA EL PERIODO DE APLICACIÓN EN FORMATO YYYY-MM
         if (solicitud.fecha_aplicacion) {
             const fecha = new Date(solicitud.fecha_aplicacion);
             const año   = fecha.getFullYear();
@@ -516,6 +621,7 @@ function editarSolicitud(id) {
             document.getElementById('fecha_aplicacion').value = '';
         }
 
+        // CARGA EL PERIODO DE VERIFICACIÓN EN FORMATO YYYY-MM
         if (solicitud.fecha_verificacion) {
             const fecha = new Date(solicitud.fecha_verificacion);
             const año   = fecha.getFullYear();
@@ -525,7 +631,7 @@ function editarSolicitud(id) {
             document.getElementById('fecha_verificacion').value = '';
         }
 
-        // ===== INFORME RELACIONADO Y FECHA DEL INFORME =====
+        // CARGA EL INFORME RELACIONADO Y SU FECHA
         if (window.cargarInformeEnModal) {
             window.cargarInformeEnModal(
                 solicitud.informe_id || '',
@@ -533,7 +639,7 @@ function editarSolicitud(id) {
             );
         }
 
-        // ===== ARCHIVO =====
+        // MUESTRA EL NOMBRE DEL ARCHIVO ACTUAL SI EXISTE
         const nombreArchivoActual = document.getElementById('nombreArchivoActual');
         const nombreArchivo       = document.getElementById('nombreArchivo');
         if (solicitud.archivo_nombre) {

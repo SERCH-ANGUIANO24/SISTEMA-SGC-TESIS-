@@ -4,25 +4,29 @@
 
 @section('content')
 <div class="container-fluid py-4">
+    {{-- HEADER - TÍTULO Y BOTONES DE ACCIÓN --}}
     <div class="row mb-3">
         <div class="col-12">
-            <div class="d-flex justify-content-between align-items-start">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
                 <div class="d-flex flex-column">
                     <a href="{{ route('dashboard') }}" class="text-decoration-none" title="Ir al Dashboard">
                         <h1 class="h3 mb-2" style="color: #dc2626; cursor: pointer;">
-                            <i class="bi bi-files me-2" style="font-size: 3rem; vertical-align: middle;"></i>
+                            <i class="bi bi-files me-2" style="font-size: 2.5rem; vertical-align: middle;"></i>
                             Gestión Documental
                         </h1>
                     </a>
                 </div>
 
-                <div class="mt-2">
+                {{-- BOTONES DE ACCIÓN SEGÚN ROL Y CONTEXTO --}}
+                <div class="d-flex flex-wrap gap-2 mt-2 mt-md-0">
+                    {{-- BOTÓN NUEVA CARPETA - SOLO PARA ADMIN --}}
                     @if(in_array($userRole, ['superadmin', 'admin']))
-                        <button type="button" class="btn text-white me-2" style="background-color: #737373;" data-bs-toggle="modal" data-bs-target="#createFolderModal">
+                        <button type="button" class="btn text-white" style="background-color: #737373;" data-bs-toggle="modal" data-bs-target="#createFolderModal">
                             <i class="bi bi-folder-plus me-1"></i> Nueva Carpeta
                         </button>
                     @endif
 
+                    {{-- BOTÓN SUBIR ARCHIVO - SOLO SI ESTAMOS DENTRO DE UNA CARPETA --}}
                     @if(isset($currentFolder) && $currentFolder)
                         <button type="button" class="btn text-white" style="background-color: #737373;" data-bs-toggle="modal" data-bs-target="#uploadFileModal">
                             <i class="bi bi-upload me-1"></i> Subir Archivo
@@ -33,11 +37,12 @@
         </div>
     </div>
 
+    {{-- (BREADCRUMB) PARA NAVEGACIÓN --}}
     <div class="mb-3">
         @include('documental.partials.breadcrumbs', ['breadcrumbs' => $breadcrumbs, 'currentFolder' => $currentFolder])
     </div>
 
-
+    {{-- SECCIÓN DE FILTROS Y BÚSQUEDA - SOLO SI HAY DOCUMENTOS Y ESTAMOS EN UNA CARPETA --}}
     @if(isset($currentFolder) && $currentFolder && $documents->count() > 0)
     @php
         $hasAdminDocs = $versionesUnicas->count() > 0
@@ -45,25 +50,27 @@
                      || $clavesUnicas->count() > 0;
     @endphp
 
-    {{-- FILA 1: Buscar + Ordenar --}}
-    <div class="row mb-3 align-items-stretch">
-        <div class="col-md-6">
+    {{-- FILA 1: BUSCADOR + ORDENAMIENTO (RESPONSIVO) --}}
+    <div class="row mb-3 g-3">
+        {{-- BUSCADOR DE ARCHIVOS --}}
+        <div class="col-12 col-md-6">
             <div class="card shadow-sm border-0 h-100">
                 <div class="card-body p-3">
                     <label class="form-label fw-bold mb-2" style="color: #000000;">
                         <i class="bi bi-search me-1"></i> Buscar archivos
                     </label>
-                    <div class="input-group">
-                        <span class="input-group-text bg-light border-end-0" style="border-color: #dee2e6;">
-                            <i class="bi bi-search text-secondary"></i>
-                        </span>
-                        <input type="text" id="searchInput"
-                               class="form-control border-start-0 ps-0"
-                               placeholder="Buscar por nombre de archivo"
-                               style="border-color: #dee2e6; background-color: white;">
-                        <button class="btn btn-outline-secondary" type="button"
+                    <div class="d-flex">
+                        <div class="position-relative flex-grow-1">
+                            <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted" style="font-size: 0.9rem;"></i>
+                            <input type="text" id="searchInput"
+                                   class="form-control ps-5"
+                                   placeholder="Buscar por nombre de archivo"
+                                   style="height: 42px; border-radius: 4px 0 0 4px; border-right: none;">
+                        </div>
+                        <button class="btn btn-outline-secondary d-flex align-items-center justify-content-center" type="button"
                                 id="clearSearch" title="Limpiar búsqueda"
-                                onclick="limpiarBuscador()">
+                                onclick="limpiarBuscador()"
+                                style="width: 42px; height: 42px; border-radius: 0 4px 4px 0; border-left: none;">
                             <i class="bi bi-x-lg"></i>
                         </button>
                     </div>
@@ -74,7 +81,8 @@
             </div>
         </div>
 
-        <div class="col-md-6">
+        {{-- SELECTOR DE ORDENAMIENTO --}}
+        <div class="col-12 col-md-6">
             <div class="card shadow-sm border-0 h-100">
                 <div class="card-body p-3">
                     <label class="form-label fw-bold mb-2" style="color: #000000;">
@@ -93,7 +101,7 @@
         </div>
     </div>
 
-    {{-- FILA 3: Filtro por tipo de documento (cliente, solo cuando hay docs de usuario) --}}
+    {{-- FILA 2: FILTRO POR TIPO DE DOCUMENTO (FORMATO O PROCEDIMIENTO) --}}
     @if($documents->count() > 0)
     <div class="row mb-4">
         <div class="col-12">
@@ -131,9 +139,9 @@
     <div class="mb-4"></div>
     @endif
 
-    @endif {{-- fin @if(isset($currentFolder) && $currentFolder) --}}
+    @endif {{-- FIN DEL @IF(ISSET($CURRENTFOLDER) && $CURRENTFOLDER) --}}
 
-    {{-- INDICADOR DE CARGA --}}
+    {{-- INDICADOR DE CARGA (SPINNER) --}}
     <div id="loadingSpinner" class="text-center my-5" style="display: none;">
         <div class="spinner-border" style="color: #800000;" role="status">
             <span class="visually-hidden">Cargando...</span>
@@ -141,7 +149,7 @@
         <p class="mt-2 text-muted">Cargando archivos...</p>
     </div>
 
-    {{-- CARPETAS --}}
+    {{-- CUADRÍCULA DE CARPETAS (RESPONSIVA) --}}
     <div id="folderContainer">
         @include('documental.partials.folder-grid', [
             'folders'  => $folders,
@@ -149,7 +157,7 @@
         ])
     </div>
 
-    {{-- DOCUMENTOS --}}
+    {{-- TABLA DE DOCUMENTOS (RESPONSIVA) --}}
     <div id="documentContainer">
         @include('documental.partials.document-table', [
             'documents'     => $documents,
@@ -159,7 +167,7 @@
     </div>
 </div>
 
-{{-- MODALES --}}
+{{-- MODALES DEL SISTEMA --}}
 @include('documental.modals.view-document',   ['documents' => $documents])
 @include('documental.modals.edit-document')
 @include('documental.modals.edit-admin-document')
@@ -169,8 +177,10 @@
 
 @endsection
 
+{{-- ESTILOS CSS DE LA PÁGINA --}}
 @push('styles')
 <style>
+    {{-- ESTILOS DE LAS TARJETAS DE CARPETA --}}
     .folder-card {
         transition: all 0.2s;
         cursor: pointer;
@@ -189,11 +199,203 @@
         color: black !important;
         border-color: #737373 !important;
     }
+
+    {{-- ESTILOS RESPONSIVOS PARA TABLETS --}}
+    @media (min-width: 769px) and (max-width: 992px) {
+        .table-responsive {
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch !important;
+        }
+        .table {
+            min-width: 950px !important;
+            width: max-content !important;
+        }
+        .table th, .table td {
+            white-space: nowrap !important;
+            font-size: 0.75rem !important;
+            padding: 8px 6px !important;
+        }
+        .btn-sm {
+            padding: 0.15rem 0.3rem !important;
+            font-size: 0.65rem !important;
+        }
+        .folder-icon {
+            font-size: 2rem !important;
+        }
+        .folder-card .card-title {
+            font-size: 0.85rem !important;
+        }
+        .modal-dialog {
+            max-width: 95% !important;
+            margin: 1rem auto !important;
+        }
+        .d-flex.gap-2.flex-wrap {
+            gap: 0.5rem !important;
+        }
+        .btn {
+            font-size: 0.75rem !important;
+            padding: 0.375rem 0.75rem !important;
+        }
+    }
+
+    {{-- ESTILOS RESPONSIVOS PARA MÓVILES --}}
+    @media (max-width: 768px) {
+        .container-fluid {
+            padding-left: 12px !important;
+            padding-right: 12px !important;
+        }
+        .h3 {
+            font-size: 1.5rem !important;
+        }
+        .h3 i {
+            font-size: 2rem !important;
+        }
+        .d-flex.flex-column.flex-md-row {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 0.75rem !important;
+        }
+        .d-flex.flex-wrap.gap-2 {
+            width: 100% !important;
+        }
+        .d-flex.flex-wrap.gap-2 .btn {
+            flex: 1 !important;
+            text-align: center !important;
+        }
+        
+        {{-- BUSCADOR --}}
+        .d-flex {
+            width: 100% !important;
+        }
+        #searchInput {
+            font-size: 0.85rem !important;
+            height: 38px !important;
+        }
+        #clearSearch {
+            width: 38px !important;
+            height: 38px !important;
+        }
+        
+        {{-- SELECT ORDENAR --}}
+        #sortSelect {
+            font-size: 0.85rem !important;
+            padding: 8px 10px !important;
+        }
+        
+        {{-- TABLA - SCROLL HORIZONTAL --}}
+        .table-responsive {
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch !important;
+        }
+        .table {
+            min-width: 800px !important;
+            width: max-content !important;
+        }
+        .table th, .table td {
+            white-space: nowrap !important;
+            font-size: 0.7rem !important;
+            padding: 6px 4px !important;
+        }
+        
+        {{-- BOTONES DE ACCIÓN EN TABLA --}}
+        .btn-sm {
+            padding: 0.15rem 0.25rem !important;
+            font-size: 0.6rem !important;
+        }
+        .btn-sm i {
+            font-size: 0.65rem !important;
+        }
+        
+        {{-- TARJETAS DE CARPETAS EN MÓVIL --}}
+        .folder-card {
+            margin-bottom: 0.75rem !important;
+        }
+        .folder-icon {
+            font-size: 1.8rem !important;
+        }
+        .folder-card .card-title {
+            font-size: 0.8rem !important;
+        }
+        .folder-card .text-muted {
+            font-size: 0.65rem !important;
+        }
+        
+        {{-- GRID DE CARPETAS - 2 COLUMNAS EN MÓVIL --}}
+        .row-cols-1 .col {
+            width: 50% !important;
+            flex: 0 0 50% !important;
+        }
+        
+        {{-- MODALES --}}
+        .modal-dialog {
+            margin: 0.5rem !important;
+        }
+        .modal-body {
+            padding: 0.75rem !important;
+        }
+        .modal-footer {
+            flex-wrap: wrap !important;
+            gap: 0.5rem !important;
+        }
+        .modal-footer .btn {
+            flex: 1 !important;
+        }
+        
+        {{-- BREADCRUMBS --}}
+        .breadcrumb {
+            font-size: 0.75rem !important;
+            flex-wrap: wrap !important;
+        }
+        .breadcrumb-item + .breadcrumb-item::before {
+            padding-left: 0.25rem !important;
+            padding-right: 0.25rem !important;
+        }
+        
+        {{-- FILTROS DE TIPO --}}
+        .btn-filtro-tipo {
+            font-size: 0.7rem !important;
+            padding: 0.2rem 0.5rem !important;
+        }
+    }
+
+    {{-- ESTILOS RESPONSIVOS PARA MÓVILES MUY PEQUEÑOS --}}
+    @media (max-width: 480px) {
+        .table th, .table td {
+            font-size: 0.65rem !important;
+            padding: 4px 3px !important;
+        }
+        .btn-sm {
+            padding: 0.1rem 0.2rem !important;
+            font-size: 0.55rem !important;
+        }
+        .btn-sm i {
+            font-size: 0.55rem !important;
+        }
+        .folder-icon {
+            font-size: 1.5rem !important;
+        }
+        .folder-card .card-title {
+            font-size: 0.75rem !important;
+        }
+        
+        {{-- GRID DE CARPETAS - 1 COLUMNA EN MÓVIL MUY PEQUEÑO --}}
+        .row-cols-1 .col {
+            width: 100% !important;
+            flex: 0 0 100% !important;
+        }
+        
+        .btn-filtro-tipo {
+            font-size: 0.65rem !important;
+            padding: 0.15rem 0.4rem !important;
+        }
+    }
 </style>
 @endpush
 
+{{-- JAVASCRIPT PARA FILTROS, BÚSQUEDA Y ORDENAMIENTO --}}
 @push('scripts')
 <script>
+{{-- DATOS PARA FILTROS DE CAMPOS (VERSIONES, CÓDIGOS, CLAVES) --}}
 const datosFiltro = {
     version: @json($versionesUnicas),
     codigo:  @json($codigosUnicos),
@@ -206,13 +408,14 @@ const labelsFiltro = {
     clave:   'Clave de formato',
 };
 
-// ── Filtro por tipo de documento (cliente) ──
+{{-- VARIABLE GLOBAL PARA EL FILTRO POR TIPO DE DOCUMENTO --}}
 let tipoFiltroActivo = '';
 
+{{-- FUNCIÓN PARA FILTRAR DOCUMENTOS POR TIPO (FORMATO O PROCEDIMIENTO) --}}
 function filtrarPorTipo(tipo) {
     tipoFiltroActivo = tipo;
 
-    // Actualizar estilo de botones
+    {{-- ACTUALIZAR ESTILO DE BOTONES --}}
     document.querySelectorAll('.filtro-tipo').forEach(btn => {
         btn.style.background  = 'white';
         btn.style.color       = btn.id === 'filtro-tipo-formato'       ? '#000000' :
@@ -232,7 +435,7 @@ function filtrarPorTipo(tipo) {
         btnActivo.style.borderColor = '#000000';
     }
 
-    // Filtrar filas
+    {{-- FILTRAR FILAS DE DOCUMENTOS --}}
     let visible = 0;
     document.querySelectorAll('.document-row').forEach(row => {
         const tipoDoc = row.dataset.tipoDocumento || '';
@@ -247,9 +450,10 @@ function filtrarPorTipo(tipo) {
     }
 }
 
+{{-- INICIALIZA LA PÁGINA CUANDO EL DOM ESTÁ LISTO --}}
 document.addEventListener('DOMContentLoaded', function () {
 
-    // Buscar en tiempo real sobre filas visibles
+    {{-- BUSCADOR EN TIEMPO REAL SOBRE FILAS VISIBLES --}}
     const si = document.getElementById('searchInput');
     if (si) {
         si.addEventListener('input', function () {
@@ -280,11 +484,11 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Ordenar documentos
+    {{-- ORDENAR DOCUMENTOS --}}
     const ss = document.getElementById('sortSelect');
     if (ss) ss.addEventListener('change', () => sortDocuments(ss.value));
 
-    // Restaurar estado del filtro de campo si hay un filtro activo en la URL
+    {{-- RESTAURAR ESTADO DEL FILTRO DE CAMPO SI HAY UN FILTRO ACTIVO EN LA URL --}}
     (function () {
         const tipoActivo  = @json(request('version') ? 'version' : (request('codigo') ? 'codigo' : (request('clave') ? 'clave' : '')));
         const valorActivo = @json(request('version') ?: (request('codigo') ?: (request('clave') ?: '')));
@@ -304,7 +508,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     })();
 
-    // Al hacer submit del form de filtros: mapear valor al hidden correcto
+    {{-- AL HACER SUBMIT DEL FORM DE FILTROS: MAPEAR VALOR AL HIDDEN CORRECTO --}}
     const ff = document.getElementById('form-filtros');
     if (ff) {
         ff.addEventListener('submit', function () {
@@ -324,7 +528,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
-// Cambiar opciones del select valor según campo elegido
+{{-- CAMBIAR OPCIONES DEL SELECT VALOR SEGÚN CAMPO ELEGIDO --}}
 function cambiarTipoCampo(tipo) {
     const sel = document.getElementById('select-valor-campo');
     if (!sel) return;
@@ -347,7 +551,7 @@ function cambiarTipoCampo(tipo) {
         vals.map(v => `<option value="${tipo}:${v}">${v}</option>`).join('');
 }
 
-// Limpiar buscador en tiempo real
+{{-- LIMPIAR BUSCADOR EN TIEMPO REAL --}}
 function limpiarBuscador() {
     const input = document.getElementById('searchInput');
     if (input) {
@@ -357,7 +561,7 @@ function limpiarBuscador() {
     }
 }
 
-// Ordenar tabla de documentos en el cliente
+{{-- ORDENAR TABLA DE DOCUMENTOS EN EL CLIENTE --}}
 function sortDocuments(sortBy) {
     const tb = document.querySelector('table tbody');
     if (!tb) return;

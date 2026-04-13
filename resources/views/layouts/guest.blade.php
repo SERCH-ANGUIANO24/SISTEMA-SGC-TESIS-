@@ -1,3 +1,11 @@
+{{-- ============================================================ --}}
+{{-- ARCHIVO: GUEST.BLADE.PHP                                    --}}
+{{-- TIPO: LAYOUT (PLANTILLA BASE)                               --}}
+{{-- DESCRIPCIÓN: LAYOUT PARA PÁGINAS PÚBLICAS (SIN SESIÓN).    --}}
+{{-- SE USA EN: PÁGINA DE INICIO (LANDING PAGE) Y LOGIN.        --}}
+{{-- INCLUYE: NAVBAR, CONTENIDO PRINCIPAL Y FOOTER.             --}}
+{{-- ============================================================ --}}
+
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
@@ -5,19 +13,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>@yield('title', 'SAMS - Sistema de Gestion de Calidad')</title>
+    <title>@yield('title', 'SAMS - Sistema de Gestión de Calidad')</title>
 
-    <!-- Bootstrap 5.3 -->
+    {{-- ================================================ --}}
+    {{-- LIBRERÍAS CSS EXTERNAS                           --}}
+    {{-- · BOOTSTRAP 5.3  → ESTILOS Y COMPONENTES        --}}
+    {{-- · BOOTSTRAP ICONS → ÍCONOS                      --}}
+    {{-- ================================================ --}}
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
-    <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     
-    <!-- Custom CSS -->
-     <!--            --primary-gradient: linear-gradient(135deg, #800000 0%, #800000 100%); es el color del margen de arriba-->
     <style>
+        /* ===== VARIABLES CSS GLOBALES ===== */
         :root {
-            
             --primary-gradient: linear-gradient(135deg, #800000 0%, #800000 100%);
             --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
             --hero-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
@@ -28,18 +36,21 @@
             --border-color: #ffffff;
         }
 
+        /* ===== ESTILOS GENERALES DEL BODY ===== */
         body {
             background: var(--dark-bg);
             color: var(--text-light);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
-        /* Navbar Transparente para Landing */
+        /* ===== NAVBAR TRANSPARENTE (FIJO EN LA PARTE SUPERIOR) ===== */
+        /* SE VUELVE SÓLIDO AL HACER SCROLL CON LA CLASE .scrolled */
         .navbar-landing {
             background: rgba(128, 0, 0, 1.0);
             backdrop-filter: blur(10px);
             border-bottom: 1px solid rgba(183, 11, 11, 0.1);
             transition: all 0.3s ease;
+            padding: 0.8rem 0;
         }
 
         .navbar-landing.scrolled {
@@ -65,7 +76,8 @@
             transform: translateY(-2px);
         }
 
-        /* Hero Section */
+        /* ===== SECCIÓN HERO (PANTALLA PRINCIPAL) ===== */
+        /* FONDO CON GRADIENTE DE COLORES Y PATRÓN DE CUADRÍCULA */
         .hero-section {
             background: var(--hero-gradient);
             min-height: 100vh;
@@ -104,7 +116,8 @@
             opacity: 0.9;
         }
 
-        /* Cards */
+        /* ===== TARJETAS (CARDS) ===== */
+        /* .card-disabled → TARJETA DESHABILITADA (SIN HOVER) */
         .card-custom {
             background: var(--card-bg);
             border: 1px solid var(--border-color);
@@ -128,7 +141,10 @@
             transform: none;
         }
 
-        /* Buttons */
+        /* ===== BOTONES PERSONALIZADOS ===== */
+        /* .btn-primary-custom → BOTÓN ROJO SÓLIDO        */
+        /* .btn-outline-custom → BOTÓN TRANSPARENTE       */
+        /* .btn-disabled       → BOTÓN DESHABILITADO      */
         .btn-primary-custom {
             background: #ac3939;
             border: none;
@@ -172,7 +188,7 @@
             cursor: not-allowed;
         }
 
-        /* Stats Section */
+        /* ===== TARJETAS DE ESTADÍSTICAS ===== */
         .stats-card {
             background: var(--primary-gradient);
             border-radius: 12px;
@@ -192,7 +208,7 @@
             opacity: 0.9;
         }
 
-        /* Section Spacing */
+        /* ===== SECCIONES ===== */
         .section {
             padding: 4rem 0;
         }
@@ -201,7 +217,7 @@
             background: #0f1419;
         }
 
-        /* Footer */
+        /* ===== FOOTER ===== */
         .footer {
             background: #800000;
             border-top: 1px solid var(--border-color);
@@ -209,7 +225,9 @@
             margin-top: 4rem;
         }
 
-        /* Animations */
+        /* ===== ANIMACIÓN DE ENTRADA ===== */
+        /* LOS ELEMENTOS CON CLASE .animate-on-scroll SE ANIMAN  */
+        /* AL APARECER EN PANTALLA GRACIAS AL IntersectionObserver */
         .fade-in {
             opacity: 0;
             transform: translateY(30px);
@@ -223,111 +241,280 @@
             }
         }
 
-        /* Responsive */
-        @media (max-width: 768px) {
-            .hero-title {
-                font-size: 2.5rem;
+        /* =====================================================
+           ESTILOS RESPONSIVOS - GUEST.BLADE.PHP
+        ===================================================== */
+
+        /* TABLETS (769px a 992px) */
+        @media (min-width: 769px) and (max-width: 992px) {
+            .navbar-landing {
+                padding: 0.5rem 0 !important;
+            }
+            .navbar-landing .container {
+                display: flex !important;
+                flex-direction: row !important;
+                flex-wrap: nowrap !important;
+                justify-content: space-between !important;
+                align-items: center !important;
+                gap: 0.5rem !important;
+            }
+            .navbar-brand img {
+                height: 35px !important;
+                width: auto !important;
+            }
+            .right-section {
+                width: auto !important;
+                flex-shrink: 0 !important;
+                gap: 0.5rem !important;
+            }
+            .right-section .d-flex.align-items-center {
+                font-size: 0.7rem !important;
+                white-space: nowrap !important;
+            }
+            .right-section .d-flex.align-items-center i {
+                font-size: 0.75rem !important;
             }
             
+            .hero-title {
+                font-size: 2.5rem !important;
+            }
             .hero-subtitle {
-                font-size: 1rem;
+                font-size: 1rem !important;
+            }
+            
+            .card-custom {
+                margin-bottom: 1rem !important;
+            }
+            
+            .footer {
+                padding: 1rem 0 !important;
+                margin-top: 2rem !important;
+            }
+            .footer p {
+                font-size: 0.7rem !important;
+            }
+            
+            .stats-number {
+                font-size: 2rem !important;
+            }
+            .stats-label {
+                font-size: 0.8rem !important;
+            }
+        }
+
+        /* MÓVILES (768px y menos) */
+        @media (max-width: 768px) {
+            .navbar-landing {
+                padding: 0.5rem 0 !important;
+            }
+            .navbar-landing .container {
+                display: flex !important;
+                flex-direction: row !important;
+                flex-wrap: nowrap !important;
+                align-items: center !important;
+                justify-content: space-between !important;
+            }
+            .navbar-brand img {
+                height: 32px !important;
+            }
+            
+            /* FECHA EN ESQUINA DERECHA DEL NAVBAR */
+            .right-section {
+                order: 0 !important;
+                width: auto !important;
+                justify-content: flex-end !important;
+                margin-top: 0 !important;
+            }
+            .right-section .d-flex.align-items-center {
+                font-size: 0.6rem !important;
+            }
+            .right-section .d-flex.align-items-center i {
+                font-size: 0.7rem !important;
+            }
+            
+            .hero-title {
+                font-size: 2rem !important;
+            }
+            .hero-subtitle {
+                font-size: 0.9rem !important;
             }
             
             .btn-primary-custom,
             .btn-outline-custom {
-                padding: 0.6rem 1.5rem;
-                font-size: 0.9rem;
+                padding: 0.6rem 1.5rem !important;
+                font-size: 0.9rem !important;
+            }
+            
+            .row-cols-md-3 .col {
+                width: 50% !important;
+                flex: 0 0 50% !important;
+            }
+            
+            .footer {
+                padding: 0.75rem 0 !important;
+                margin-top: 1.5rem !important;
+            }
+            .footer p {
+                font-size: 0.6rem !important;
+            }
+            
+            .stats-number {
+                font-size: 1.5rem !important;
+            }
+            .stats-label {
+                font-size: 0.7rem !important;
+            }
+            .stats-card {
+                padding: 1rem !important;
+            }
+            
+            .section {
+                padding: 2rem 0 !important;
             }
         }
-        
+
+        /* MÓVILES MUY PEQUEÑOS (480px y menos) */
+        @media (max-width: 480px) {
+            .navbar-brand img {
+                height: 28px !important;
+            }
+            .right-section .d-flex.align-items-center {
+                font-size: 0.55rem !important;
+            }
+            .right-section .d-flex.align-items-center i {
+                font-size: 0.6rem !important;
+            }
+            .hero-title {
+                font-size: 1.8rem !important;
+            }
+            .hero-subtitle {
+                font-size: 0.8rem !important;
+            }
+            .btn-primary-custom,
+            .btn-outline-custom {
+                padding: 0.5rem 1rem !important;
+                font-size: 0.8rem !important;
+            }
+            
+            .row-cols-md-3 .col {
+                width: 100% !important;
+                flex: 0 0 100% !important;
+            }
+            
+            .footer p {
+                font-size: 0.55rem !important;
+            }
+            .stats-number {
+                font-size: 1.2rem !important;
+            }
+        }
     </style>
 
+    {{-- ESTILOS ADICIONALES INYECTADOS DESDE LAS VISTAS HIJAS --}}
     @stack('styles')
 </head>
 <body>
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg fixed-top navbar-landing" id="mainNavbar">
+
+    {{-- ================================================ --}}
+    {{-- NAVBAR FIJO EN LA PARTE SUPERIOR                 --}}
+    {{-- MUESTRA EL LOGO DE LA INSTITUCIÓN Y LA FECHA     --}}
+    {{-- ACTUAL EN LA ESQUINA DERECHA.                    --}}
+    {{-- NO TIENE MENÚ HAMBURGUESA (SIN TOGGLER).         --}}
+    {{-- ================================================ --}}
+    <nav class="navbar navbar-expand fixed-top navbar-landing" id="mainNavbar">
         <div class="container">
-            <a class="navbar-brand" >
+            <a class="navbar-brand">
                 <img src="https://lh3.googleusercontent.com/proxy/iBImmZjJODGa39TgtflRih-vmGJwiTPpBotgG80_ckaAxtEWogKYQLf1ACpY-Nqr_-QnZM01aRtgtNef_Gk-m6An8VR-9ovpNw" alt="UPTEX Logo" style="height: 50px; width: auto;">
             </a>
 
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-
-
-            <!-- Sección derecha:  Fecha -->
+            {{-- SECCIÓN DERECHA: FECHA ACTUAL (SE ACTUALIZA EN TIEMPO REAL) --}}
             <div class="right-section d-flex align-items-center gap-3">
-                <!-- Fecha actual -->
                 <div class="d-flex align-items-center text-white">
                     <i class="bi bi-calendar3 me-2"></i>
                     <span id="fecha-actual"></span>
                 </div>
-            
-
-
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                </ul>
-
-    
             </div>
         </div>
     </nav>
 
-    <!-- Main Content -->
+    {{-- ================================================ --}}
+    {{-- CONTENIDO PRINCIPAL                              --}}
+    {{-- AQUÍ SE INYECTA EL CONTENIDO DE CADA VISTA HIJA  --}}
+    {{-- QUE USE ESTE LAYOUT.                             --}}
+    {{-- ================================================ --}}
     <main>
         @yield('content')
     </main>
 
-    <!-- Footer -->
+    {{-- ================================================ --}}
+    {{-- FOOTER                                           --}}
+    {{-- MUESTRA EL NOMBRE DEL SISTEMA Y EL AÑO ACTUAL.  --}}
+    {{-- ================================================ --}}
     <footer class="footer">
+        <div class="container">
             <div class="row">
                 <div class="col-12 text-center">
                     <p class="text-white mb-0">
                         &copy; {{ date('Y') }} SAMS Infinity. Todos los derechos reservados.
                     </p>
+                </div>
             </div>
         </div>
     </footer>
 
-    <!-- Scripts -->
+    {{-- BOOTSTRAP JS (NECESARIO PARA MODALES, DROPDOWNS, ETC.) --}}
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
-    <!-- Custom JavaScript -->
     <script>
-        // Función para actualizar la fecha actual
+        // ============================================================
+        // FUNCIÓN: actualizarFecha
+        // MUESTRA LA FECHA ACTUAL EN FORMATO DD/MM/YYYY EN EL NAVBAR.
+        // SE EJECUTA CADA SEGUNDO PARA MANTENERSE ACTUALIZADA.
+        // ============================================================
         function actualizarFecha() {
             const hoy = new Date();
             const dia = String(hoy.getDate()).padStart(2, '0');
             const mes = String(hoy.getMonth() + 1).padStart(2, '0');
             const anio = hoy.getFullYear();
-            document.getElementById('fecha-actual').textContent = `${dia}/${mes}/${anio}`;
+            const fechaElement = document.getElementById('fecha-actual');
+            if (fechaElement) {
+                fechaElement.textContent = `${dia}/${mes}/${anio}`;
+            }
         }
         
-        // Actualizar fecha cada segundo y al cargar la página
+        // ACTUALIZA LA FECHA AL CARGAR Y CADA SEGUNDO
         setInterval(actualizarFecha, 1000);
         actualizarFecha();
 
-        // Global CSRF token
+        // TOKEN CSRF DISPONIBLE GLOBALMENTE PARA PETICIONES AJAX
         window.Laravel = {
             csrfToken: '{{ csrf_token() }}'
         };
 
-        // Navbar scroll effect
         document.addEventListener('DOMContentLoaded', function() {
+
+            // ============================================================
+            // EFECTO SCROLL EN EL NAVBAR
+            // AL BAJAR MÁS DE 50px → AGREGA CLASE .scrolled AL NAVBAR
+            // PARA CAMBIAR SU ESTILO Y AGREGAR SOMBRA.
+            // ============================================================
             const navbar = document.getElementById('mainNavbar');
             
-            window.addEventListener('scroll', function() {
-                if (window.scrollY > 50) {
-                    navbar.classList.add('scrolled');
-                } else {
-                    navbar.classList.remove('scrolled');
-                }
-            });
+            if (navbar) {
+                window.addEventListener('scroll', function() {
+                    if (window.scrollY > 50) {
+                        navbar.classList.add('scrolled');
+                    } else {
+                        navbar.classList.remove('scrolled');
+                    }
+                });
+            }
 
-            // Animate elements on scroll
+            // ============================================================
+            // ANIMACIÓN AL HACER SCROLL
+            // LOS ELEMENTOS CON CLASE .animate-on-scroll SE ANIMAN
+            // CUANDO ENTRAN AL ÁREA VISIBLE DE LA PANTALLA.
+            // ============================================================
             const observerOptions = {
                 threshold: 0.1,
                 rootMargin: '0px 0px -50px 0px'
@@ -341,12 +528,17 @@
                 });
             }, observerOptions);
 
-            // Observe all elements with animate class
+            // OBSERVAR TODOS LOS ELEMENTOS CON .animate-on-scroll
             document.querySelectorAll('.animate-on-scroll').forEach(el => {
                 observer.observe(el);
             });
         });
-        // Handle disabled buttons/cards for non-authenticated users
+
+        // ============================================================
+        // MANEJO DE ELEMENTOS PROTEGIDOS (SOLO PARA USUARIOS SIN SESIÓN)
+        // SI UN USUARIO NO AUTENTICADO HACE CLIC EN UN ELEMENTO CON
+        // CLASE .requires-auth → LE PREGUNTA SI QUIERE IR AL LOGIN.
+        // ============================================================
         @guest
         document.addEventListener('DOMContentLoaded', function() {
             const disabledElements = document.querySelectorAll('.requires-auth');
@@ -365,6 +557,7 @@
         @endguest
     </script>
 
+    {{-- SCRIPTS ADICIONALES INYECTADOS DESDE LAS VISTAS HIJAS --}}
     @stack('scripts')
 </body>
 </html>

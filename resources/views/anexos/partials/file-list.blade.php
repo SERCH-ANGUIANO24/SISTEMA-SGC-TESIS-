@@ -1,12 +1,21 @@
+{{--TABLA DE DOCUMENTOS - LISTADO DE ARCHIVOS EN UNA CARPETA--}}
+{{--ESTE CODIGO MUESTRA TODOS LOS ARCHIVOS QUE ESTEN SUBIDOS EN UNA CARPETA--}}
+{{--SI HAY ARCHIVOS ESTANDO DENTRO DE UNA CARPETA S EMUESTRA LA TABLA DE LO CONTRARIO 
+MUESTRA EL MENSAJE DE CARPETA VACIA--}}
 @if($documents->count() > 0)
     <div class="card shadow-sm mt-4">
+    {{--ENCABEZADO DE LA TABLA --}} 
         <div class="card-header bg-light">
             <h6 class="mb-0 fw-bold" style="color: #000000;">
                 <i class="bi bi-file-earmark me-2"></i>Documentos
             </h6>     
         </div>
+        {{--CONTENEDOR DE LA TABLA --}}
         <div class="card-body p-0">
             <div class="table-responsive">
+            {{--ENCABEZADOS DE LA TABLA--}}
+            {{--EN LA TABLA DENTRO DE UNA CARPETA SE MUESTRA EL NOMBRE DEL ARCHIVO, TAMAÑO(EN B, KB, O MB)
+            Y LOS BOTONES DE ACCION COMO VER Y DESCARGAR(DISPONIBLES TANTO PARA ADMIN, SUPERADMIN Y USUARIOS), RENOMRAR MOVER DE CARPETA Y ELIMINAR(SOLO DISPONIBLES PARA ADMIN Y SUPERADMIN)--}}
                 <table class="table table-hover align-middle mb-0">
                     <thead class="table-light text-secondary">
                         <tr>
@@ -17,6 +26,7 @@
                         </tr>
                     </thead>
                     <tbody id="fileTableBody">
+                    {{--SE RECABA LA INFORMACION DE UN ARCHIVO INDIVIDUALMENETE DE OTRO--}}
                         @foreach($documents as $doc)
                         <tr class="file-row" 
                             data-file-id="{{ $doc->id }}"
@@ -25,10 +35,15 @@
                             data-file-date="{{ $doc->created_at }}"
                             data-file-extension="{{ strtolower(pathinfo($doc->original_name, PATHINFO_EXTENSION)) }}">
                             <td>
+                            {{--DETERMINA LA EXTENSION DE UN ARCHIVO--}}
                                 <i class="bi bi-file-earmark-text me-2" style="color: #000000;"></i>
                                 {{ $doc->name }}.{{ pathinfo($doc->original_name, PATHINFO_EXTENSION) }}
                             </td>
                             <td>
+                            {{--TAMAÑOS DE UN ARCHIVO--}}
+                    {{-- 1024 BYTES -> MUESTRA EN BYTES
+                    MENOS DE 1 MB ->MUESTRA EL TAMAÑO EN KB
+                    MAS DE 1 MB-> MUESTRA EN MB--}}
                                 @if($doc->size < 1024)
                                     {{ $doc->size }} B
                                 @elseif($doc->size < 1048576)
@@ -46,7 +61,7 @@
                                     $noViewable = ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'csv'];
                                 @endphp
                                 
-                                {{-- BOTÓN VER - PARA TODOS (solo extensiones visibles) --}}
+                                {{-- BOTÓN VER - DISPONIBLES PARA TODOS (solo extensiones visibles) --}}
                                 @if(!in_array($ext, $noViewable))
                                     <button type="button" class="btn btn-sm btn-outline-info" 
                                             data-bs-toggle="modal" 
@@ -56,7 +71,7 @@
                                     </button>
                                 @endif
                                 
-                                {{-- BOTÓN DESCARGAR - PARA TODOS --}}
+                                {{-- BOTÓN DESCARGAR - HABILITADO PARA TODOS --}}
                                 <a href="{{ route('anexos.document.download', $doc->id) }}" 
                                    class="btn btn-sm btn-outline-primary"
                                    title="Descargar archivo">
@@ -64,19 +79,20 @@
                                 </a>
                                 
                                 {{-- BOTONES DE ADMINISTRACIÓN - SOLO SUPERADMIN/ADMIN --}}
+                                {{--BOTON QUE ABRE UN MINIFORMUALRIO PARA RENOMBRAR UN ARCHIVO O DOCUMENTO--}}
                                 @if(in_array($userRole, ['superadmin', 'admin']))
                                     <button type="button" class="btn btn-sm btn-outline-secondary" 
                                             onclick="openRenameDocumentModal({{ $doc->id }}, '{{ $doc->name }}')"
                                             title="Renombrar archivo">
                                         <i class="bi bi-pencil"></i>
                                     </button>
-                                    
+                                    {{--BOTON DE MOVER DOCUMENTO A UNA CARPETA, DESPLIEGA UN MODAL EN DONDE SE VEN LAS CARPETAS DISPONIBLES EN EL MODULO--}}
                                     <button type="button" class="btn btn-sm btn-outline-secondary" 
                                             onclick="openMoveDocumentModal({{ $doc->id }}, '{{ $doc->name }}.{{ pathinfo($doc->original_name, PATHINFO_EXTENSION) }}')"
                                             title="Mover archivo">
                                         <i class="bi bi-arrow-right-circle"></i>
                                     </button>
-                                    
+                                    {{--BOTON DE ELIMINAR UN ARCHIVO--}}
                                     <button type="button" class="btn btn-sm btn-outline-danger" 
                                             onclick="deleteElement({{ $doc->id }}, '{{ addslashes($doc->name) }}', 'Documento')"
                                             title="Eliminar archivo">
@@ -92,6 +108,8 @@
         </div>
     </div>
 @else
+    {{--DENTRO DE UNA CARPETA SI NO HAY ARCHIVOS MUESTRA EL MENSAJE DE "NO HAY ARCHIVOS EN ESTA CARPETA"--}}
+    {{--SI NO HAY CARPETAS CREADAS EN RAIZ NO SE MUESTRA EL MENSAJE--}}
     @if(isset($currentFolder) && $currentFolder)
     <div class="alert alert-info d-flex align-items-center mt-4" role="alert">
         <i class="bi bi-info-circle-fill me-2"></i>

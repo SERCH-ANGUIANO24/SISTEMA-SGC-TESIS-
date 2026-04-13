@@ -1,3 +1,10 @@
+{{-- ============================================================ --}}
+{{-- ARCHIVO: MODAL_HISTORICO.BLADE.PHP                          --}}
+{{-- MÓDULO: SOLICITUDES DE MEJORA                               --}}
+{{-- MUESTRA UN MODAL CON EL HISTORIAL COMPLETO DE SOLICITUDES   --}}
+{{-- AGRUPADO POR AÑO, CON GRÁFICAS Y TABLA DE DETALLE.          --}}
+{{-- ============================================================ --}}
+
 <!-- MODAL HISTÓRICO DE SOLICITUDES -->
 <div class="modal fade" id="modalHistorico" tabindex="-1" aria-labelledby="modalHistoricoLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl">
@@ -9,7 +16,12 @@
             </div>
             <div class="modal-body">
 
-                <!-- RESUMEN -->
+                {{-- ================================================ --}}
+                {{-- SECCIÓN 1: RESUMEN GENERAL                       --}}
+                {{-- MUESTRA EL TOTAL HISTÓRICO DE SOLICITUDES Y      --}}
+                {{-- UN DESGLOSE POR ESTADO: NO ATENDIDA, EN PROCESO  --}}
+                {{-- Y CERRADO. MIENTRAS CARGA MUESTRA UN SPINNER.    --}}
+                {{-- ================================================ --}}
                 <div class="row mb-4" id="resumenHistorico">
                     <div class="col-12 text-center">
                         <div class="spinner-border text-secondary" role="status">
@@ -18,7 +30,14 @@
                     </div>
                 </div>
 
-                <!-- GRÁFICAS DE PASTEL -->
+                {{-- ================================================ --}}
+                {{-- SECCIÓN 2: GRÁFICAS DE PASTEL HISTÓRICAS         --}}
+                {{-- MUESTRA 3 GRÁFICAS CON TODOS LOS DATOS           --}}
+                {{-- SIN FILTROS (HISTÓRICO COMPLETO):                --}}
+                {{--   · GRÁFICA 1 (GRIS)  → TODAS LAS SOLICITUDES   --}}
+                {{--   · GRÁFICA 2 (ROJO)  → SOLO NO CONFORMIDADES   --}}
+                {{--   · GRÁFICA 3 (VERDE) → SOLO OPORTUNIDADES       --}}
+                {{-- ================================================ --}}
                 <div class="row justify-content-center mb-4">
                     <div class="col-md-4 mb-4">
                         <div class="card border-0 shadow-sm h-100">
@@ -55,7 +74,13 @@
                     </div>
                 </div>
 
-                <!-- TABLA POR AÑO -->
+                {{-- ================================================ --}}
+                {{-- SECCIÓN 3: TABLA DE DETALLE POR AÑO              --}}
+                {{-- MUESTRA UNA TABLA CON UNA FILA POR CADA AÑO      --}}
+                {{-- Y LAS COLUMNAS: NO ATENDIDA, EN PROCESO,         --}}
+                {{-- CERRADO Y TOTAL. LOS DATOS SE CARGAN              --}}
+                {{-- DINÁMICAMENTE DESDE EL SERVIDOR.                 --}}
+                {{-- ================================================ --}}
                 <div class="row">
                     <div class="col-12 mb-4">
                         <div class="card border-0 shadow-sm">
@@ -92,16 +117,31 @@
 
 <script>
 (function() {
+    // ============================================================
+    // VARIABLES GLOBALES DE LAS GRÁFICAS HISTÓRICAS
+    // SE GUARDAN LAS INSTANCIAS PARA DESTRUIRLAS ANTES DE
+    // VOLVER A CREARLAS CUANDO SE RECARGUEN LOS DATOS.
+    // ============================================================
     var chartHistorico   = null;
     var chartHistoricoNC = null;
     var chartHistoricoOM = null;
 
+    // ============================================================
+    // FUNCIÓN: abrirModalHistorico
+    // ABRE EL MODAL Y CARGA LOS DATOS AUTOMÁTICAMENTE.
+    // ============================================================
     window.abrirModalHistorico = function() {
         var modal = new bootstrap.Modal(document.getElementById('modalHistorico'));
         modal.show();
         cargarHistorico();
     };
 
+    // ============================================================
+    // FUNCIÓN: renderPastel (PRIVADA)
+    // CREA O ACTUALIZA UNA GRÁFICA DE PASTEL CON SUS DATOS.
+    // SI NO HAY DATOS → MUESTRA MENSAJE "SIN DATOS PARA MOSTRAR".
+    // TAMBIÉN GENERA LA LEYENDA CON CANTIDAD Y PORCENTAJE.
+    // ============================================================
     function renderPastel(canvasId, leyendaId, chartInstance, labels, valores, colores) {
         if (chartInstance) chartInstance.destroy();
         var total = valores.reduce(function(a, b) { return a + b; }, 0);
@@ -134,6 +174,8 @@
                 }
             }
         });
+
+        // GENERA LA LEYENDA CON COLORES, NOMBRES Y PORCENTAJES
         var leyendaHTML = '';
         labels.forEach(function(label, i) {
             var pct = total > 0 ? ((valores[i] / total) * 100).toFixed(1) : 0;
@@ -148,6 +190,12 @@
         return chart;
     }
 
+    // ============================================================
+    // FUNCIÓN: cargarHistorico (PRIVADA)
+    // CONSULTA AL SERVIDOR TODOS LOS DATOS HISTÓRICOS SIN FILTROS.
+    // RENDERIZA LAS 3 GRÁFICAS Y LLENA LA TABLA DE DETALLE POR AÑO.
+    // SI OCURRE UN ERROR → MUESTRA MENSAJE EN ROJO.
+    // ============================================================
     function cargarHistorico() {
         var url = '{{ route("auditoria.solicitudes.historico") }}';
         document.getElementById('resumenHistorico').innerHTML =
@@ -162,6 +210,8 @@
         })
         .then(function(r) { return r.json(); })
         .then(function(data) {
+
+            // MUESTRA EL RESUMEN GENERAL CON TOTALES POR ESTADO
             document.getElementById('resumenHistorico').innerHTML =
                 '<div class="col-12"><div class="alert text-center fw-bold" style="background-color:#fff;border:1px solid #bab2b2;color:#000000;">' +
                 '<i class="bi bi-clipboard-data me-2"></i>' +
@@ -171,6 +221,7 @@
                 ' &nbsp;|&nbsp; <span style="color:#dc3545;">Cerradas: ' + data.totales['Cerrado'] + '</span>' +
                 '</div></div>';
 
+            // RENDERIZA LAS 3 GRÁFICAS HISTÓRICAS
             chartHistorico = renderPastel(
                 'graficaHistorica', 'leyendaHistorica', chartHistorico,
                 ['No Atendida', 'En Proceso', 'Cerrado'],
@@ -192,6 +243,7 @@
                 ['#fd7e14', '#ffc107', '#dc3545']
             );
 
+            // LLENA LA TABLA CON UNA FILA POR AÑO
             var tbodyHTML = '';
             if (data.por_anio && data.por_anio.length > 0) {
                 data.por_anio.forEach(function(fila) {

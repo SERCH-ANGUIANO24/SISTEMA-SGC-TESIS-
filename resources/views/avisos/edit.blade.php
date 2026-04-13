@@ -1,4 +1,3 @@
-{{-- resources/views/avisos/edit.blade.php --}}
 @extends('layouts.app')
 
 @section('title', 'Editar Aviso')
@@ -8,6 +7,7 @@
     <div class="row mb-4">
         <div class="col-12">
             <div class="d-flex flex-column">
+                <!-- ENLACE PARA VOLVER AL LISTADO DE AVISOS -->
                 <a href="{{ route('avisos.index') }}" class="text-decoration-none" title="Volver a Avisos">
                     <h1 class="h3 mb-2" style="color: #4f46e5; cursor: pointer;">
                         <i class="bi bi-arrow-left-circle me-2" style="font-size: 2rem; vertical-align: middle;"></i>
@@ -22,6 +22,8 @@
 
     <div class="card shadow-sm">
         <div class="card-body">
+            /** VERIFICAR SI HAY ERRORES DE VALIDACIÓN **/
+            // SI EXISTEN ERRORES, SE MUESTRA UN ALERTA ROJO CON LA LISTA
             @if($errors->any())
                 <div class="alert alert-danger">
                     <ul class="mb-0">
@@ -32,13 +34,18 @@
                 </div>
             @endif
 
+            /** FORMULARIO PARA ACTUALIZAR UN AVISO EXISTENTE **/
+            // METHOD="POST" PERO USA @METHOD('PUT') PARA SIMULAR PUT (ACTUALIZAR)
+            // ACTION APUNTA A UPDATE CON EL ID DEL AVISO: avisos.update($aviso->id)
+            // ENCTYPE="MULTIPART/FORM-DATA" - PERMITE SUBIR ARCHIVOS
             <form action="{{ route('avisos.update', $aviso->id) }}" method="POST" enctype="multipart/form-data">
-                @csrf
-                @method('PUT')
+                @csrf  // TOKEN DE SEGURIDAD - PROTEGE CONTRA ATAQUES CSRF
+                @method('PUT')  // SIMULA EL MÉTODO HTTP PUT (PARA ACTUALIZAR)
                 
                 <div class="row">
                     <div class="col-md-8">
-                        <!-- Título -->
+                        /** CAMPO: TÍTULO DEL AVISO **/
+                        // OBLIGATORIO - USA OLD()-'MEMORIA' PARA MANTENER DATOS Y $aviso->titulo POR DEFECTO
                         <div class="mb-3">
                             <label for="titulo" class="form-label">Título del Aviso *</label>
                             <input type="text" class="form-control @error('titulo') is-invalid @enderror" 
@@ -48,7 +55,8 @@
                             @enderror
                         </div>
 
-                        <!-- Descripción -->
+                        /** CAMPO: DESCRIPCIÓN DEL AVISO **/
+                        // ÁREA DE TEXTO - CARGA EL VALOR GUARDADO EN LA BASE DE DATOS
                         <div class="mb-3">
                             <label for="descripcion" class="form-label">Descripción</label>
                             <textarea class="form-control @error('descripcion') is-invalid @enderror" 
@@ -60,12 +68,15 @@
                     </div>
 
                     <div class="col-md-4">
-                        <!-- Archivo actual -->
+                        /** SECCIÓN: ARCHIVO ACTUAL **/
+                        // MUESTRA EL ARCHIVO QUE ESTÁ ACTUALMENTE ASOCIADO AL AVISO (SI EXISTE)
                         @if($aviso->archivo_nombre)
                             <div class="mb-3">
                                 <label class="form-label">Archivo actual</label>
                                 <div class="border rounded p-3 bg-light">
+                                    <!-- GETICONOARCHIVO() - DEVUELVE UN ÍCONO SEGÚN EL TIPO DE ARCHIVO (PDF, WORD, IMAGEN, ETC.) -->
                                     <i class="{{ $aviso->getIconoArchivo() }} me-2" style="font-size: 1.2rem;"></i>
+                                    <!-- ENLACE PARA DESCARGAR EL ARCHIVO ACTUAL -->
                                     <a href="{{ route('avisos.download', $aviso->id) }}" class="text-decoration-none">
                                         {{ $aviso->archivo_nombre }}
                                     </a>
@@ -76,7 +87,9 @@
                             </div>
                         @endif
 
-                        <!-- Nuevo archivo -->
+                        /** SECCIÓN: SUBIR NUEVO ARCHIVO **/
+                        // SI YA HAY ARCHIVO, ESTO SIRVE PARA REEMPLAZARLO
+                        // SI NO HAY ARCHIVO, ESTO SIRVE PARA AGREGAR UNO NUEVO
                         <div class="mb-3">
                             <label for="archivo" class="form-label">
                                 @if($aviso->archivo_nombre)
@@ -98,7 +111,8 @@
 
                 <div class="row">
                     <div class="col-md-6">
-                        <!-- Fecha Inicio -->
+                        /** CAMPO: FECHA DE INICIO **/
+                        // OBLIGATORIO - FORMATEA LA FECHA GUARDADA PARA EL INPUT DATETIME-LOCAL
                         <div class="mb-3">
                             <label for="fecha_inicio" class="form-label">Fecha de Inicio *</label>
                             <input type="datetime-local" class="form-control @error('fecha_inicio') is-invalid @enderror" 
@@ -110,7 +124,8 @@
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <!-- Fecha Fin -->
+                        /** CAMPO: FECHA DE FIN **/
+                        // OBLIGATORIO - FORMATEA LA FECHA GUARDADA PARA EL INPUT DATETIME-LOCAL
                         <div class="mb-3">
                             <label for="fecha_fin" class="form-label">Fecha de Fin *</label>
                             <input type="datetime-local" class="form-control @error('fecha_fin') is-invalid @enderror" 
@@ -123,12 +138,13 @@
                     </div>
                 </div>
 
+                /** BOTONES DE ACCIÓN **/
                 <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
                     <a href="{{ route('avisos.index') }}" class="btn btn-secondary">
-                        Cancelar
+                        Cancelar  // BOTÓN PARA CANCELAR Y VOLVER AL LISTADO
                     </a>
                     <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-save me-2"></i>Actualizar Aviso
+                        <i class="bi bi-save me-2"></i>Actualizar Aviso  // BOTÓN PARA GUARDAR LOS CAMBIOS
                     </button>
                 </div>
             </form>

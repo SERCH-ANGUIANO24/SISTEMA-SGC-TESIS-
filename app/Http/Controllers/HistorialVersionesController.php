@@ -10,8 +10,26 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Route;
 
+/*
+|--------------------------------------------------------------------------
+| CONTROLADOR: HISTORIAL DE VERSIONES
+|--------------------------------------------------------------------------
+| SE ENCARGA DE REGISTRAR Y GESTIONAR TODAS LAS ACTIVIDADES DEL SISTEMA:
+| VER EL HISTORIAL, RESTAURAR ELEMENTOS ELIMINADOS Y LIMPIAR REGISTROS.
+| SOLO EL SUPERADMIN PUEDE VER EL HISTORIAL COMPLETO.
+| LOS DEMÁS USUARIOS SOLO PUEDEN VER SUS PROPIAS ACTIVIDADES.
+*/
+
 class HistorialVersionesController extends Controller
 {
+    /*
+    |--------------------------------------------------------------------------
+    | CONSTRUCTOR
+    |--------------------------------------------------------------------------
+    | APLICA EL MIDDLEWARE DE AUTENTICACIÓN A TODAS LAS FUNCIONES.
+    | ADEMÁS VERIFICA QUE SOLO EL SUPERADMIN PUEDA ACCEDER AL HISTORIAL COMPLETO.
+    | LA ÚNICA EXCEPCIÓN ES "MIS ACTIVIDADES" QUE CUALQUIER USUARIO PUEDE VER.
+    */
     public function __construct()
     {
         $this->middleware('auth');
@@ -34,14 +52,21 @@ class HistorialVersionesController extends Controller
         });
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | FUNCIÓN: index
+    |--------------------------------------------------------------------------
+    | MUESTRA EL HISTORIAL COMPLETO DE ACTIVIDADES DEL SISTEMA.
+    | SE PUEDE FILTRAR POR ACCIÓN (CREAR, EDITAR, ELIMINAR, ETC.) Y POR USUARIO.
+    | EXCLUYE LAS ACTIVIDADES DEL MÓDULO HISTORIAL, DASHBOARD Y VISUALIZACIONES.
+    | TAMBIÉN MUESTRA ESTADÍSTICAS DE HOY, ESTA SEMANA, ESTE MES Y EL TOTAL.
+    */
     public function index(Request $request)
     {
         $query = HistorialVersiones::with('usuario');
 
-        // --- EXCLUIR REGISTROS NO DESEADOS ---
         $query->whereNotIn('modulo', ['HISTORIAL', 'DASHBOARD']);
         $query->where('descripcion', 'not like', '%visualizó%');
-        // --------------------------------------
 
         $accion = $request->get('accion');
         $usuario_id = $request->get('usuario_id');
@@ -79,6 +104,14 @@ class HistorialVersionesController extends Controller
         ));
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | FUNCIÓN: misActividades
+    |--------------------------------------------------------------------------
+    | MUESTRA ÚNICAMENTE LAS ACTIVIDADES DEL USUARIO QUE ESTÁ CONECTADO.
+    | DISPONIBLE PARA TODOS LOS USUARIOS (NO SOLO ADMINS).
+    | MUESTRA ESTADÍSTICAS PERSONALES: HOY, ESTA SEMANA Y ESTE MES.
+    */
     public function misActividades()
     {
         $user = auth()->user();
@@ -103,6 +136,14 @@ class HistorialVersionesController extends Controller
         return view('historial_versiones.mis-actividades', compact('actividades', 'totalHoy', 'totalSemana', 'totalMes'));
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | FUNCIÓN: show
+    |--------------------------------------------------------------------------
+    | REDIRIGE AL MÓDULO CORRESPONDIENTE SEGÚN EL TIPO DE ACTIVIDAD.
+    | SI EL REGISTRO TIENE UNA URL ESPECÍFICA → REDIRIGE A ESA URL.
+    | SI NO → BUSCA LA RUTA DEL MÓDULO EN EL MAPA DE RUTAS Y REDIRIGE.
+    */
     public function show($id)
     {
         $actividad = HistorialVersiones::findOrFail($id);
@@ -139,13 +180,19 @@ class HistorialVersionesController extends Controller
             ->with('info', 'No se pudo determinar el módulo de destino.');
     }
 
-    /**
-     * BORRAR TODO EL HISTORIAL
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | FUNCIÓN: borrarTodo
+    |--------------------------------------------------------------------------
+    | ELIMINA TODOS LOS REGISTROS DEL HISTORIAL (EXCEPTO HISTORIAL Y DASHBOARD).
+    | SOLO PUEDE HACERLO EL SUPERADMIN.
+    | REGISTRA EN EL HISTORIAL QUIÉN BORRÓ Y CUÁNTOS REGISTROS SE ELIMINARON.
+    | SI LA PETICIÓN ES AJAX → DEVUELVE JSON.
+    | SI NO ES AJAX          → REDIRIGE CON MENSAJE DE ÉXITO O ERROR.
+    */
     public function borrarTodo()
     {
         try {
-            // Verificar permisos - solo superadmin
             if (auth()->user()->role !== 'superadmin') {
                 if (request()->ajax() || request()->wantsJson()) {
                     return response()->json(['error' => 'No autorizado'], 403);
@@ -153,12 +200,10 @@ class HistorialVersionesController extends Controller
                 return redirect()->back()->with('error', 'No autorizado para realizar esta acción.');
             }
 
-            // Excluir los mismos registros que excluyes en el index
             $deleted = HistorialVersiones::whereNotIn('modulo', ['HISTORIAL', 'DASHBOARD'])
                 ->where('descripcion', 'not like', '%visualizó%')
                 ->delete();
 
-            // Registrar la acción de borrado masivo en el historial
             $historial = new HistorialVersiones();
             $historial->usuario_id = auth()->id();
             $historial->modulo = 'HISTORIAL';
@@ -169,7 +214,6 @@ class HistorialVersionesController extends Controller
             $historial->user_agent = request()->userAgent();
             $historial->save();
 
-            // Respuesta según el tipo de petición
             if (request()->ajax() || request()->wantsJson()) {
                 return response()->json([
                     'success' => true,
@@ -194,14 +238,36 @@ class HistorialVersionesController extends Controller
         }
     }
 
-    /**
-     * RESTAURAR ELEMENTO ELIMINADO - CORREGIDO
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | FUNCIÓN: restaurar
+    |--------------------------------------------------------------------------
+    | RESTAURA UN ELEMENTO QUE FUE ELIMINADO SEGÚN SU MÓDULO.
+    | SOLO SE PUEDEN RESTAURAR REGISTROS CON ACCIÓN "ELIMINAR".
+    | CADA MÓDULO TIENE SU PROPIA LÓGICA DE RESTAURACIÓN:
+    |
+    |   · FORMATOS            → RESTAURA EL FORMATO EN LISTA MAESTRA
+    |   · DOCUMENTALFOLDER    → RESTAURA CARPETA EN GESTIÓN DOCUMENTAL
+    |   · DOCUMENTAL_DOCUMENTS→ RESTAURA DOCUMENTO EN GESTIÓN DOCUMENTAL
+    |   · AUDITORIAS          → RESTAURA UNA AUDITORÍA
+    |   · DOCUMENTS           → RESTAURA DOCUMENTO EN ANEXOS
+    |   · FOLDERS             → RESTAURA CARPETA EN ANEXOS (CON TODO SU CONTENIDO)
+    |   · SOLICITUDES_MEJORA  → RESTAURA UNA SOLICITUD DE MEJORA
+    |   · INFORMES_AUDITORIA  → RESTAURA UN INFORME DE AUDITORÍA
+    |   · COMPETENCIAS        → RESTAURA CARPETA O DOCUMENTO DE COMPETENCIAS
+    |   · USUARIOS            → RESTAURA UN USUARIO ELIMINADO
+    |   · AVISOS              → RESTAURA UN AVISO ELIMINADO
+    |
+    | EN TODOS LOS CASOS VERIFICA:
+    |   - QUE EL ELEMENTO EXISTA EN LA BASE DE DATOS
+    |   - QUE ESTÉ REALMENTE ELIMINADO (SOFT DELETE)
+    |   - QUE NO EXISTA OTRO REGISTRO ACTIVO CON EL MISMO NOMBRE O CLAVE
+    |   - QUE EL ARCHIVO FÍSICO EXISTA EN EL SERVIDOR (CUANDO APLICA)
+    */
     public function restaurar($id)
     {
         $historial = HistorialVersiones::findOrFail($id);
 
-        // Solo se pueden restaurar elementos eliminados
         if ($historial->accion !== 'ELIMINAR') {
             return redirect()->back()->with('error', 'Solo se pueden restaurar elementos eliminados.');
         }
@@ -245,7 +311,6 @@ class HistorialVersionesController extends Controller
                     return redirect()->back()->with('info', 'El formato no estaba eliminado.');
                 }
                 
-                // Verificar si ya existe un formato activo con el mismo nombre
                 $existing = \App\Models\Formato::where('nombre_archivo', $formato->nombre_archivo)
                     ->whereNull('deleted_at')
                     ->where('id', '!=', $formato->id)
@@ -262,7 +327,6 @@ class HistorialVersionesController extends Controller
                     $nombreModificado = true;
                 }
                 
-                // Deshabilitar eventos temporalmente
                 $oldBulkRestoring = \App\Models\Formato::isBulkRestoring();
                 \App\Models\Formato::setBulkRestoring(true);
                 
@@ -274,6 +338,9 @@ class HistorialVersionesController extends Controller
                 } finally {
                     \App\Models\Formato::setBulkRestoring($oldBulkRestoring);
                 }
+                
+                // ✅ REGISTRAR LA RESTAURACIÓN EN EL HISTORIAL
+                HistorialVersionesHelper::restaurar('FORMATOS', $formato);
                 
                 if ($nombreModificado) {
                     $mensaje = 'Formato restaurado correctamente, pero el nombre fue modificado porque ya existía uno activo con el mismo nombre. Nuevo nombre: ' . $formato->nombre_archivo;
@@ -335,6 +402,7 @@ class HistorialVersionesController extends Controller
                 }
                 
                 $folder->restore();
+                HistorialVersionesHelper::restaurar('DOCUMENTALFOLDER', $folder);
                 
                 $redirectUrl = route('documental.index');
                 if ($folder->parent_id) {
@@ -403,7 +471,9 @@ class HistorialVersionesController extends Controller
                 }
                 
                 $archivoExiste = Storage::disk('public')->exists($document->file_path);
+                
                 $document->restore();
+                HistorialVersionesHelper::restaurar('DOCUMENTAL_DOCUMENTS', $document);
                 
                 $redirectUrl = route('documental.index');
                 if ($document->folder_id) {
@@ -851,9 +921,13 @@ class HistorialVersionesController extends Controller
         return redirect()->back()->with('error', 'No se puede restaurar este tipo de elemento. Módulo: ' . $historial->modulo);
     }
 
-    /**
-     * Restaurar todos los documentos dentro de una carpeta de ANEXOS
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | FUNCIÓN: restoreAllDocumentsInFolder (PRIVADA)
+    |--------------------------------------------------------------------------
+    | RESTAURA TODOS LOS DOCUMENTOS DENTRO DE UNA CARPETA DE ANEXOS.
+    | SOLO RESTAURA LOS DOCUMENTOS CUYO ARCHIVO FÍSICO EXISTE EN EL SERVIDOR.
+    */
     private function restoreAllDocumentsInFolder($folderId)
     {
         $documents = \App\Models\Document::withTrashed()
@@ -867,10 +941,14 @@ class HistorialVersionesController extends Controller
             }
         }
     }
-    
-    /**
-     * Restaurar todas las subcarpetas de ANEXOS
-     */
+
+    /*
+    |--------------------------------------------------------------------------
+    | FUNCIÓN: restoreAllSubfolders (PRIVADA)
+    |--------------------------------------------------------------------------
+    | RESTAURA RECURSIVAMENTE TODAS LAS SUBCARPETAS Y SUS DOCUMENTOS
+    | DENTRO DE UNA CARPETA DE ANEXOS.
+    */
     private function restoreAllSubfolders($folderId)
     {
         $subfolders = \App\Models\Folder::withTrashed()
@@ -885,9 +963,14 @@ class HistorialVersionesController extends Controller
         }
     }
 
-    /**
-     * Restaurar todos los documentos dentro de una carpeta de COMPETENCIAS
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | FUNCIÓN: restoreAllDocumentsInCompetenciaFolder (PRIVADA)
+    |--------------------------------------------------------------------------
+    | RESTAURA TODOS LOS DOCUMENTOS DENTRO DE UNA CARPETA DE COMPETENCIAS.
+    | SOLO RESTAURA LOS QUE TIENEN SU ARCHIVO FÍSICO EN EL SERVIDOR.
+    | TAMBIÉN RECORRE LAS SUBCARPETAS PARA RESTAURAR SUS DOCUMENTOS.
+    */
     private function restoreAllDocumentsInCompetenciaFolder($folderId)
     {
         $documents = \App\Models\Competencia::withTrashed()
@@ -912,10 +995,14 @@ class HistorialVersionesController extends Controller
             $this->restoreAllDocumentsInCompetenciaFolder($subfolder->id);
         }
     }
-    
-    /**
-     * Restaurar todas las subcarpetas de COMPETENCIAS
-     */
+
+    /*
+    |--------------------------------------------------------------------------
+    | FUNCIÓN: restoreAllSubfoldersCompetencia (PRIVADA)
+    |--------------------------------------------------------------------------
+    | RESTAURA RECURSIVAMENTE TODAS LAS SUBCARPETAS Y SUS DOCUMENTOS
+    | DENTRO DE UNA CARPETA DE COMPETENCIAS.
+    */
     private function restoreAllSubfoldersCompetencia($folderId)
     {
         $subfolders = \App\Models\Competencia::withTrashed()
@@ -931,6 +1018,14 @@ class HistorialVersionesController extends Controller
         }
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | FUNCIÓN: datosGraficos
+    |--------------------------------------------------------------------------
+    | DEVUELVE EN JSON LOS DATOS PARA GRAFICAR LA ACTIVIDAD DEL SISTEMA.
+    | POR DEFECTO MUESTRA LOS ÚLTIMOS 30 DÍAS.
+    | DEVUELVE LAS ETIQUETAS (FECHAS) Y LA CANTIDAD DE ACTIVIDADES POR DÍA.
+    */
     public function datosGraficos(Request $request)
     {
         $dias = $request->get('dias', 30);
@@ -946,11 +1041,26 @@ class HistorialVersionesController extends Controller
         return response()->json(['labels' => $labels, 'data' => $data]);
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | FUNCIÓN: exportar
+    |--------------------------------------------------------------------------
+    | FUNCIÓN EN DESARROLLO PARA EXPORTAR EL HISTORIAL.
+    | POR AHORA SOLO REDIRIGE CON UN MENSAJE INFORMATIVO.
+    */
     public function exportar(Request $request)
     {
         return redirect()->back()->with('info', 'Función de exportación en desarrollo');
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | FUNCIÓN: limpiar
+    |--------------------------------------------------------------------------
+    | ELIMINA LOS REGISTROS DEL HISTORIAL MÁS ANTIGUOS QUE X DÍAS.
+    | SOLO PUEDE HACERLO EL SUPERADMIN.
+    | POR DEFECTO ELIMINA REGISTROS CON MÁS DE 90 DÍAS DE ANTIGÜEDAD.
+    */
     public function limpiar(Request $request)
     {
         if (auth()->user()->role !== 'superadmin') {

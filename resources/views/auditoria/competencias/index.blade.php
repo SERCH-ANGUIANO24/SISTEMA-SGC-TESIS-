@@ -1,13 +1,18 @@
+{{-- VISTA PRINCIPAL DEL MÓDULO DE COMPETENCIAS --}}
+{{-- MUESTRA CARPETAS Y DOCUMENTOS, CON OPCIONES DE BUSCAR, ORDENAR, SUBIR Y GESTIONAR ARCHIVOS --}}
 @extends('layouts.app')
 
 @section('title', 'Competencias - Sistema de Gestión de la Calidad')
 
 @section('content')
 <div class="container-fluid py-4">
+
+    {{-- ENCABEZADO: TÍTULO Y BOTONES DE ACCIÓN --}}
     <div class="row mb-3">
         <div class="col-12">
             <div class="d-flex justify-content-between align-items-start">
                 <div class="d-flex flex-column">
+                    {{-- TÍTULO CON ENLACE AL DASHBOARD --}}
                     <a href="{{ route('auditoria.dashboard') }}" class="text-decoration-none" title="Ir al Dashboard">
                         <h1 class="h3 mb-2" style="color: #7c3aed; cursor: pointer;">
                             <i class="bi-person-workspace me-2" style="font-size: 3rem; vertical-align: middle;"></i>
@@ -17,20 +22,23 @@
                 </div>
 
                 <div class="mt-2">
-                    {{-- BOTÓN NUEVA CARPETA - Solo superadmin y admin --}}
-                    @if(in_array($userRole, ['superadmin', 'admin']))
+                    {{-- BOTÓN NUEVA CARPETA - Solo superadmin, admin Y AUDITOR LIDER--}}
+                    {{-- SOLO SE MUESTRA SI EL USUARIO TIENE PERMISO auditoria-access --}}
+                    @can('auditoria-access')
                         <button type="button" class="btn text-white me-2" style="background-color: #737373;" data-bs-toggle="modal" data-bs-target="#createFolderModal">
                             <i class="bi bi-folder-plus me-1"></i> Nueva Carpeta
                         </button>
-                    @endif
+                    @endcan
                     
                     {{-- BOTÓN SUBIR ARCHIVO - TODOS los usuarios pueden subir archivos --}}
+                    {{-- SI HAY UNA CARPETA SELECCIONADA, MUESTRA EL BOTÓN ACTIVO --}}
                     @if(isset($currentFolder) && $currentFolder)
                         <button type="button" class="btn text-white" style="background-color: #737373;" data-bs-toggle="modal" data-bs-target="#uploadFileModal">
                             <i class="bi bi-upload me-1"></i> Subir Archivo
                         </button>
                     @else
                         {{-- Si no hay carpeta seleccionada, mostrar mensaje o botón deshabilitado --}}
+                        {{-- SI NO HAY CARPETA SELECCIONADA, MUESTRA EL BOTÓN DESHABILITADO --}}
                         <button type="button" class="btn text-white" style="background-color: #a9a9a9;" disabled>
                             <i class="bi bi-upload me-1"></i> Selecciona una carpeta
                         </button>
@@ -40,11 +48,13 @@
         </div>
     </div>
 
+    {{-- BREADCRUMBS: RUTA DE NAVEGACIÓN ENTRE CARPETAS --}}
     <div class="mb-3">
         @include('auditoria.competencias.partials.breadcrumbs', ['breadcrumbs' => $breadcrumbs, 'currentFolder' => $currentFolder])
     </div>
 
     {{-- SOLO UN MENSAJE DE ÉXITO --}}
+    {{-- ALERTA DE ÉXITO --}}
     @if(session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert" id="successMessage">
             <i class="bi bi-check-circle me-2"></i> {{ session('success') }}
@@ -52,6 +62,7 @@
         </div>
     @endif
 
+    {{-- ALERTA DE ERROR --}}
     @if(session('error'))
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
             <i class="bi bi-exclamation-triangle me-2"></i> {{ session('error') }}
@@ -59,6 +70,7 @@
         </div>
     @endif
 
+    {{-- ALERTA DE ADVERTENCIA --}}
     @if(session('warning'))
         <div class="alert alert-warning alert-dismissible fade show" role="alert">
             <i class="bi bi-exclamation-triangle me-2"></i> {{ session('warning') }}
@@ -66,6 +78,7 @@
         </div>
     @endif
 
+    {{-- ALERTA INFORMATIVA --}}
     @if(session('info'))
         <div class="alert alert-info alert-dismissible fade show" role="alert">
             <i class="bi bi-info-circle me-2"></i> {{ session('info') }}
@@ -73,8 +86,11 @@
         </div>
     @endif
 
+    {{-- BUSCADOR Y ORDENADOR: SOLO SE MUESTRAN SI HAY UNA CARPETA SELECCIONADA --}}
     @if(isset($currentFolder) && $currentFolder)
     <div class="row mb-4 align-items-end">
+
+        {{-- CAMPO DE BÚSQUEDA DE ARCHIVOS --}}
         <div class="col-md-6">
             <div class="card shadow-sm border-0">
                 <div class="card-body p-3">
@@ -88,10 +104,12 @@
                         <input type="text" id="searchInput" class="form-control border-start-0 ps-0" 
                                placeholder="Buscar por nombre de archivo" 
                                style="border-color: #dee2e6; background-color: white;">
+                        {{-- BOTÓN PARA LIMPIAR EL CAMPO DE BÚSQUEDA --}}
                         <button class="btn btn-outline-secondary" type="button" id="clearSearch" title="Limpiar búsqueda">
                             <i class="bi bi-x-lg"></i>
                         </button>
                     </div>
+                    {{-- CONTADOR DE RESULTADOS DE BÚSQUEDA --}}
                     <div id="searchResults" class="mt-2 small text-muted">
                         <span id="resultCount"></span>
                     </div>
@@ -99,6 +117,7 @@
             </div>
         </div>
         
+        {{-- SELECTOR DE ORDENAMIENTO DE ARCHIVOS --}}
         <div class="col-md-6">
             <div class="card shadow-sm border-0">
                 <div class="card-body p-3">
@@ -123,6 +142,7 @@
     </div>
     @endif
 
+    {{-- SPINNER DE CARGA (SE MUESTRA MIENTRAS SE CARGAN LOS ARCHIVOS) --}}
     <div id="loadingSpinner" class="text-center my-5" style="display: none;">
         <div class="spinner-border" style="color: #800000;" role="status">
             <span class="visually-hidden">Cargando...</span>
@@ -131,6 +151,7 @@
     </div>
 
     {{-- CARPETAS --}}
+    {{-- INCLUYE EL PARTIAL QUE RENDERIZA EL GRID DE CARPETAS --}}
     <div id="folderContainer">
         @include('auditoria.competencias.partials.folder-grid', [
             'folders' => $folders,
@@ -139,6 +160,7 @@
     </div>
 
     {{-- DOCUMENTOS --}}
+    {{-- INCLUYE EL PARTIAL QUE RENDERIZA LA LISTA DE ARCHIVOS --}}
     <div id="fileContainer">
         @include('auditoria.competencias.partials.file-list', [
             'documents' => $documents,
@@ -149,12 +171,15 @@
 </div>
 
 {{-- MODALES DE VISUALIZACIÓN DE DOCUMENTOS --}}
+{{-- SE GENERA UN MODAL POR CADA DOCUMENTO QUE SEA VISUALIZABLE EN PANTALLA (NO WORD, EXCEL, ETC.) --}}
 @foreach($documents as $doc)
     @php
         $extension = strtolower($doc->archivo_extension ?? '');
+        // FORMATOS QUE NO SE PUEDEN PREVISUALIZAR EN EL NAVEGADOR
         $noViewable = ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'csv'];
     @endphp
     
+    {{-- SOLO CREA EL MODAL SI EL ARCHIVO ES VISUALIZABLE --}}
     @if(!in_array($extension, $noViewable))
     <div class="modal fade" id="viewDocumentModal{{ $doc->id }}" tabindex="-1" aria-labelledby="viewDocumentModalLabel{{ $doc->id }}" aria-hidden="true">
         <div class="modal-dialog modal-xl">
@@ -165,6 +190,7 @@
                         {{ $doc->nombre }}.{{ $doc->archivo_extension }}
                     </h5>
                 </div>
+                {{-- ÁREA DE PREVISUALIZACIÓN DEL DOCUMENTO (80% DE LA ALTURA DE PANTALLA) --}}
                 <div class="modal-body p-0" style="height: 80vh;">
                     @include('auditoria.competencias.partials.document-viewer', [
                         'extension' => $extension,
@@ -174,6 +200,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    {{-- BOTÓN PARA DESCARGAR EL DOCUMENTO --}}
                     <a href="{{ route('auditoria.competencias.document.download', $doc->id) }}" class="btn text-white" style="background-color: #800000;">
                         <i class="bi bi-download me-1"></i> Descargar
                     </a>
@@ -187,6 +214,7 @@
 {{-- MODAL RENOMBRAR CARPETA --}}
 <div class="modal fade" id="renameFolderModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
+        {{-- EL ACTION SE ASIGNA DINÁMICAMENTE CON JAVASCRIPT SEGÚN LA CARPETA SELECCIONADA --}}
         <form action="" method="POST" id="renameFolderForm">
             @csrf
             @method('PUT')
@@ -201,6 +229,7 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label for="newFolderName" class="form-label fw-bold">Nuevo nombre</label>
+                        {{-- EL VALOR SE LLENA DINÁMICAMENTE CON EL NOMBRE ACTUAL DE LA CARPETA --}}
                         <input type="text" class="form-control" id="newFolderName" name="nombre" required autofocus>
                     </div>
                 </div>
@@ -218,6 +247,7 @@
 {{-- MODAL RENOMBRAR DOCUMENTO --}}
 <div class="modal fade" id="renameDocumentModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
+        {{-- EL ACTION SE ASIGNA DINÁMICAMENTE CON JAVASCRIPT SEGÚN EL DOCUMENTO SELECCIONADO --}}
         <form action="" method="POST" id="renameDocumentForm">
             @csrf
             @method('PUT')
@@ -232,6 +262,7 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label for="newDocumentName" class="form-label fw-bold">Nuevo nombre</label>
+                        {{-- EL VALOR SE LLENA DINÁMICAMENTE CON EL NOMBRE ACTUAL DEL DOCUMENTO --}}
                         <input type="text" class="form-control" id="newDocumentName" name="nombre" required autofocus>
                         <div class="form-text">La extensión del archivo se mantendrá automáticamente.</div>
                     </div>
@@ -250,6 +281,7 @@
 {{-- MODAL MOVER CARPETA --}}
 <div class="modal fade" id="moveFolderModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
+        {{-- EL ACTION SE ASIGNA DINÁMICAMENTE CON JAVASCRIPT SEGÚN LA CARPETA A MOVER --}}
         <form action="" method="POST" id="moveFolderForm">
             @csrf
             @method('PUT')
@@ -264,10 +296,12 @@
                 <div class="modal-body">
                     <p class="mb-3">
                         <span class="fw-bold">Carpeta a mover:</span><br>
+                        {{-- EL NOMBRE SE LLENA DINÁMICAMENTE CON JAVASCRIPT --}}
                         <span id="moveFolderName" style="color: #737373; font-size: 1.1rem;"></span>
                     </p>
                     <div class="mb-3">
                         <label for="folderDestination" class="form-label fw-bold">Seleccionar destino</label>
+                        {{-- LAS OPCIONES SE CARGAN DINÁMICAMENTE VÍA FETCH CUANDO SE ABRE EL MODAL --}}
                         <select class="form-select" id="folderDestination" name="destination_id">
                             <option value="">📁 Raíz principal</option>
                         </select>
@@ -291,6 +325,7 @@
 {{-- MODAL MOVER DOCUMENTO --}}
 <div class="modal fade" id="moveDocumentModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
+        {{-- EL ACTION SE ASIGNA DINÁMICAMENTE CON JAVASCRIPT SEGÚN EL DOCUMENTO A MOVER --}}
         <form action="" method="POST" id="moveDocumentForm">
             @csrf
             @method('PUT')
@@ -305,10 +340,12 @@
                 <div class="modal-body">
                     <p class="mb-3">
                         <span class="fw-bold">Documento a mover:</span><br>
+                        {{-- EL NOMBRE SE LLENA DINÁMICAMENTE CON JAVASCRIPT --}}
                         <span id="moveDocumentName" style="color: #737373; font-size: 1.1rem;"></span>
                     </p>
                     <div class="mb-3">
                         <label for="documentDestination" class="form-label fw-bold">Seleccionar destino</label>
+                        {{-- LAS OPCIONES SE CARGAN DINÁMICAMENTE VÍA FETCH CUANDO SE ABRE EL MODAL --}}
                         <select class="form-select" id="documentDestination" name="destination_id">
                             <option value="">📁 Raíz principal</option>
                         </select>
@@ -332,6 +369,7 @@
 {{-- MODAL CREAR CARPETA --}}
 <div class="modal fade" id="createFolderModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
+        {{-- ENVÍA EL ID DE LA CARPETA ACTUAL PARA CREAR LA NUEVA COMO SUBCARPETA --}}
         <form action="{{ route('auditoria.competencias.folder.store') }}" method="POST">
             @csrf
             <input type="hidden" name="parent_id" value="{{ $currentFolder->id ?? '' }}">
@@ -344,10 +382,12 @@
 
                 </div>
                 <div class="modal-body">
+                    {{-- NOMBRE DE LA NUEVA CARPETA --}}
                     <div class="mb-3">
                         <label class="form-label">Nombre de Carpeta</label>
                         <input type="text" class="form-control" name="nombre" required autofocus>
                     </div>
+                    {{-- COLOR VISUAL PARA IDENTIFICAR LA CARPETA --}}
                     <div class="mb-3">
                         <label class="form-label">Color Visual</label>
                         <input type="color" class="form-control form-control-color" name="color" value="#800000" style="width: 100%; height: 40px;">
@@ -365,6 +405,7 @@
 {{-- MODAL SUBIR ARCHIVO (con icono agregado) --}}
 <div class="modal fade" id="uploadFileModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
+        {{-- ENVÍA EL ARCHIVO Y EL ID DE LA CARPETA DESTINO --}}
         <form action="{{ route('auditoria.competencias.upload') }}" method="POST" enctype="multipart/form-data">
             @csrf
             <input type="hidden" name="parent_id" value="{{ $currentFolder->id ?? '' }}">
@@ -394,12 +435,16 @@
 
 @push('styles')
 <style>
+    /* ========== ESTILOS EXISTENTES (NO MODIFICADOS) ========== */
+
+    /* ESTILOS DE LAS TARJETAS DE CARPETAS */
     .folder-card {
         transition: all 0.2s;
         cursor: pointer;
         border: none;
         border-radius: 12px;
     }
+    /* EFECTO HOVER EN TARJETAS DE CARPETAS */
     .folder-card:hover {
         transform: translateY(-3px);
         box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.08) !important;
@@ -408,6 +453,7 @@
         font-size: 2.5rem;
         margin-bottom: 0.5rem;
     }
+    /* EFECTO HOVER EN FILAS DE ARCHIVOS */
     .file-row:hover {
         background-color: rgba(0,0,0,0.02);
     }
@@ -426,6 +472,7 @@
         justify-content: space-between;
     }
     
+    /* ESTILOS PARA LAS ALERTAS DE SWEETALERT2 */
     .swal2-popup {
         font-size: 1.2rem !important;
     }
@@ -439,24 +486,297 @@
         background-color: #6c757d !important;
     }
 
-    /* ✅ ELIMINAR SEGUNDO MENSAJE DE ÉXITO DUPLICADO */
+    /* ELIMINAR SEGUNDO MENSAJE DE ÉXITO DUPLICADO */
     .alert-success:not(:first-of-type) {
         display: none !important;
+    }
+
+    /* ========== NUEVOS ESTILOS RESPONSIVOS ========== */
+    
+    /* MÓVILES (pantallas menores a 768px) */
+    @media (max-width: 768px) {
+        /* Header - Apilar botones */
+        .d-flex.justify-content-between {
+            flex-direction: column !important;
+            align-items: stretch !important;
+            gap: 1rem;
+        }
+        
+        .d-flex.justify-content-between .mt-2 {
+            margin-top: 0 !important;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .d-flex.justify-content-between .mt-2 .btn {
+            width: 100%;
+            margin-right: 0 !important;
+        }
+        
+        /* Título más pequeño en móvil */
+        .h3 {
+            font-size: 1.5rem;
+        }
+        
+        .h3 i {
+            font-size: 2rem !important;
+        }
+        
+        /* Buscador y ordenador - apilar en móvil */
+        .row.mb-4 .col-md-6 {
+            margin-bottom: 1rem;
+        }
+        
+        /* Tabla responsiva - permitir scroll horizontal */
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        /* Tarjetas de carpetas - 1 por fila en móvil */
+        #folderContainer .row > [class*="col-"] {
+            flex: 0 0 100%;
+            max-width: 100%;
+        }
+        
+        /* Breadcrumbs responsivo */
+        .breadcrumb {
+            flex-wrap: wrap;
+            font-size: 0.85rem;
+        }
+        
+        .breadcrumb-item + .breadcrumb-item::before {
+            padding-left: 0.3rem;
+            padding-right: 0.3rem;
+        }
+        
+        /* Modales responsivos */
+        .modal-dialog {
+            margin: 1rem;
+        }
+        
+        .modal-body {
+            padding: 1rem;
+        }
+        
+        /* Alertas */
+        .alert {
+            font-size: 0.85rem;
+            padding: 0.75rem;
+        }
+        
+        /* Botones en modales apilados */
+        .modal-footer {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .modal-footer .btn {
+            width: 100%;
+            margin: 0;
+        }
+        
+        /* Botón de limpiar búsqueda hover mejorado */
+        .btn-outline-secondary:hover {
+            background-color: #737373 !important;
+            border-color: #737373 !important;
+        }
+        .btn-outline-secondary:hover i {
+            color: white !important;
+        }
+    }
+    
+    /* TABLETS (pantallas entre 768px y 1024px) */
+    @media (min-width: 768px) and (max-width: 1024px) {
+        /* Tarjetas de carpetas - 2 por fila en tablet */
+        #folderContainer .row > [class*="col-"] {
+            flex: 0 0 50%;
+            max-width: 50%;
+        }
+        
+        /* Header - botones en línea pero más compactos */
+        .d-flex.justify-content-between .mt-2 .btn {
+            font-size: 0.9rem;
+            padding: 0.4rem 0.8rem;
+        }
+        
+        /* Tamaño de fuente ajustado */
+        .h3 {
+            font-size: 1.75rem;
+        }
+        
+        .h3 i {
+            font-size: 2.5rem !important;
+        }
+    }
+    
+    /* PANTALLAS PEQUEÑAS (máximo 576px) */
+    @media (max-width: 576px) {
+        /* Contenedor más compacto */
+        .container-fluid {
+            padding-left: 1rem !important;
+            padding-right: 1rem !important;
+        }
+        
+        /* Título aún más pequeño */
+        .h3 {
+            font-size: 1.25rem;
+        }
+        
+        /* Botones muy pequeños */
+        .btn {
+            font-size: 0.8rem;
+            padding: 0.4rem 0.75rem;
+        }
+        
+        /* Iconos de carpetas más pequeños */
+        .folder-icon i {
+            font-size: 2.5rem !important;
+        }
+        
+        .folder-card .card-body {
+            min-height: 130px;
+            padding: 0.75rem;
+        }
+        
+        .card-title {
+            font-size: 0.9rem;
+        }
+        
+        /* Tabla - ocultar columnas menos importantes en móvil muy pequeño */
+        .file-table th:nth-child(3),
+        .file-table td:nth-child(3),
+        .file-table th:nth-child(4),
+        .file-table td:nth-child(4) {
+            display: none;
+        }
+        
+        /* Input group más compacto */
+        .input-group-text,
+        .input-group .form-control,
+        .input-group .btn {
+            font-size: 0.8rem;
+        }
+    }
+    
+    /* MEJORAS PARA LA TABLA (responsive con overflow) */
+    .file-table-container {
+        overflow-x: auto;
+        width: 100%;
+    }
+    
+    .file-table {
+        min-width: 500px;
+    }
+    
+    /* MEJORAS PARA EL GRID DE CARPETAS (responsive con grid) */
+    #folderContainer .row {
+        display: flex;
+        flex-wrap: wrap;
+        margin-right: -0.5rem;
+        margin-left: -0.5rem;
+    }
+    
+    #folderContainer .row > [class*="col-"] {
+        padding-right: 0.5rem;
+        padding-left: 0.5rem;
+    }
+    
+    /* Ajustes para pantallas extra grandes (escritorio) */
+    @media (min-width: 1400px) {
+        #folderContainer .row > [class*="col-"] {
+            flex: 0 0 20%;
+            max-width: 20%;
+        }
+    }
+    
+    /* Mejora para dispositivos con pantalla muy ancha */
+    @media (min-width: 1920px) {
+        .container-fluid {
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+    }
+    
+    /* Ajuste para orientación landscape en móviles */
+    @media (max-width: 768px) and (orientation: landscape) {
+        .folder-card .card-body {
+            min-height: 140px;
+        }
+        
+        #folderContainer .row > [class*="col-"] {
+            flex: 0 0 50%;
+            max-width: 50%;
+        }
+    }
+    
+    /* Ajustes para el buscador responsivo */
+    @media (max-width: 768px) {
+        .card-body.p-3 {
+            padding: 1rem !important;
+        }
+        
+        .form-label {
+            font-size: 0.85rem;
+        }
+        
+        .form-select {
+            font-size: 0.85rem;
+        }
+    }
+
+    /* Tooltips personalizados */
+    [title] {
+        position: relative;
+        cursor: help;
+    }
+    
+    .tooltip {
+        --bs-tooltip-bg: #737373;
+        --bs-tooltip-color: #ffffff;
+        font-size: 0.875rem;
+    }
+    
+    .tooltip .tooltip-inner {
+        background-color: #737373;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+    
+    .tooltip.bs-tooltip-top .tooltip-arrow::before {
+        border-top-color: #737373;
+    }
+    
+    .tooltip.bs-tooltip-bottom .tooltip-arrow::before {
+        border-bottom-color: #737373;
+    }
+    
+    .tooltip.bs-tooltip-start .tooltip-arrow::before {
+        border-left-color: #737373;
+    }
+    
+    .tooltip.bs-tooltip-end .tooltip-arrow::before {
+        border-right-color: #737373;
     }
 </style>
 @endpush
 
 @prepend('scripts')
+{{-- LIBRERÍA SWEETALERT2 PARA LAS ALERTAS DE CONFIRMACIÓN --}}
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // SI HAY UNA CARPETA SELECCIONADA, INICIALIZA EL BUSCADOR Y EL ORDENADOR
         @if(isset($currentFolder) && $currentFolder)
             initSearch();
             initSorting();
         @endif
         
-        // ✅ ELIMINAR CUALQUIER MENSAJE DE ÉXITO DUPLICADO
+        // ELIMINAR CUALQUIER MENSAJE DE ÉXITO DUPLICADO
         const successAlerts = document.querySelectorAll('.alert-success');
         if (successAlerts.length > 1) {
             for (let i = 1; i < successAlerts.length; i++) {
@@ -467,6 +787,7 @@
 
     // FUNCIONES PARA MODALES DE RENOMBRAR Y MOVER (ahora con envío tradicional)
 
+    // ABRE EL MODAL DE RENOMBRAR CARPETA Y ASIGNA EL ACTION Y EL NOMBRE ACTUAL
     function openRenameModal(folderId, folderName) {
         event.stopPropagation();
         const form = document.getElementById('renameFolderForm');
@@ -475,6 +796,7 @@
         new bootstrap.Modal(document.getElementById('renameFolderModal')).show();
     }
 
+    // ABRE EL MODAL DE RENOMBRAR DOCUMENTO Y ASIGNA EL ACTION Y EL NOMBRE ACTUAL
     function openRenameDocumentModal(docId, docName) {
         event.stopPropagation();
         const form = document.getElementById('renameDocumentForm');
@@ -483,6 +805,7 @@
         new bootstrap.Modal(document.getElementById('renameDocumentModal')).show();
     }
 
+    // ABRE EL MODAL DE MOVER CARPETA Y CARGA LAS CARPETAS DISPONIBLES VÍA FETCH
     function openMoveModal(folderId, folderName) {
         event.stopPropagation();
         const form = document.getElementById('moveFolderForm');
@@ -493,6 +816,7 @@
         select.innerHTML = '<option value="">📁 Cargando carpetas...</option>';
         select.disabled = true;
         
+        // CARGA EL ÁRBOL DE CARPETAS DISPONIBLES EXCLUYENDO LA CARPETA ACTUAL
         fetch('/auditoria/competencias/folders/tree?current_folder=' + folderId)
             .then(response => response.json())
             .then(folders => {
@@ -506,6 +830,7 @@
                     option.disabled = true;
                     select.appendChild(option);
                 } else {
+                    // AGREGA CADA CARPETA COMO OPCIÓN EN EL SELECT
                     folders.forEach(folder => {
                         const option = document.createElement('option');
                         option.value = folder.id;
@@ -515,6 +840,7 @@
                 }
             })
             .catch(error => {
+                // SI FALLA LA CARGA, MUESTRA ERROR EN EL SELECT Y EN UNA ALERTA
                 console.error('Error al cargar carpetas:', error);
                 select.innerHTML = '<option value="">❌ Error al cargar carpetas</option>';
                 select.disabled = false;
@@ -529,6 +855,7 @@
         new bootstrap.Modal(document.getElementById('moveFolderModal')).show();
     }
 
+    // ABRE EL MODAL DE MOVER DOCUMENTO Y CARGA LAS CARPETAS DISPONIBLES VÍA FETCH
     function openMoveDocumentModal(docId, docName) {
         event.stopPropagation();
         const form = document.getElementById('moveDocumentForm');
@@ -539,6 +866,7 @@
         select.innerHTML = '<option value="">📁 Cargando carpetas...</option>';
         select.disabled = true;
         
+        // CARGA EL ÁRBOL COMPLETO DE CARPETAS PARA EL DESTINO DEL DOCUMENTO
         fetch('/auditoria/competencias/folders/tree?current_folder=null')
             .then(response => response.json())
             .then(folders => {
@@ -552,6 +880,7 @@
                     option.disabled = true;
                     select.appendChild(option);
                 } else {
+                    // AGREGA CADA CARPETA COMO OPCIÓN EN EL SELECT
                     folders.forEach(folder => {
                         const option = document.createElement('option');
                         option.value = folder.id;
@@ -561,6 +890,7 @@
                 }
             })
             .catch(error => {
+                // SI FALLA LA CARGA, MUESTRA ERROR EN EL SELECT Y EN UNA ALERTA
                 console.error('Error:', error);
                 select.innerHTML = '<option value="">❌ Error al cargar carpetas</option>';
                 select.disabled = false;
@@ -576,12 +906,14 @@
     }
 
     // FUNCIÓN PARA ELIMINAR (SweetAlert, AJAX)
+    // MUESTRA UNA ALERTA DE CONFIRMACIÓN ANTES DE ELIMINAR UN ARCHIVO O CARPETA
     function deleteElement(id, name, type) {
         event.stopPropagation();
         event.preventDefault();
         
         if (type === 'Documento') {
             // Diseño simple para archivos
+            // ALERTA SIMPLE PARA ELIMINAR UN DOCUMENTO
             Swal.fire({
                 title: '¿Eliminar archivo?',
                 text: `¿Estás seguro de eliminar "${name}"?`,
@@ -598,6 +930,7 @@
             });
         } else {
             // Diseño detallado para carpetas
+            // ALERTA DETALLADA PARA ELIMINAR UNA CARPETA (ADVIERTE QUE SE ELIMINA TODO SU CONTENIDO)
             Swal.fire({
                 title: '¿Eliminar ' + type.toLowerCase() + '?',
                 html: `
@@ -633,7 +966,9 @@
     }
 
     // Función auxiliar para realizar la eliminación (AJAX)
+    // EJECUTA EL DELETE VÍA FETCH Y RECARGA LA PÁGINA SI FUE EXITOSO
     function proceedWithDeletion(id, type, name) {
+        // MUESTRA UN SPINNER MIENTRAS SE PROCESA LA ELIMINACIÓN
         Swal.fire({
             title: 'Eliminando...',
             text: 'Por favor espere',
@@ -643,6 +978,7 @@
             }
         });
         
+        // CONSTRUYE LA URL SEGÚN SI ES DOCUMENTO O CARPETA
         const url = '/auditoria/competencias/' + (type === 'Documento' ? 'document/' : 'folder/') + id;
         
         fetch(url, {
@@ -656,6 +992,7 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
+                // ELIMINACIÓN EXITOSA: MUESTRA MENSAJE Y RECARGA LA PÁGINA
                 Swal.fire({
                     icon: 'success',
                     title: '¡Eliminado!',
@@ -667,6 +1004,7 @@
                     location.reload();
                 });
             } else {
+                // ERROR DESDE EL SERVIDOR: MUESTRA EL MENSAJE DE ERROR
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
@@ -676,6 +1014,7 @@
             }
         })
         .catch(error => {
+            // ERROR DE CONEXIÓN: MUESTRA ALERTA GENÉRICA
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
@@ -686,11 +1025,13 @@
     }
 
     // BUSCADOR
+    // INICIALIZA LOS EVENTOS DEL INPUT DE BÚSQUEDA Y EL BOTÓN DE LIMPIAR
     function initSearch() {
         const searchInput = document.getElementById('searchInput');
         const clearButton = document.getElementById('clearSearch');
         
         if (searchInput) {
+            // USA DEBOUNCE DE 300ms PARA NO BUSCAR EN CADA TECLA PRESIONADA
             searchInput.addEventListener('input', function(e) {
                 clearTimeout(debounceTimer);
                 debounceTimer = setTimeout(() => performSearch(e.target.value), 300);
@@ -698,6 +1039,7 @@
         }
         
         if (clearButton) {
+            // LIMPIA EL INPUT Y RESTAURA TODOS LOS ELEMENTOS VISIBLES
             clearButton.addEventListener('click', function() {
                 searchInput.value = '';
                 performSearch('');
@@ -708,12 +1050,14 @@
 
     let debounceTimer;
     
+    // FILTRA CARPETAS Y ARCHIVOS EN TIEMPO REAL SEGÚN EL TEXTO INGRESADO
     function performSearch(query) {
         query = query.toLowerCase().trim();
         const folderCards = document.querySelectorAll('.folder-card');
         const fileRows = document.querySelectorAll('.file-row');
         let visibleCount = 0;
         
+        // MUESTRA U OCULTA CADA TARJETA DE CARPETA SEGÚN EL NOMBRE
         folderCards.forEach(card => {
             const folderName = card.querySelector('.card-title')?.textContent.toLowerCase() || '';
             const parentCol = card.closest('.col');
@@ -727,6 +1071,7 @@
             }
         });
         
+        // MUESTRA U OCULTA CADA FILA DE ARCHIVO SEGÚN EL NOMBRE
         fileRows.forEach(row => {
             const fileName = row.querySelector('td:first-child')?.textContent.toLowerCase() || '';
             if (query === '' || fileName.includes(query)) {
@@ -737,13 +1082,16 @@
             }
         });
         
+        // ACTUALIZA EL CONTADOR DE RESULTADOS
         const resultCount = document.getElementById('resultCount');
         if (resultCount) {
             resultCount.textContent = query === '' ? '' : `🔍 ${visibleCount} resultado${visibleCount !== 1 ? 's' : ''}`;
         }
         
+        // ELIMINA EL MENSAJE DE "SIN RESULTADOS" ANTERIOR SI EXISTE
         document.getElementById('noResultsMessage')?.remove();
         
+        // SI NO HAY RESULTADOS, MUESTRA UN MENSAJE DE ADVERTENCIA
         if (query !== '' && visibleCount === 0) {
             const folderContainer = document.getElementById('folderContainer');
             const noResultsDiv = document.createElement('div');
@@ -755,6 +1103,7 @@
     }
 
     // ORDENAMIENTO
+    // INICIALIZA EL EVENTO DEL SELECT DE ORDENAMIENTO
     function initSorting() {
         const sortSelect = document.getElementById('sortSelect');
         if (sortSelect) {
@@ -764,6 +1113,7 @@
         }
     }
     
+    // ORDENA LAS FILAS DE ARCHIVOS SEGÚN EL CRITERIO SELECCIONADO
     function sortItems(sortBy) {
         const tableBody = document.getElementById('fileTableBody');
         if (tableBody) {
@@ -776,6 +1126,7 @@
                 const sizeA = parseInt(a.dataset.fileSize) || 0;
                 const sizeB = parseInt(b.dataset.fileSize) || 0;
                 
+                // APLICA EL CRITERIO DE ORDENAMIENTO SELECCIONADO
                 switch(sortBy) {
                     case 'name_asc': return nameA.localeCompare(nameB);
                     case 'name_desc': return nameB.localeCompare(nameA);
@@ -786,6 +1137,7 @@
                     default: return 0;
                 }
             });
+            // REINSERTA LAS FILAS EN EL NUEVO ORDEN
             rows.forEach(row => tableBody.appendChild(row));
         }
     }

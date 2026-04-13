@@ -75,6 +75,7 @@
         .alert-success-custom { background: linear-gradient(135deg, #48bb78, #38a169); color: white; }
         .alert-danger-custom { background: linear-gradient(135deg, #f56565, #e53e3e); color: white; }
 
+        /* Los estilos originales del navbar se mantienen, pero los responsivos los sobreescriben */
         .welcome-container { position: absolute; left: 50%; transform: translateX(-50%); }
         .welcome-text { white-space: nowrap; font-size: 1.25rem; }
         .left-section, .right-section { width: 200px; }
@@ -197,9 +198,6 @@
             border-color: #545b62 !important;
         }
 
-        /* ── SÍ ELIMINAR / DESACTIVAR — SWEETALERT SIEMPRE ROJO/SU COLOR ── */
-        /* Se controla desde JS, no desde CSS para no interferir */
-
         /* ── OVERLAY PROCESOS — colores fijos ── */
         #overlayProcesos .btn-modal-cancel {
             background: #6c757d !important;
@@ -321,7 +319,6 @@
         .theme-preview-btn { padding:4px 14px; border:none; border-radius:4px; color:#fff; font-size:12px; font-weight:600; cursor:default; }
 
         /* ── HISTORIAL ── */
-        /* FORZAR COLORES FIJOS - NO USAR TEMA */
         #filtrosForm .btn-outline-secondary, #btnBorrarTodo {
             border-color: #6c757d !important;
             color: #6c757d !important;
@@ -353,7 +350,6 @@
             color: #ffffff !important;
         }
 
-                /* ── BOTONES CON CLASE no-tema NO SE AFECTAN ── */
         .no-tema,
         .no-tema:hover,
         .no-tema:focus,
@@ -363,97 +359,337 @@
             color: inherit !important;
         }
 
-            /* ===== MODAL VISUALIZAR ARCHIVO - BOTON CERRAR NO CAMBIA ===== */
-    /* Forzar que el botón Cerrar mantenga el mismo color siempre */
-    .modal:not(#modalTema):not(#modalEstadisticas):not(#modalHistorico):not(#modalGraficas):not(#modalHistoricoSolicitudes):not(#modalHistoricoGlobal):not(#modalEstadisticasSolicitudes) .modal-footer .btn-secondary,
-    .modal-footer .btn-secondary[data-bs-dismiss="modal"] {
-        background-color: #6c757d !important;
-        border-color: #6c757d !important;
-        color: #fff !important;
-    }
-    
-    .modal:not(#modalTema):not(#modalEstadisticas):not(#modalHistorico):not(#modalGraficas):not(#modalHistoricoSolicitudes):not(#modalHistoricoGlobal):not(#modalEstadisticasSolicitudes) .modal-footer .btn-secondary:hover,
-    .modal-footer .btn-secondary[data-bs-dismiss="modal"]:hover {
-        background-color: #6c757d !important;  /* Mismo color que el normal */
-        border-color: #6c757d !important;
-        color: #fff !important;
-        /* Opcional: solo un pequeño efecto visual sin cambiar color */
-        filter: brightness(0.98);
-    }
+        /* ===== MODAL VISUALIZAR ARCHIVO - BOTON CERRAR NO CAMBIA ===== */
+        .modal:not(#modalTema):not(#modalEstadisticas):not(#modalHistorico):not(#modalGraficas):not(#modalHistoricoSolicitudes):not(#modalHistoricoGlobal):not(#modalEstadisticasSolicitudes) .modal-footer .btn-secondary,
+        .modal-footer .btn-secondary[data-bs-dismiss="modal"] {
+            background-color: #6c757d !important;
+            border-color: #6c757d !important;
+            color: #fff !important;
+        }
+        
+        .modal:not(#modalTema):not(#modalEstadisticas):not(#modalHistorico):not(#modalGraficas):not(#modalHistoricoSolicitudes):not(#modalHistoricoGlobal):not(#modalEstadisticasSolicitudes) .modal-footer .btn-secondary:hover,
+        .modal-footer .btn-secondary[data-bs-dismiss="modal"]:hover {
+            background-color: #6c757d !important;
+            border-color: #6c757d !important;
+            color: #fff !important;
+            filter: brightness(0.98);
+        }
 
-    /* ===== BOTON DESCARGAR - RESPETA TEMA DEL USUARIO ===== */
-    /* El botón Descargar que está en el modal de visualización */
-    .modal .modal-footer a.btn[download],
-    .modal .modal-footer a.btn[href*="download"] {
-        background-color: var(--theme-color) !important;
-        border-color: var(--theme-color) !important;
-        color: #fff !important;
-        transition: all 0.3s ease !important;
-    }
+        /* ===== BOTON DESCARGAR - RESPETA TEMA DEL USUARIO ===== */
+        .modal .modal-footer a.btn[download],
+        .modal .modal-footer a.btn[href*="download"] {
+            background-color: var(--theme-color) !important;
+            border-color: var(--theme-color) !important;
+            color: #fff !important;
+            transition: all 0.3s ease !important;
+        }
 
-    .modal .modal-footer a.btn[download]:hover,
-    .modal .modal-footer a.btn[href*="download"]:hover {
-        background-color: var(--theme-color) !important;
-        border-color: var(--theme-color) !important;
-        filter: brightness(0.88) !important;
-        color: #fff !important;
-        transform: translateY(-1px);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
-    }
+        .modal .modal-footer a.btn[download]:hover,
+        .modal .modal-footer a.btn[href*="download"]:hover {
+            background-color: var(--theme-color) !important;
+            border-color: var(--theme-color) !important;
+            filter: brightness(0.88) !important;
+            color: #fff !important;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+        }
 
-    /* ===== BOTON DESCARGAR EN SOLICITUDES (también en body) ===== */
-    .modal-body a.btn[download],
-    .modal-body a.btn[href*="download"] {
-        background-color: var(--theme-color) !important;
-        border-color: var(--theme-color) !important;
-        color: #fff !important;
-        transition: all 0.3s ease !important;
-    }
+        .modal-body a.btn[download],
+        .modal-body a.btn[href*="download"] {
+            background-color: var(--theme-color) !important;
+            border-color: var(--theme-color) !important;
+            color: #fff !important;
+            transition: all 0.3s ease !important;
+        }
 
-    .modal-body a.btn[download]:hover,
-    .modal-body a.btn[href*="download"]:hover {
-        background-color: var(--theme-color) !important;
-        border-color: var(--theme-color) !important;
-        filter: brightness(0.88) !important;
-        transform: translateY(-1px);
-    } 
-    /* ===== X BLANCA EN MODALES DE ESTADÍSTICAS E HISTÓRICO ===== */
-    #modalEstadisticas .btn-close,
-    #modalHistorico .btn-close {
-        background-color: transparent !important;
-        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23ffffff'%3e%3cpath d='M.293.293a1 1 0 0 1 1.414 0L8 6.586 14.293.293a1 1 0 1 1 1.414 1.414L9.414 8l6.293 6.293a1 1 0 0 1-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 0 1-1.414-1.414L6.586 8 .293 1.707a1 1 0 0 1 0-1.414z'/%3e%3c/svg%3e") !important;
-        filter: none !important;
-        opacity: 0.9 !important;
-        box-shadow: none !important;
-        border: none !important;
-    }
+        .modal-body a.btn[download]:hover,
+        .modal-body a.btn[href*="download"]:hover {
+            background-color: var(--theme-color) !important;
+            border-color: var(--theme-color) !important;
+            filter: brightness(0.88) !important;
+            transform: translateY(-1px);
+        }
+        
+        /* ===== X BLANCA EN MODALES DE ESTADÍSTICAS E HISTÓRICO ===== */
+        #modalEstadisticas .btn-close,
+        #modalHistorico .btn-close {
+            background-color: transparent !important;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23ffffff'%3e%3cpath d='M.293.293a1 1 0 0 1 1.414 0L8 6.586 14.293.293a1 1 0 1 1 1.414 1.414L9.414 8l6.293 6.293a1 1 0 0 1-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 0 1-1.414-1.414L6.586 8 .293 1.707a1 1 0 0 1 0-1.414z'/%3e%3c/svg%3e") !important;
+            filter: none !important;
+            opacity: 0.9 !important;
+            box-shadow: none !important;
+            border: none !important;
+        }
 
-    #modalEstadisticas .btn-close:hover,
-    #modalHistorico .btn-close:hover {
-        background-color: rgba(255,255,255,0.15) !important;
-        opacity: 1 !important;
-        border-radius: 4px !important;
-    }
+        #modalEstadisticas .btn-close:hover,
+        #modalHistorico .btn-close:hover {
+            background-color: rgba(255,255,255,0.15) !important;
+            opacity: 1 !important;
+            border-radius: 4px !important;
+        }
 
-    /* ===== BOTÓN CERRAR GRIS PARA MODAL HISTÓRICO ===== */
-    #modalHistorico .modal-footer .btn-secondary,
-    #modalHistorico .modal-footer button[data-bs-dismiss="modal"] {
-        background-color: #6c757d !important;
-        border-color: #6c757d !important;
-        color: #fff !important;
-    }
+        #modalHistorico .modal-footer .btn-secondary,
+        #modalHistorico .modal-footer button[data-bs-dismiss="modal"] {
+            background-color: #6c757d !important;
+            border-color: #6c757d !important;
+            color: #fff !important;
+        }
 
-    #modalHistorico .modal-footer .btn-secondary:hover,
-    #modalHistorico .modal-footer button[data-bs-dismiss="modal"]:hover {
-        background-color: #5a6268 !important;
-        border-color: #545b62 !important;
-        color: #fff !important;
-    }
+        #modalHistorico .modal-footer .btn-secondary:hover,
+        #modalHistorico .modal-footer button[data-bs-dismiss="modal"]:hover {
+            background-color: #5a6268 !important;
+            border-color: #545b62 !important;
+            color: #fff !important;
+        }
 
-    /* Ocultar permanentemente el botón de cerrar en el modal de edición de documentos */
-    #editDocumentModal .btn-close {
-        display: none !important;
-    }
+        #editDocumentModal .btn-close {
+            display: none !important;
+        }
+
+        /* =====================================================
+           ESTILOS RESPONSIVOS - CORRECCIÓN DEFINITIVA PARA TABLET
+        ===================================================== */
+
+        /* Tablets (769px a 992px) - VERSIÓN MODERNA Y EQUILIBRADA */ /*Pendiente */
+        @media (min-width: 800px) and (max-width: 1280px) {  /* Pendiente */
+            /* Navbar más compacto */
+            .navbar-custom {
+                padding: 0.4rem 0 !important;
+            }
+            .navbar-custom .container {
+                display: flex !important;
+                flex-direction: row !important;
+                flex-wrap: nowrap !important;
+                justify-content: space-between !important;
+                align-items: center !important;
+                gap: 0.5rem !important;
+            }
+            
+            /* Logo más proporcionado */
+            .navbar-brand img {
+                height: 32px !important;
+                width: auto !important;
+            }
+            .left-section {
+                width: auto !important;
+                flex: 0 0 auto !important;
+            }
+            
+            /* Texto central - elegante y legible */
+            .welcome-container {
+                position: static !important;
+                transform: none !important;
+                flex: 1 !important;
+                text-align: center !important;
+                margin: 0 !important;
+                padding: 0 0.5rem !important;
+            }
+            .welcome-text {
+                font-size: 0.7rem !important;
+                font-weight: 500 !important;
+                white-space: nowrap !important;
+                display: inline-block !important;
+                letter-spacing: -0.2px !important;
+            }
+            
+            /* Sección derecha - compacta pero legible */
+            .right-section {
+                width: auto !important;
+                flex: 0 0 auto !important;
+                gap: 0.5rem !important;
+            }
+            
+            /* Fecha */
+            .right-section .d-flex.align-items-center {
+                font-size: 0.65rem !important;
+                white-space: nowrap !important;
+                gap: 0.25rem !important;
+            }
+            .right-section .d-flex.align-items-center i {
+                font-size: 0.7rem !important;
+            }
+            
+            /* Usuario */
+            .right-section .navbar-nav {
+                margin: 0 !important;
+            }
+            .right-section .nav-link {
+                font-size: 0.65rem !important;
+                padding: 0.2rem 0.35rem !important;
+                white-space: nowrap !important;
+            }
+            .right-section .nav-link i {
+                font-size: 0.7rem !important;
+                margin-right: 0.25rem !important;
+            }
+            
+            /* Dropdown menu */
+            .dropdown-menu {
+                font-size: 0.7rem !important;
+                min-width: 130px !important;
+                padding: 0.3rem 0 !important;
+            }
+            .dropdown-item {
+                padding: 0.25rem 0.6rem !important;
+                font-size: 0.65rem !important;
+            }
+            .dropdown-item svg {
+                width: 11px !important;
+                height: 11px !important;
+            }
+            
+            /* Footer */
+            .footer {
+                padding: 0.75rem 0 !important;
+                margin-top: 2rem !important;
+            }
+            .footer p {
+                font-size: 0.6rem !important;
+            }
+            
+            /* Contenido principal */
+            .main-content {
+                padding-top: 1rem !important;
+            }
+            
+            /* Tarjetas y contenedores */
+            .card {
+                margin-bottom: 1rem !important;
+            }
+            
+            /* Tablas responsivas */
+            .table-responsive {
+                overflow-x: auto !important;
+            }
+        }
+
+        /* Móviles (768px y menos) */
+        @media (max-width: 768px) {
+            .navbar-custom {
+                padding: 0.5rem 0 !important;
+            }
+            .navbar-custom .container {
+                flex-direction: column !important;
+                align-items: center !important;
+                gap: 0.35rem !important;
+            }
+            .navbar-brand img {
+                height: 32px !important;
+            }
+            .left-section {
+                width: auto !important;
+            }
+            .welcome-container {
+                position: static !important;
+                transform: none !important;
+                text-align: center !important;
+                margin: 0.15rem 0 !important;
+            }
+            .welcome-text {
+                font-size: 0.7rem !important;
+                white-space: normal !important;
+            }
+            .right-section {
+                width: 100% !important;
+                justify-content: center !important;
+                gap: 0.5rem !important;
+            }
+            .right-section .d-flex.align-items-center {
+                font-size: 0.6rem !important;
+                gap: 0.25rem !important;
+            }
+            .right-section .d-flex.align-items-center i {
+                font-size: 0.7rem !important;
+            }
+            .right-section .navbar-nav {
+                margin: 0 !important;
+            }
+            .right-section .nav-link {
+                font-size: 0.7rem !important;
+                padding: 0.2rem 0.35rem !important;
+                white-space: nowrap !important;
+            }
+            .right-section .nav-link i {
+                font-size: 0.7rem !important;
+            }
+            .dropdown-menu {
+                min-width: 140px !important;
+                font-size: 0.7rem !important;
+                padding: 0.25rem 0 !important;
+            }
+            .dropdown-item {
+                padding: 0.25rem 0.6rem !important;
+                font-size: 0.7rem !important;
+            }
+            .dropdown-item svg {
+                width: 11px !important;
+                height: 11px !important;
+            }
+            .dropdown-divider {
+                margin: 0.25rem 0 !important;
+            }
+            .footer {
+                padding: 0.75rem 0 !important;
+                margin-top: 1.5rem !important;
+            }
+            .footer p {
+                font-size: 0.6rem !important;
+            }
+            .main-content {
+                padding-top: 0.75rem !important;
+            }
+            .alert-custom {
+                margin-bottom: 0.75rem !important;
+                padding: 0.6rem 0.8rem !important;
+                font-size: 0.75rem !important;
+            }
+            .modal-dialog {
+                margin: 0.5rem !important;
+            }
+            #modalTema .modal-dialog {
+                max-width: 95% !important;
+            }
+            #modalTema .modal-header {
+                padding: 10px 12px !important;
+            }
+            #modalTema .modal-body {
+                padding: 0.75rem !important;
+            }
+            .theme-swatch {
+                width: 20px !important;
+                height: 20px !important;
+            }
+        }
+
+        /* Móviles muy pequeños (480px y menos) */
+        @media (max-width: 480px) {
+            .navbar-brand img {
+                height: 28px !important;
+            }
+            .welcome-text {
+                font-size: 0.65rem !important;
+            }
+            .right-section .d-flex.align-items-center {
+                font-size: 0.55rem !important;
+            }
+            .right-section .d-flex.align-items-center i {
+                font-size: 0.6rem !important;
+            }
+            .right-section .nav-link {
+                font-size: 0.65rem !important;
+                padding: 0.15rem 0.3rem !important;
+            }
+            .dropdown-menu {
+                min-width: 130px !important;
+            }
+            .dropdown-item {
+                font-size: 0.65rem !important;
+                padding: 0.2rem 0.5rem !important;
+            }
+            .footer p {
+                font-size: 0.55rem !important;
+            }
+        }
     </style>
 
     @stack('styles')
@@ -628,27 +864,22 @@
         let tempColor = "{{ auth()->user()->theme_color ?? '#800000' }}";
 
         function applyTheme(color) {
-
-                // IGNORAR COMPLETAMENTE LA PÁGINA DEL HISTORIAL
             if (window.location.href.indexOf('historial-versiones') !== -1) {
                 return;
             }
                     
-            /* 1. Variable CSS global */
             document.documentElement.style.setProperty('--theme-color', color);
 
-            /* 2. Clases conocidas con tema */
             document.querySelectorAll(
                 '.btn-primary, .btn-tema, .btn-modal-submit, .btn-registrar, .btn-gestionar-procesos, .usuarios-icon-wrap'
             ).forEach(function(el) {
                 if (el.disabled) return;
-                 if (el.classList.contains('no-tema')) return;
+                if (el.classList.contains('no-tema')) return;
                 el.style.setProperty('background-color', color, 'important');
                 el.style.setProperty('border-color', color, 'important');
                 el.style.setProperty('background', color, 'important');
             });
 
-            /* 3. btn-secondary (excluye filtros, cancelar, overlays especiales) */
             document.querySelectorAll('.btn-secondary').forEach(function(el) {
                 if (el.disabled) return;
                 if (el.classList.contains('no-tema')) return; 
@@ -665,7 +896,6 @@
                 el.style.setProperty('border-color', color, 'important');
             });
 
-            /* 4. Botones inline background (excluye blancos, grises especiales, overlays) */
             document.querySelectorAll('button[style*="background"], a[style*="background"]').forEach(function(el) {
                 if (el.disabled) return;
                 if (el.classList.contains('no-tema')) return;
@@ -690,33 +920,28 @@
                 el.style.setProperty('background', color, 'important');
             });
 
-            /* 5. Restaurar cancelar/modal-cancel siempre gris (pero NO las X de los modales) */
             document.querySelectorAll('.btn-modal-cancel, .modal-footer .btn-secondary').forEach(function(el) {
                 el.style.setProperty('background-color', '#6c757d', 'important');
                 el.style.setProperty('background', '#6c757d', 'important');
                 el.style.setProperty('border-color', '#6c757d', 'important');
             });
 
-            /* Excluir las X (btn-close) de los modales de Estadísticas e Histórico */
             document.querySelectorAll('#modalEstadisticas .btn-close, #modalHistorico .btn-close, #modalEstadisticas button[data-bs-dismiss="modal"], #modalHistorico button[data-bs-dismiss="modal"]').forEach(function(el) {
                 el.style.setProperty('background-color', 'transparent', 'important');
                 el.style.setProperty('background', 'transparent', 'important');
                 el.style.setProperty('border-color', 'transparent', 'important');
             });
 
-            /* 6. Restaurar avatar-circle siempre gris */
             document.querySelectorAll('.avatar-circle').forEach(function(el) {
                 el.style.setProperty('background', 'linear-gradient(135deg, #737373, #737373)', 'important');
                 el.style.setProperty('background-color', '#737373', 'important');
             });
 
-            /* 7. Restaurar Estadísticas/Histórico */
             var elEst = document.getElementById('btnEstadisticas');
             if (elEst) { elEst.style.setProperty('background-color','#0dcaf0','important'); elEst.style.setProperty('background','#0dcaf0','important'); }
             var elHist = document.getElementById('btnHistorico');
             if (elHist) { elHist.style.setProperty('background-color','#0d6efd','important'); elHist.style.setProperty('background','#0d6efd','important'); }
 
-            /* 8. Restaurar encabezados de modales en blanco (excepto modalTema y modales especiales) */
             document.querySelectorAll('.modal-header').forEach(function(el) {
                 var modal = el.closest('.modal');
                 if (!modal) return;
@@ -729,72 +954,64 @@
                 el.style.setProperty('color', '#212529', 'important');
             });
 
-            /* 9. Paginación siempre gris */
             document.querySelectorAll('.pagination .page-link').forEach(function(el) {
                 el.style.setProperty('background-color', '#ffffff', 'important');
                 el.style.setProperty('border-color', '#dee2e6', 'important');
                 el.style.setProperty('color', '#6c757d', 'important');
             });
 
-            /* 10. Historial de versiones botones — outline, no rellenos */
             document.querySelectorAll('#filtrosForm .btn-outline-secondary, #btnBorrarTodo').forEach(function(el) {
                 if (el.disabled) return;
                 el.style.setProperty('background-color', '#ffffff', 'important');
                 el.style.setProperty('border-color', color, 'important');
                 el.style.setProperty('color', color, 'important');
             });
-            /* 11. Hacer visible la X en modales de Estadísticas e Histórico */
+            
             document.querySelectorAll('#modalEstadisticas .btn-close, #modalHistorico .btn-close').forEach(function(el) {
                 el.style.setProperty('filter', 'invert(1)', 'important');
                 el.style.setProperty('opacity', '1', 'important');
                 el.style.setProperty('background-color', 'transparent', 'important');
             });
-                    /* 12. FORZAR X VISIBLE EN MODALES DE ESTADÍSTICAS E HISTÓRICO */
-        function fixCloseButtons() {
-            const modales = ['modalEstadisticas', 'modalHistorico'];
-            modales.forEach(id => {
-                const modal = document.getElementById(id);
-                if (!modal) return;
-                const btnClose = modal.querySelector('.btn-close');
-                if (btnClose && !btnClose.hasAttribute('data-fixed')) {
-                    // Guardar el texto original por si acaso
-                    btnClose.setAttribute('data-fixed', 'true');
-                    // Limpiar estilos y poner X blanca
-                    btnClose.style.cssText = `
-                        background: transparent !important;
-                        background-color: transparent !important;
-                        border: none !important;
-                        font-size: 20px !important;
-                        font-weight: bold !important;
-                        line-height: 1 !important;
-                        color: white !important;
-                        opacity: 0.9 !important;
-                        padding: 0 8px !important;
-                        margin: 0 !important;
-                        box-shadow: none !important;
-                        outline: none !important;
-                        text-shadow: none !important;
-                    `;
-                    btnClose.textContent = '✕';
-                    // Eliminar cualquier SVG o imagen de fondo
-                    btnClose.innerHTML = '✕';
-                }
-            });
-        }
-
-        // Ejecutar cuando se abran los modales
-        document.getElementById('modalEstadisticas')?.addEventListener('shown.bs.modal', fixCloseButtons);
-        document.getElementById('modalHistorico')?.addEventListener('shown.bs.modal', fixCloseButtons);
-        // Ejecutar también al cargar por si ya están abiertos
-        setTimeout(fixCloseButtons, 500);
             
-        /* 13. FORZAR BOTÓN CERRAR GRIS EN MODAL HISTÓRICO (el del footer, no la X) */
-        var modalHistoricoFooterBtn = document.querySelector('#modalHistorico .modal-footer .btn-secondary');
-        if (modalHistoricoFooterBtn) {
-            modalHistoricoFooterBtn.style.setProperty('background-color', '#6c757d', 'important');
-            modalHistoricoFooterBtn.style.setProperty('border-color', '#6c757d', 'important');
-            modalHistoricoFooterBtn.style.setProperty('background', '#6c757d', 'important');
-        }
+            function fixCloseButtons() {
+                const modales = ['modalEstadisticas', 'modalHistorico'];
+                modales.forEach(id => {
+                    const modal = document.getElementById(id);
+                    if (!modal) return;
+                    const btnClose = modal.querySelector('.btn-close');
+                    if (btnClose && !btnClose.hasAttribute('data-fixed')) {
+                        btnClose.setAttribute('data-fixed', 'true');
+                        btnClose.style.cssText = `
+                            background: transparent !important;
+                            background-color: transparent !important;
+                            border: none !important;
+                            font-size: 20px !important;
+                            font-weight: bold !important;
+                            line-height: 1 !important;
+                            color: white !important;
+                            opacity: 0.9 !important;
+                            padding: 0 8px !important;
+                            margin: 0 !important;
+                            box-shadow: none !important;
+                            outline: none !important;
+                            text-shadow: none !important;
+                        `;
+                        btnClose.textContent = '✕';
+                        btnClose.innerHTML = '✕';
+                    }
+                });
+            }
+
+            document.getElementById('modalEstadisticas')?.addEventListener('shown.bs.modal', fixCloseButtons);
+            document.getElementById('modalHistorico')?.addEventListener('shown.bs.modal', fixCloseButtons);
+            setTimeout(fixCloseButtons, 500);
+            
+            var modalHistoricoFooterBtn = document.querySelector('#modalHistorico .modal-footer .btn-secondary');
+            if (modalHistoricoFooterBtn) {
+                modalHistoricoFooterBtn.style.setProperty('background-color', '#6c757d', 'important');
+                modalHistoricoFooterBtn.style.setProperty('border-color', '#6c757d', 'important');
+                modalHistoricoFooterBtn.style.setProperty('background', '#6c757d', 'important');
+            }
         }
 
         function updatePreview(color) {

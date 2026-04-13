@@ -1,4 +1,17 @@
-<!-- MODAL RENOMBRAR DOCUMENTO -->
+{{-- ============================================================ --}}
+{{-- ARCHIVO: MODAL_ACCIONES.BLADE.PHP                           --}}
+{{-- MÓDULO: SOLICITUDES DE MEJORA                               --}}
+{{-- CONTIENE 3 MODALES (VENTANAS EMERGENTES) PARA GESTIONAR     --}}
+{{-- LOS DOCUMENTOS DENTRO DEL MÓDULO DE SOLICITUDES DE MEJORA.  --}}
+{{-- ============================================================ --}}
+
+
+{{-- ============================================================ --}}
+{{-- MODAL 1: RENOMBRAR DOCUMENTO                                 --}}
+{{-- MUESTRA UN CAMPO DE TEXTO PARA ESCRIBIR EL NUEVO NOMBRE     --}}
+{{-- DE UN DOCUMENTO EN EL MÓDULO DE SOLICITUDES DE MEJORA.      --}}
+{{-- LA EXTENSIÓN DEL ARCHIVO SE CONSERVA AUTOMÁTICAMENTE.       --}}
+{{-- ============================================================ --}}
 <div class="modal fade" id="renameDocumentModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <form action="" method="POST" id="renameDocumentForm">
@@ -30,7 +43,14 @@
     </div>
 </div>
 
-<!-- MODAL MOVER DOCUMENTO -->
+
+{{-- ============================================================ --}}
+{{-- MODAL 2: MOVER DOCUMENTO                                     --}}
+{{-- MUESTRA EL NOMBRE DEL DOCUMENTO Y UN SELECTOR DE CARPETA    --}}
+{{-- PARA ELEGIR A DÓNDE MOVER EL DOCUMENTO DENTRO DEL MÓDULO   --}}
+{{-- DE SOLICITUDES DE MEJORA.                                   --}}
+{{-- LAS OPCIONES DEL SELECTOR SE CARGAN DINÁMICAMENTE.          --}}
+{{-- ============================================================ --}}
 <div class="modal fade" id="moveDocumentModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <form action="" method="POST" id="moveDocumentForm">
@@ -71,7 +91,13 @@
     </div>
 </div>
 
-<!-- MODAL VER CALENDARIO (DETALLE DE FECHAS) -->
+
+{{-- ============================================================ --}}
+{{-- MODAL 3: VER CALENDARIO (DETALLE DE FECHAS)                  --}}
+{{-- MUESTRA INFORMACIÓN DETALLADA DE LAS FECHAS RELACIONADAS    --}}
+{{-- CON UNA SOLICITUD DE MEJORA (FECHAS DE INICIO, CIERRE,      --}}
+{{-- SEGUIMIENTO, ETC.). EL CONTENIDO SE CARGA DINÁMICAMENTE.    --}}
+{{-- ============================================================ --}}
 <div class="modal fade" id="calendarioModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">

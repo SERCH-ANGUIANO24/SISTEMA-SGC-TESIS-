@@ -2,6 +2,10 @@
 
 @section('title', 'Informes de Auditoría')
 
+{{-- ══════════════════════════════════════════════════════════════
+     ESTILOS CSS DE LA PÁGINA DE INFORMES DE AUDITORÍA
+     INCLUYE: TABLA, BADGES, BOTONES, MODALES, GRÁFICAS Y RESPONSIVE
+══════════════════════════════════════════════════════════════ --}}
 @push('styles')
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
 <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
@@ -32,7 +36,7 @@
     #limpiarBusqueda:hover { background-color: #737373 !important; border-color: #737373 !important; }
     #limpiarBusqueda:hover i { color: white !important; }
     .btn[style*="background-color: #737373"]:hover { background-color: #5a5a5a !important; color: white !important; }
-    .table-responsive { border: 1px solid #dee2e6; border-radius: 5px; overflow: hidden; margin-bottom: 15px; }
+    .table-responsive { border: 1px solid #dee2e6; border-radius: 5px; overflow-x: auto; margin-bottom: 15px; }
     .pagination-info { color: #6c757d; font-size: 0.9rem; margin-bottom: 10px; }
     .pagination { display: flex; justify-content: flex-end; gap: 5px; }
     .procesos-container { display: flex; flex-wrap: wrap; gap: 3px; }
@@ -145,14 +149,307 @@
         display: inline-block;
         vertical-align: middle;
     }
+
+    /* =====================================================
+       ESTILOS RESPONSIVOS
+    ===================================================== */
+
+    /* Tablets específicamente (769px a 992px) */
+    @media (min-width: 769px) and (max-width: 992px) {
+        /* Forzar scroll horizontal en tablet */
+        .table-responsive {
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch !important;
+        }
+        
+        #tablaInformes {
+            min-width: 950px !important;
+            width: max-content !important;
+        }
+        
+        .table th, .table td {
+            white-space: nowrap !important;
+        }
+        
+        /* Reducir padding en tablet para que quepa más */
+        .table th {
+            padding: 8px 6px !important;
+            font-size: 0.75rem !important;
+        }
+        .table td {
+            padding: 8px 6px !important;
+            font-size: 0.75rem !important;
+        }
+        
+        /* Botones más compactos en tablet */
+        .btn-sm {
+            padding: 0.15rem 0.3rem !important;
+            font-size: 0.65rem !important;
+        }
+        
+        .tag-proceso {
+            font-size: 0.6rem !important;
+            padding: 1px 4px !important;
+        }
+        
+        /* Filtros en tablet */
+        .row.mb-4 .col-12 .d-flex {
+            flex-wrap: wrap !important;
+            gap: 0.5rem !important;
+        }
+        
+        .d-flex.align-items-center.position-relative[style*="width: 700px"] {
+            width: 100% !important;
+            min-width: auto !important;
+        }
+        
+        .dropdown .btn, #btnEstadisticas, #btnHistorico {
+            font-size: 0.75rem !important;
+            padding: 0.375rem 0.75rem !important;
+        }
+    }
+
+    /* Tablets y pantallas medianas (992px y menos) */
+    @media (max-width: 992px) {
+        /* Encabezado */
+        .container-fluid > .row:first-child .d-flex {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 1rem !important;
+        }
+        .container-fluid > .row:first-child .d-flex .btn {
+            width: 100% !important;
+        }
+        
+        /* Filtros - se envuelven */
+        .row.mb-4 .col-12 .d-flex {
+            flex-direction: column !important;
+            align-items: stretch !important;
+            gap: 0.75rem !important;
+        }
+        .row.mb-4 .col-12 .d-flex > div.d-flex.align-items-center.position-relative {
+            width: 100% !important;
+        }
+        .row.mb-4 .col-12 .d-flex .dropdown,
+        .row.mb-4 .col-12 .d-flex .btn {
+            width: 100% !important;
+        }
+        .row.mb-4 .col-12 .d-flex .dropdown .btn {
+            width: 100% !important;
+        }
+    }
+
+    /* Móviles (768px y menos) */
+    @media (max-width: 768px) {
+        /* Contenedor principal */
+        .container-fluid {
+            padding-left: 12px !important;
+            padding-right: 12px !important;
+        }
+        
+        /* Título */
+        .h3 {
+            font-size: 1.5rem !important;
+        }
+        .h3 i {
+            font-size: 2rem !important;
+        }
+        
+        /* Buscador - sin espacio entre input y botón */
+        .d-flex.align-items-center.position-relative[style*="width: 700px"] {
+            width: 100% !important;
+            display: flex !important;
+            flex-direction: row !important;
+            flex-wrap: nowrap !important;
+            gap: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        
+        .d-flex.align-items-center.position-relative .position-relative {
+            flex: 1 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        
+        #inputBuscar {
+            font-size: 0.9rem !important;
+            height: 38px !important;
+            border-top-right-radius: 0 !important;
+            border-bottom-right-radius: 0 !important;
+            border-right: none !important;
+            margin: 0 !important;
+        }
+        
+        #limpiarBusqueda {
+            width: 42px !important;
+            height: 38px !important;
+            border-top-left-radius: 0 !important;
+            border-bottom-left-radius: 0 !important;
+            border-left: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        
+        #limpiarBusqueda i {
+            font-size: 1.2rem !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        
+        /* Botones de filtros */
+        .dropdown .btn, #btnEstadisticas, #btnHistorico {
+            height: 38px !important;
+            font-size: 0.8rem !important;
+        }
+        
+        /* Tabla - scroll horizontal obligatorio */
+        .table-responsive {
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch !important;
+        }
+        #tablaInformes {
+            min-width: 800px !important;
+            width: max-content !important;
+        }
+        .table th, .table td {
+            white-space: nowrap !important;
+        }
+        /* Permitir wrap solo en columnas de texto largo */
+        .table td:nth-child(1), /* Nombre */
+        .table td:nth-child(7) { /* Procesos */
+            white-space: normal !important;
+            min-width: 150px !important;
+            max-width: 200px !important;
+        }
+        
+        /* Columna de acciones */
+        .table td:last-child .d-flex {
+            flex-wrap: nowrap !important;
+        }
+        
+        /* Paginación */
+        .pagination-info {
+            font-size: 0.75rem !important;
+            text-align: center !important;
+            margin-bottom: 8px !important;
+        }
+        .pagination {
+            justify-content: center !important;
+        }
+        .pagination .page-link {
+            padding: 0.25rem 0.5rem !important;
+            font-size: 0.7rem !important;
+        }
+        
+        /* Documento nombre */
+        .table td:nth-child(11) span {
+            max-width: 100px !important;
+            display: inline-block !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+            white-space: nowrap !important;
+        }
+        
+        /* Criterios */
+        .criterio-text {
+            max-width: 150px !important;
+        }
+    }
+
+    /* Móviles muy pequeños (480px y menos) */
+    @media (max-width: 480px) {
+        /* Stats cards */
+        .stat-card .num {
+            font-size: 1.3rem !important;
+        }
+        .stat-card .label {
+            font-size: 0.7rem !important;
+        }
+        
+        /* Modales */
+        .modal-dialog {
+            margin: 0.5rem !important;
+        }
+        .modal-body {
+            padding: 0.75rem !important;
+        }
+        
+        /* Checklist procesos en móvil - una columna */
+        .procesos-checklist {
+            column-count: 1 !important;
+        }
+        
+        /* Tabla NC/OM en móvil */
+        #tablaNcOmPorProceso table {
+            font-size: 0.7rem !important;
+        }
+        #tablaNcOmPorProceso tbody td input[type="text"] {
+            width: 100px !important;
+            font-size: 0.7rem !important;
+        }
+        #tablaNcOmPorProceso tbody td input[type="number"] {
+            width: 55px !important;
+            font-size: 0.7rem !important;
+        }
+        
+        /* Drag area */
+        .drag-area i {
+            font-size: 2rem !important;
+        }
+        .drag-area p {
+            font-size: 0.7rem !important;
+        }
+    }
+
+    /* Mejoras para gráficas responsivas */
+    @media (max-width: 768px) {
+        #wrapperChartPorProceso,
+        #wrapperChartHistorico {
+            overflow-x: auto !important;
+        }
+        
+        #chartPorProceso,
+        #chartHistorico {
+            min-width: 500px !important;
+        }
+        
+        .grafica-anual-container {
+            padding: 10px !important;
+        }
+        
+        /* Tarjetas de estadísticas en móvil */
+        .stat-card .num {
+            font-size: 1.3rem !important;
+        }
+        .stat-card .label {
+            font-size: 0.7rem !important;
+        }
+        .stat-card {
+            padding: 12px 5px !important;
+        }
+    }
     
+    @media (max-width: 480px) {
+        .grafica-anual-container h6 {
+            font-size: 0.8rem !important;
+        }
+        
+        /* Filtros de tipo en gráficas */
+        .filtro-tipo-estadisticas .btn-tipo {
+            padding: 3px 10px !important;
+            font-size: 0.7rem !important;
+        }
+    }
 </style>
 @endpush
 
 @section('content')
 <div class="container-fluid py-4">
 
-    {{-- ── ENCABEZADO ── --}}
+    {{-- ── ENCABEZADO: TÍTULO DE LA PÁGINA Y BOTÓN PARA REGISTRAR NUEVO INFORME ── --}}
+    {{-- EL TÍTULO ES UN ENLACE AL DASHBOARD DE AUDITORÍA --}}
+    {{-- EL BOTÓN DE REGISTRO SOLO ES VISIBLE PARA SUPERADMIN, ADMIN Y AUDITOR_LIDER --}}
     <div class="row mb-4">
         <div class="col-12">
             <div class="d-flex align-items-center justify-content-between">
@@ -162,21 +459,22 @@
                         Informes
                     </h1>
                 </a>
-                @if(Auth::user()->role === 'admin' || Auth::user()->role === 'superadmin')
+                @can('auditoria-access')
                 <button class="btn" type="button" id="btnNuevoInforme" style="background-color: #737373; color: white; border: none;">
                     <i class="bi bi-plus-circle"></i> Registrar Informe
                 </button>
-                @endif
+                @endcan
             </div>
         </div>
     </div>
 
-    {{-- ── FILTROS ── --}}
+    {{-- ── FILTROS: BUSCADOR, ORDENAR, AÑO, TIPO, ESTADÍSTICAS E HISTÓRICO ── --}}
+    {{-- TODOS LOS FILTROS RECONSTRUYEN LA URL CON LOS PARÁMETROS Y RECARGAN LA PÁGINA --}}
     <div class="row mb-4">
         <div class="col-12">
             <div class="d-flex align-items-center gap-3 flex-wrap">
 
-                <!-- Buscar archivos -->
+                {{-- BUSCADOR DE INFORMES POR NOMBRE CON BOTÓN PARA LIMPIAR LA BÚSQUEDA --}}
                 <div class="d-flex align-items-center position-relative" style="width: 700px;">
                     <div class="position-relative flex-grow-1">
                         <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted" style="font-size: 1rem;"></i>
@@ -192,7 +490,7 @@
                     </button>
                 </div>
 
-                <!-- Ordenar por -->
+                {{-- DROPDOWN PARA ORDENAR LOS INFORMES POR NOMBRE O FECHA (ASC O DESC) --}}
                 <div class="dropdown">
                     <button class="btn btn-light border dropdown-toggle" type="button" data-bs-toggle="dropdown" id="btnOrdenar" style="height: 42px; background-color: white;">
                         <i class="bi bi-arrow-up-short"></i> <span id="ordenarTexto">Ordenar por</span>
@@ -205,7 +503,8 @@
                     </ul>
                 </div>
 
-                <!-- Filtrar por Año -->
+                {{-- DROPDOWN PARA FILTRAR LOS INFORMES POR AÑO --}}
+                {{-- LOS AÑOS SE CARGAN DINÁMICAMENTE DESDE JAVASCRIPT --}}
                 <div class="dropdown">
                     <button class="btn btn-light border dropdown-toggle" type="button" data-bs-toggle="dropdown" id="btnAnio" style="height: 42px; background-color: white;">
                         <i class="bi bi-calendar"></i> <span id="anioTexto">Filtrar por Año</span>
@@ -215,7 +514,7 @@
                     </ul>
                 </div>
 
-                <!-- Tipo de Auditoría -->
+                {{-- DROPDOWN PARA FILTRAR LOS INFORMES POR TIPO (INTERNA O EXTERNA) --}}
                 <div class="dropdown">
                     <button class="btn btn-light border dropdown-toggle" type="button" data-bs-toggle="dropdown" id="btnTipo" style="height: 42px; background-color: white;">
                         <i class="bi bi-building"></i> <span id="tipoTexto">Tipo de Auditoría</span>
@@ -227,12 +526,12 @@
                     </ul>
                 </div>
 
-                <!-- Estadísticas -->
+                {{-- BOTÓN QUE ABRE EL MODAL DE ESTADÍSTICAS POR AÑO CON GRÁFICAS --}}
                 <button class="btn" id="btnEstadisticas" style="background-color: #0dcaf0; color: #fff; border: none; height: 42px; padding: 8px 15px; font-weight: 500;">
                     <i class="bi bi-bar-chart-line me-1"></i>Estadísticas
                 </button>
 
-                <!-- ── NUEVO: Histórico Global ── -->
+                {{-- BOTÓN QUE ABRE EL MODAL DEL HISTÓRICO GLOBAL DE NC Y OM POR AÑO --}}
                 <button class="btn" id="btnHistorico" style="background-color: #0d6efd; color: #fff; border: none; height: 42px; padding: 8px 15px; font-weight: 500;">
                     <i class="bi bi-graph-up me-1"></i>Histórico
                 </button>
@@ -241,7 +540,9 @@
         </div>
     </div>
 
-    {{-- ── TABLA ── --}}
+    {{-- ── TABLA PRINCIPAL DE INFORMES DE AUDITORÍA ── --}}
+    {{-- MUESTRA TODOS LOS INFORMES CON SUS DATOS Y ACCIONES DISPONIBLES --}}
+    {{-- LOS ATRIBUTOS data-tipo Y data-nc-om-por-proceso SE USAN PARA LAS ESTADÍSTICAS EN JS --}}
     <div class="row mb-4">
         <div class="col-12">
             <div class="table-responsive">
@@ -262,14 +563,27 @@
                         </tr>
                     </thead>
                     <tbody>
+                        {{-- RECORRE CADA INFORME Y LO MUESTRA EN UNA FILA DE LA TABLA --}}
+                        {{-- SI NO HAY INFORMES, MUESTRA UN MENSAJE EN EL CENTRO --}}
                         @forelse($informes as $inf)
                         <tr class="align-middle"
                             data-tipo="{{ $inf->tipo_auditoria }}"
                             data-nc-om-por-proceso="{{ json_encode($inf->nc_om_por_proceso ?? []) }}">
+
+                            {{-- NOMBRE DEL INFORME EN NEGRITAS --}}
                             <td class="fw-bold">{{ $inf->nombre_informe }}</td>
+
+                            {{-- TIPO DE AUDITORÍA CON BADGE DE COLOR (VERDE=INTERNA, ROJO=EXTERNA) --}}
                             <td><span class="badge-{{ strtolower($inf->tipo_auditoria) }}">{{ $inf->tipo_auditoria }}</span></td>
+
+                            {{-- NOMBRE DEL AUDITOR LÍDER --}}
                             <td>{{ $inf->auditor_lider }}</td>
+
+                            {{-- FECHA EN QUE SE EMITIÓ EL INFORME --}}
                             <td>{{ $inf->fecha_informe->format('d/m/Y') }}</td>
+
+                            {{-- PERIODO DE AUDITORÍA: MUESTRA EL RANGO DE FECHAS Y LOS DÍAS DE DURACIÓN --}}
+                            {{-- OBTIENE LAS FECHAS DEL INFORME O DE LA AUDITORÍA RELACIONADA COMO RESPALDO --}}
                             <td>
                                 @php
                                     $fi = $inf->fecha_inicio ?? ($inf->auditoriaRelacionada?->fecha_inicio ?? null);
@@ -283,7 +597,11 @@
                                 @else -
                                 @endif
                             </td>
+
+                            {{-- AÑO AL QUE PERTENECE EL INFORME --}}
                             <td>{{ $inf->anio }}</td>
+
+                            {{-- LISTA DE PROCESOS AUDITADOS MOSTRADOS COMO ETIQUETAS (TAGS) --}}
                             <td>
                                 <div class="procesos-container">
                                     @if($inf->procesos_auditados)
@@ -294,6 +612,9 @@
                                     @endif
                                 </div>
                             </td>
+
+                            {{-- CRITERIOS DE AUDITORÍA POR PROCESO (SE TRUNCAN SI SON MUY LARGOS) --}}
+                            {{-- EL TITLE DEL DIV MUESTRA EL NOMBRE DEL PROCESO AL HACER HOVER --}}
                             <td>
                                 @if($inf->nc_om_por_proceso)
                                     @foreach($inf->nc_om_por_proceso as $item)
@@ -305,44 +626,59 @@
                                     <span class="text-muted">—</span>
                                 @endif
                             </td>
+
+                            {{-- TOTAL DE NO CONFORMIDADES EN ROJO Y OPORTUNIDADES DE MEJORA EN VERDE --}}
                             <td class="num-red">{{ $inf->no_conformidades }}</td>
                             <td class="num-orange">{{ $inf->oportunidades_mejora }}</td>
+
+                            {{-- NOMBRE DEL DOCUMENTO ADJUNTO (TRUNCADO A 20 CARACTERES) O GUIÓN --}}
                             <td>
                                 @if($inf->documento_path)
                                     <span style="color: #212529;"><i class="bi bi-file-earmark-pdf me-1" style="color: #000000;"></i>{{ Str::limit($inf->documento_nombre, 20) }}</span>
                                 @else <span class="text-muted">—</span>
                                 @endif
                             </td>
+
+                            {{-- BOTONES DE ACCIÓN: VER, DESCARGAR, EDITAR Y ELIMINAR --}}
+                            {{-- VER Y DESCARGAR SOLO SI HAY DOCUMENTO, EDITAR Y ELIMINAR REQUIEREN PERMISO --}}
                             <td>
                                 <div class="d-flex justify-content-center gap-1">
+                                    {{-- BOTÓN VER: SOLO DISPONIBLE SI EL DOCUMENTO ES PDF --}}
                                     @if($inf->documento_path && strtolower(pathinfo($inf->documento_nombre, PATHINFO_EXTENSION)) === 'pdf')
                                     <button type="button" class="btn btn-sm btn-outline-info" title="Ver documento"
                                         onclick="verDocumento({{ $inf->id }}, '{{ addslashes($inf->documento_nombre) }}')">
                                         <i class="bi bi-eye"></i>
                                     </button>
                                     @endif
+
+                                    {{-- BOTÓN DESCARGAR: SOLO DISPONIBLE SI HAY DOCUMENTO ADJUNTO --}}
                                     @if($inf->documento_path)
                                     <a href="{{ url('auditorias/informes') }}/{{ $inf->id }}/descargar"
                                        class="btn btn-sm btn-outline-primary" title="Descargar documento">
                                         <i class="bi bi-download"></i>
                                     </a>
                                     @endif
-                                    @if(Auth::user()->role === 'admin' || Auth::user()->role === 'superadmin')
+
+                                    {{-- BOTÓN EDITAR: SOLO VISIBLE PARA SUPERADMIN, ADMIN Y AUDITOR_LIDER --}}
+                                    @can('auditoria-access')
                                     <button type="button" class="btn btn-sm btn-outline-secondary" title="Editar informe"
                                         onclick="editarInforme({{ $inf->id }})">
                                         <i class="bi bi-pencil-square"></i>
                                     </button>
-                                    @endif
-                                    @if(Auth::user()->role === 'admin' || Auth::user()->role === 'superadmin')
+                                    @endcan
+
+                                    {{-- BOTÓN ELIMINAR: SOLO VISIBLE PARA SUPERADMIN, ADMIN Y AUDITOR_LIDER --}}
+                                    @can('auditoria-access')
                                     <button type="button" class="btn btn-sm btn-outline-danger" title="Eliminar informe"
                                         onclick="eliminarInforme({{ $inf->id }}, '{{ addslashes($inf->nombre_informe) }}')">
                                         <i class="bi bi-trash"></i>
                                     </button>
-                                    @endif
+                                    @endcan
                                 </div>
                             </td>
                         </tr>
                         @empty
+                        {{-- MENSAJE CUANDO NO HAY INFORMES REGISTRADOS --}}
                         <tr><td colspan="12" class="text-center text-muted py-3">No hay informes registrados.</td></tr>
                         @endforelse
                     </tbody>
@@ -351,7 +687,7 @@
         </div>
     </div>
 
-    {{-- Paginación --}}
+    {{-- ── PAGINACIÓN: MUESTRA EL RANGO DE REGISTROS VISIBLES Y LOS BOTONES DE PÁGINA ── --}}
     <div class="pagination-info">
         Mostrando registros del {{ $informes->firstItem() ?? 0 }} al {{ $informes->lastItem() ?? 0 }}
         de un total de {{ $informes->total() }} registros
@@ -365,6 +701,8 @@
 
 {{-- ══════════════════════════════════════════════════════════════
      MODAL: SUBIR / EDITAR INFORME
+     SE USA TANTO PARA CREAR UN NUEVO INFORME COMO PARA EDITAR UNO EXISTENTE
+     EL TÍTULO Y EL MÉTODO (POST/PUT) CAMBIAN DINÁMICAMENTE DESDE JAVASCRIPT
 ══════════════════════════════════════════════════════════════ --}}
 <div class="modal fade" id="modalInforme" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-scrollable">
@@ -375,14 +713,20 @@
       <div class="modal-body">
         <form id="formInforme" enctype="multipart/form-data" novalidate>
           @csrf
+          {{-- CAMPO OCULTO PARA INDICAR SI ES CREACIÓN (POST) O EDICIÓN (PUT) --}}
           <input type="hidden" name="_method" id="formMethod" value="POST">
+          {{-- CAMPO OCULTO PARA GUARDAR EL ID DEL INFORME AL EDITAR --}}
           <input type="hidden" name="informe_id" id="informeId">
           <div class="row g-3">
+
+            {{-- NOMBRE DEL INFORME --}}
             <div class="col-md-6">
               <label class="form-label">Nombre del Informe <span class="text-danger">*</span></label>
               <input type="text" class="form-control" name="nombre_informe" id="fNombre" placeholder="Ej. Informe_2024_Q1" required>
               <div class="invalid-feedback" id="fNombre-feedback">El nombre del informe es requerido</div>
             </div>
+
+            {{-- TIPO DE AUDITORÍA (INTERNA O EXTERNA) --}}
             <div class="col-md-6">
               <label class="form-label">Tipo de Auditoría <span class="text-danger">*</span></label>
               <select class="form-select" name="tipo_auditoria" id="fTipo" required>
@@ -392,11 +736,16 @@
               </select>
               <div class="invalid-feedback" id="fTipo-feedback">El tipo de auditoría es requerido</div>
             </div>
+
+            {{-- NOMBRE DEL AUDITOR LÍDER --}}
             <div class="col-md-6">
               <label class="form-label">Auditor Líder <span class="text-danger">*</span></label>
               <input type="text" class="form-control" name="auditor_lider" id="fAuditor" placeholder="Nombre del auditor" required>
               <div class="invalid-feedback" id="fAuditor-feedback">El nombre del auditor líder es requerido</div>
             </div>
+
+            {{-- SELECTOR DE AUDITORÍA RELACIONADA --}}
+            {{-- AL SELECCIONAR UNO, SE COPIAN AUTOMÁTICAMENTE LAS FECHAS DE INICIO Y FIN --}}
             <div class="col-md-6">
               <label class="form-label">Auditoría Relacionada</label>
               <select class="form-select" name="auditoria_relacionada_id" id="fAuditoriaRel">
@@ -411,11 +760,16 @@
               </select>
               <small class="text-muted">Al seleccionar, se copiará el rango de fechas al campo "Periodo de Auditoría"</small>
             </div>
+
+            {{-- FECHA EN QUE SE EMITE EL INFORME --}}
             <div class="col-md-6">
               <label class="form-label">Fecha del Informe <span class="text-danger">*</span></label>
               <input type="date" class="form-control" name="fecha_informe" id="fFechaInforme" required>
               <div class="invalid-feedback" id="fFechaInforme-feedback">La fecha del informe es requerida</div>
             </div>
+
+            {{-- PERIODO DE AUDITORÍA (SOLO LECTURA, SE LLENA AUTOMÁTICAMENTE AL ELEGIR AUDITORÍA RELACIONADA) --}}
+            {{-- LOS CAMPOS OCULTOS fecha_inicio Y fecha_fin SON LOS QUE SE ENVÍAN AL SERVIDOR --}}
             <div class="col-md-6">
               <label class="form-label">
                 Periodo de Auditoría <span class="text-danger">*</span>
@@ -428,6 +782,9 @@
               <input type="hidden" id="fecha_fin" name="fecha_fin">
               <div class="invalid-feedback" id="rango-fechas-feedback">Debe seleccionar el periodo de auditoría</div>
             </div>
+
+            {{-- CHECKLIST DE PROCESOS AUDITADOS --}}
+            {{-- SE PUEDE SELECCIONAR MÚLTIPLES PROCESOS Y AGREGAR NUEVOS DESDE EL CAMPO DE ABAJO --}}
             <div class="col-12">
               <label class="form-label">Procesos Auditados <span class="text-danger">*</span> <small class="text-muted">(puede elegir varios)</small></label>
               <div id="fProcesos" class="procesos-checklist border rounded p-3">
@@ -443,6 +800,10 @@
               </div>
               <div class="invalid-feedback" id="fProcesos-feedback">Debe seleccionar al menos un proceso</div>
             </div>
+
+            {{-- TABLA DE NO CONFORMIDADES Y OPORTUNIDADES DE MEJORA POR PROCESO --}}
+            {{-- APARECE AUTOMÁTICAMENTE CUANDO SE SELECCIONA AL MENOS UN PROCESO --}}
+            {{-- LOS TOTALES SE CALCULAN AUTOMÁTICAMENTE AL INGRESAR VALORES --}}
             <div class="col-12" id="tablaNcOmPorProceso">
               <label class="form-label">
                 <i class="bi bi-table me-1" style="color:#000000;"></i>
@@ -458,9 +819,11 @@
                       <th style="background:#ffffff;color:#212529;padding:8px 12px;text-align:center;font-weight:600;width:150px;border-bottom:1px solid #dee2e6;">Oport. de Mejora</th>
                      </tr>
                   </thead>
+                  {{-- LAS FILAS SE GENERAN DINÁMICAMENTE DESDE JAVASCRIPT AL SELECCIONAR PROCESOS --}}
                   <tbody id="cuerpoTablaNcOm"></tbody>
                 </table>
               </div>
+              {{-- TOTALES DE NC Y OM CALCULADOS AUTOMÁTICAMENTE --}}
               <div class="totales-nc-om mt-2">
                 <span>Totales:</span>
                 <span class="badge-total-nc">NC: <span id="totalNcDisplay">0</span></span>
@@ -471,8 +834,13 @@
                 Los totales se calculan automáticamente sumando los valores de cada proceso.
               </small>
             </div>
+
+            {{-- CAMPOS OCULTOS QUE GUARDAN LOS TOTALES CALCULADOS PARA ENVIARLOS AL SERVIDOR --}}
             <input type="hidden" name="no_conformidades" id="fNoConf" value="0">
             <input type="hidden" name="oportunidades_mejora" id="fOport" value="0">
+
+            {{-- ÁREA DE CARGA DE DOCUMENTO (DRAG & DROP O CLIC PARA SELECCIONAR) --}}
+            {{-- EL DOCUMENTO ES OBLIGATORIO EN CREACIÓN Y OPCIONAL EN EDICIÓN --}}
             <div class="col-12">
               <label class="form-label">Documento <span id="docRequerido" class="text-danger">*</span></label>
               <div class="drag-area border rounded p-4 bg-light" onclick="document.getElementById('fDocumento').click()" id="dragArea">
@@ -482,11 +850,14 @@
                     <p class="text-muted small mb-0" id="docLabel">PDF, DOC, DOCX, XLS, XLSX, CSV — máx. 10 MB</p>
                 </div>
               </div>
+              {{-- INPUT DE ARCHIVO OCULTO QUE SE ACTIVA AL HACER CLIC EN EL ÁREA DE DRAG & DROP --}}
               <input type="file" id="fDocumento" name="documento" accept=".pdf,.doc,.docx,.xls,.xlsx,.csv" class="d-none"
                 onchange="document.getElementById('docLabel').textContent = this.files[0]?.name ?? 'PDF, DOC, DOCX, XLS, XLSX — máx. 10 MB'">
               <div class="invalid-feedback" id="fDocumento-feedback">El documento es requerido</div>
             </div>
           </div>
+
+          {{-- CONTENEDOR PARA MOSTRAR ERRORES DEL SERVIDOR (SE OCULTA INICIALMENTE) --}}
           <div id="erroresForm" class="alert alert-danger mt-3 d-none"></div>
         </form>
       </div>
@@ -502,7 +873,9 @@
 
 
 {{-- ══════════════════════════════════════════════════════════════
-     MODAL: ESTADÍSTICAS POR AÑO  (CON FILTRO TIPO + GRÁFICA POR PROCESO)
+     MODAL: ESTADÍSTICAS POR AÑO
+     MUESTRA TARJETAS CON TOTALES Y UNA GRÁFICA DE BARRAS DE NC/OM POR PROCESO
+     TIENE FILTROS DE AÑO Y TIPO DE AUDITORÍA (TODOS/INTERNA/EXTERNA)
 ══════════════════════════════════════════════════════════════ --}}
 <div class="modal fade" id="modalEstadisticas" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-xl modal-dialog-scrollable">
@@ -512,11 +885,14 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
+
+        {{-- FILTROS DE AÑO Y TIPO DE AUDITORÍA DEL MODAL DE ESTADÍSTICAS --}}
         <div class="row mb-4 align-items-center g-2">
           <div class="col-auto">
             <label class="form-label fw-bold mb-0">Año</label>
           </div>
           <div class="col-auto">
+            {{-- SELECT DE AÑO QUE SE LLENA DINÁMICAMENTE DESDE JAVASCRIPT --}}
             <select id="selectAnioEstadisticas" class="form-select" style="width:150px; border:2px solid #0dcaf0;">
               <option value="">Cargando años...</option>
             </select>
@@ -524,6 +900,7 @@
           <div class="col-auto ms-3">
             <label class="form-label fw-bold mb-0">Tipo de Auditoría</label>
           </div>
+          {{-- BOTONES DE FILTRO POR TIPO: TODOS (AZUL), INTERNA (VERDE), EXTERNA (ROJO) --}}
           <div class="col-auto filtro-tipo-estadisticas d-flex gap-2">
             <button type="button" class="btn-tipo activo-todos" id="btnTipoTodos" onclick="seleccionarTipoEstadisticas('todos')">
               <i class="bi bi-grid me-1"></i>Todos
@@ -536,6 +913,8 @@
             </button>
           </div>
         </div>
+
+        {{-- TARJETAS DE ESTADÍSTICAS: TOTAL AUDITORÍAS, NC Y OM --}}
         <div class="row g-3 mb-4">
           <div class="col-md-4">
             <div class="stat-card stat-blue">
@@ -556,6 +935,9 @@
             </div>
           </div>
         </div>
+
+        {{-- GRÁFICA DE BARRAS DE NC Y OM DESGLOSADOS POR PROCESO --}}
+        {{-- SE OCULTA Y MUESTRA MENSAJE SI NO HAY DATOS PARA LOS FILTROS SELECCIONADOS --}}
         <div class="grafica-anual-container mt-3">
           <h6 class="fw-bold text-muted text-center mb-3">
             <i class="bi bi-diagram-3 me-1"></i>
@@ -569,6 +951,8 @@
             <canvas id="chartPorProceso" height="300"></canvas>
           </div>
         </div>
+
+        {{-- LISTA DE PROCESOS AUDITADOS EN EL AÑO SELECCIONADO --}}
         <div class="row mt-4">
           <div class="col-12">
             <h6 class="fw-bold text-muted">Procesos Auditados en el año:</h6>
@@ -582,7 +966,9 @@
 
 
 {{-- ══════════════════════════════════════════════════════════════
-     MODAL: HISTÓRICO GLOBAL  ← NUEVO
+     MODAL: HISTÓRICO GLOBAL
+     MUESTRA UNA GRÁFICA DE BARRAS CON NC Y OM TOTALES POR AÑO
+     Y UNA TABLA RESUMEN CON LOS DATOS DE CADA AÑO
 ══════════════════════════════════════════════════════════════ --}}
 <div class="modal fade" id="modalHistorico" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-xl modal-dialog-scrollable">
@@ -593,6 +979,8 @@
       </div>
       <div class="modal-body">
         <div class="grafica-anual-container">
+
+          {{-- BOTONES DE FILTRO POR TIPO EN EL MODAL DE HISTÓRICO --}}
           <div class="d-flex justify-content-center mb-3">
             <div class="filtro-tipo-estadisticas d-flex gap-2">
               <button type="button" class="btn-tipo activo-todos" id="btnHistTodos" onclick="seleccionarTipoHistorico('todos')">
@@ -606,6 +994,9 @@
               </button>
             </div>
           </div>
+
+          {{-- GRÁFICA DE BARRAS HISTÓRICA POR AÑO --}}
+          {{-- SE OCULTA Y MUESTRA MENSAJE SI NO HAY DATOS DISPONIBLES --}}
           <h6 class="fw-bold text-muted text-center mb-3">
             <i class="bi bi-calendar3 me-1"></i>
             Totales de No Conformidades y Oportunidades de Mejora por Año
@@ -617,6 +1008,8 @@
             <canvas id="chartHistorico" height="260"></canvas>
           </div>
         </div>
+
+        {{-- TABLA RESUMEN CON LOS TOTALES POR AÑO (SE LLENA DINÁMICAMENTE DESDE JAVASCRIPT) --}}
         <div class="mt-4">
           <h6 class="fw-bold text-muted mb-2"><i class="bi bi-table me-1"></i>Resumen por Año</h6>
           <div class="table-responsive">
@@ -629,6 +1022,7 @@
                   <th style="background:#0d6efd;color:#fff;text-align:center;border:none;">Oport. de Mejora</th>
                  </tr>
               </thead>
+              {{-- LAS FILAS SE GENERAN DINÁMICAMENTE DESDE JAVASCRIPT --}}
               <tbody id="cuerpoTablaHistorico"></tbody>
             </table>
           </div>
@@ -641,6 +1035,8 @@
 
 {{-- ══════════════════════════════════════════════════════════════
      MODAL: VER DOCUMENTO
+     MUESTRA EL DOCUMENTO EN UN IFRAME DENTRO DEL MODAL
+     SI ES PDF LO MUESTRA DIRECTAMENTE, OTROS FORMATOS MUESTRAN OPCIÓN DE DESCARGA
 ══════════════════════════════════════════════════════════════ --}}
 <div class="modal fade" id="modalDocumento" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-xl modal-dialog-scrollable">
@@ -648,6 +1044,7 @@
       <div class="modal-header modal-header-rojo">
         <h5 class="modal-title"><i class="bi bi-file-earmark me-2"></i><span id="tituloDocumento"></span></h5>
       </div>
+      {{-- IFRAME QUE CARGA EL DOCUMENTO AL ABRIR EL MODAL Y SE LIMPIA AL CERRARLO --}}
       <div class="modal-body p-0">
         <iframe id="iframeDoc" src="about:blank"></iframe>
       </div>
@@ -655,6 +1052,7 @@
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
           <i class=""></i> Cerrar
         </button>
+        {{-- BOTÓN PARA DESCARGAR EL DOCUMENTO DESDE EL MODAL DE VISUALIZACIÓN --}}
         <a id="btnDescargarDocumento" href="#" class="btn text-white" style="background-color: #800000; border: none;">
           <i class="bi bi-download me-1"></i> Descargar
         </a>
@@ -665,6 +1063,10 @@
 @endsection
 
 
+{{-- ══════════════════════════════════════════════════════════════
+     SCRIPTS DE LA PÁGINA DE INFORMES DE AUDITORÍA
+     INCLUYE: SWEETALERT2, CHART.JS, JQUERY, MOMENT Y DATERANGEPICKER
+══════════════════════════════════════════════════════════════ --}}
 @push('scripts')
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -676,6 +1078,8 @@
 <script>
 // ============================================================
 // 1.  DATOS COMPLETOS DE TODOS LOS INFORMES (para estadísticas)
+//     SE GENERAN DESDE PHP Y SE PASAN A JAVASCRIPT COMO JSON
+//     SE USAN PARA CALCULAR ESTADÍSTICAS SIN LLAMADAS AJAX ADICIONALES
 // ============================================================
 @php
     $informesData = $informes->map(function($inf) {
@@ -699,6 +1103,8 @@ const informesCompletos = @json($informesData);
 
 // ============================================================
 // 2.  RUTAS Y VARIABLES GLOBALES
+//     RUTAS: URLS DEL SERVIDOR PARA LAS OPERACIONES CRUD
+//     VARIABLES: ESTADO ACTUAL DE LOS FILTROS Y LAS GRÁFICAS
 // ============================================================
 const ROUTES = {
     index       : "{{ route('informes-auditoria.index') }}",
@@ -714,14 +1120,20 @@ const ROUTES = {
 
 const CSRF = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
+// INSTANCIAS DE LAS GRÁFICAS (SE DESTRUYEN Y RECREAN AL CAMBIAR FILTROS)
 let chartPorProceso    = null;
 let chartHistorico     = null;
+
+// ESTADO ACTUAL DE LOS FILTROS DE LA TABLA PRINCIPAL
 let tipoSeleccionado   = '';
 let anioSeleccionado   = '';
 let ordenSeleccionado  = '';
+
+// ESTADO ACTUAL DE LOS FILTROS DE LOS MODALES DE ESTADÍSTICAS E HISTÓRICO
 let tipoEstadisticas   = 'todos';
 let tipoHistorico      = 'todos';
 
+// COLORES PARA LAS BARRAS DE NC Y OM EN LAS GRÁFICAS
 const coloresNCPorTipo = {
     todos: 'rgba(220, 53, 69, 0.85)',
     Interna: 'rgba(220, 53, 69, 0.85)',
@@ -735,7 +1147,10 @@ const coloresOMPorTipo = {
 
 // ============================================================
 // 3.  FUNCIONES DE FILTRADO Y ESTADÍSTICAS (USANDO informesCompletos)
+//     CALCULAN LOS DATOS LOCALMENTE SIN LLAMADAS AL SERVIDOR
 // ============================================================
+
+// FILTRA LOS INFORMES POR AÑO Y TIPO, Y CALCULA TOTALES Y DESGLOSE POR PROCESO
 function obtenerDatosFiltrados(anio, tipo) {
     let total = 0, nc = 0, om = 0;
     const procesosSet = new Set();
@@ -750,12 +1165,12 @@ function obtenerDatosFiltrados(anio, tipo) {
         nc += inf.no_conformidades || 0;
         om += inf.oportunidades_mejora || 0;
 
-        // Procesos generales (lista simple)
+        // ACUMULA LOS PROCESOS AUDITADOS EN UN SET PARA ELIMINAR DUPLICADOS
         if (inf.procesos_auditados && Array.isArray(inf.procesos_auditados)) {
             inf.procesos_auditados.forEach(p => procesosSet.add(p));
         }
 
-        // Desglose por proceso (NC y OM por proceso)
+        // ACUMULA NC Y OM POR PROCESO EN UN MAPA PARA LA GRÁFICA DE BARRAS
         if (inf.nc_om_por_proceso && Array.isArray(inf.nc_om_por_proceso)) {
             inf.nc_om_por_proceso.forEach(item => {
                 if (!item.proceso) return;
@@ -771,18 +1186,21 @@ function obtenerDatosFiltrados(anio, tipo) {
     return { totalAuditorias: total, totalNC: nc, totalOM: om, procesos: Array.from(procesosSet), procesosMap };
 }
 
+// OBTIENE LOS AÑOS ÚNICOS DE TODOS LOS INFORMES ORDENADOS ALFABÉTICAMENTE
 function obtenerAniosUnicosCompletos() {
     const años = new Set();
     informesCompletos.forEach(inf => { if (inf.anio) años.add(inf.anio.toString()); });
     return Array.from(años).sort();
 }
 
+// ACTUALIZA LOS VALORES DE LAS TARJETAS DE ESTADÍSTICAS EN EL MODAL
 function actualizarTarjetas(t, nc, om) {
     document.getElementById('statTotal').textContent = t;
     document.getElementById('statNC').textContent    = nc;
     document.getElementById('statOM').textContent    = om;
 }
 
+// CREA O ACTUALIZA LA GRÁFICA DE BARRAS DE NC Y OM POR PROCESO
 function actualizarGraficaPorProceso(procesosMap) {
     const ctx    = document.getElementById('chartPorProceso');
     const msgEl  = document.getElementById('sinDatosProcesoMsg');
@@ -836,6 +1254,7 @@ function actualizarGraficaPorProceso(procesosMap) {
     });
 }
 
+// ACTUALIZA LA LISTA DE ETIQUETAS DE PROCESOS EN EL MODAL DE ESTADÍSTICAS
 function actualizarListaProcesos(procesos) {
     const div = document.getElementById('listaProcesosEstadisticas');
     div.innerHTML = '';
@@ -846,6 +1265,7 @@ function actualizarListaProcesos(procesos) {
     }
 }
 
+// REFRESCA TODAS LAS ESTADÍSTICAS DEL MODAL AL CAMBIAR AÑO O TIPO
 function refrescarEstadisticas() {
     const anio = document.getElementById('selectAnioEstadisticas').value;
     if (!anio || anio === '0') { actualizarTarjetas(0, 0, 0); actualizarGraficaPorProceso({}); actualizarListaProcesos([]); return; }
@@ -855,6 +1275,7 @@ function refrescarEstadisticas() {
     actualizarListaProcesos(d.procesos);
 }
 
+// CAMBIA EL TIPO ACTIVO EN EL MODAL DE ESTADÍSTICAS Y REFRESCA LOS DATOS
 function seleccionarTipoEstadisticas(tipo) {
     tipoEstadisticas = tipo;
     document.getElementById('btnTipoTodos').className    = 'btn-tipo' + (tipo === 'todos'    ? ' activo-todos'    : '');
@@ -863,6 +1284,7 @@ function seleccionarTipoEstadisticas(tipo) {
     refrescarEstadisticas();
 }
 
+// GENERA LA GRÁFICA HISTÓRICA Y LA TABLA DE RESUMEN POR AÑO
 function renderHistorico() {
     const anios = obtenerAniosUnicosCompletos();
     const msgEl = document.getElementById('sinDatosHistoricoMsg');
@@ -939,6 +1361,7 @@ function renderHistorico() {
     });
 }
 
+// CAMBIA EL TIPO ACTIVO EN EL MODAL DE HISTÓRICO Y REGENERA LA GRÁFICA
 function seleccionarTipoHistorico(tipo) {
     tipoHistorico = tipo;
     document.getElementById('btnHistTodos').className   = 'btn-tipo' + (tipo === 'todos'   ? ' activo-todos'   : '');
@@ -948,8 +1371,10 @@ function seleccionarTipoHistorico(tipo) {
 }
 
 // ============================================================
-// 4.  EVENTOS PARA ABRIR MODALES
+// 4.  EVENTOS PARA ABRIR MODALES DE ESTADÍSTICAS E HISTÓRICO
 // ============================================================
+
+// AL HACER CLIC EN "ESTADÍSTICAS", CARGA LOS AÑOS Y MUESTRA EL MODAL
 document.getElementById('btnEstadisticas').addEventListener('click', () => {
     const anios = obtenerAniosUnicosCompletos();
     tipoEstadisticas = 'todos';
@@ -967,6 +1392,7 @@ document.getElementById('btnEstadisticas').addEventListener('click', () => {
     }
 });
 
+// AL HACER CLIC EN "HISTÓRICO", MUESTRA EL MODAL Y GENERA LA GRÁFICA
 document.getElementById('btnHistorico').addEventListener('click', () => {
     tipoHistorico = 'todos';
     seleccionarTipoHistorico('todos');
@@ -974,9 +1400,12 @@ document.getElementById('btnHistorico').addEventListener('click', () => {
     renderHistorico();
 });
 
+// AL CERRAR EL MODAL DE ESTADÍSTICAS, DESTRUYE LA GRÁFICA PARA LIBERAR MEMORIA
 document.getElementById('modalEstadisticas').addEventListener('hidden.bs.modal', () => {
     if (chartPorProceso) { chartPorProceso.destroy(); chartPorProceso = null; }
 });
+
+// AL CERRAR EL MODAL DE HISTÓRICO, DESTRUYE LA GRÁFICA PARA LIBERAR MEMORIA
 document.getElementById('modalHistorico').addEventListener('hidden.bs.modal', () => {
     if (chartHistorico) { chartHistorico.destroy(); chartHistorico = null; }
 });
@@ -984,8 +1413,11 @@ document.getElementById('modalHistorico').addEventListener('hidden.bs.modal', ()
 // ============================================================
 // 5.  FUNCIONES ORIGINALES PARA EL CRUD Y MANEJO DE FORMULARIOS
 // ============================================================
+
+// FUNCIÓN VACÍA POR COMPATIBILIDAD (EL DATERANGEPICKER NO SE USA ACTUALMENTE)
 function inicializarDateRangePicker() {}
 
+// AL SELECCIONAR UNA AUDITORÍA RELACIONADA, COPIA SUS FECHAS AL CAMPO DE PERIODO
 document.getElementById('fAuditoriaRel').addEventListener('change', function () {
     const selected    = this.options[this.selectedIndex];
     const fechaInicio = selected.dataset.fechaInicio;
@@ -1006,6 +1438,7 @@ document.getElementById('fAuditoriaRel').addEventListener('change', function () 
     }
 });
 
+// OBTIENE LA INSTANCIA DE UN MODAL DE BOOTSTRAP O CREA UNA NUEVA SI NO EXISTE
 function getModalInstance(modalId) {
     const el = document.getElementById(modalId);
     if (!el) return null;
@@ -1014,10 +1447,13 @@ function getModalInstance(modalId) {
     return inst;
 }
 
+// LIMPIA EL BUSCADOR Y APLICA LOS FILTROS PARA VOLVER A CARGAR LA TABLA
 function limpiarBuscador() {
     const b = document.getElementById('inputBuscar');
     if (b) { b.value = ''; aplicarFiltros(); b.focus(); }
 }
+
+// CAMBIA EL AÑO SELECCIONADO EN EL FILTRO Y RECARGA LA TABLA
 function seleccionarAnio(anio, texto) {
     anioSeleccionado = anio;
     document.getElementById('anioTexto').innerText = texto;
@@ -1025,6 +1461,7 @@ function seleccionarAnio(anio, texto) {
     aplicarFiltros();
 }
 
+// CAMBIA EL TIPO SELECCIONADO EN EL FILTRO Y RECARGA LA TABLA
 function seleccionarTipo(tipo, texto) {
     tipoSeleccionado = tipo;
     document.getElementById('tipoTexto').innerText = texto;
@@ -1038,6 +1475,7 @@ function seleccionarTipo(tipo, texto) {
     aplicarFiltros();
 }
 
+// CAMBIA EL CRITERIO DE ORDEN SELECCIONADO Y RECARGA LA TABLA
 function seleccionarOrden(criterio, texto) {
     ordenSeleccionado = criterio;
     document.getElementById('ordenarTexto').innerText = texto;
@@ -1045,6 +1483,7 @@ function seleccionarOrden(criterio, texto) {
     aplicarFiltros();
 }
 
+// CONSTRUYE LA URL CON LOS PARÁMETROS DE FILTRO Y RECARGA LA PÁGINA
 function aplicarFiltros() {
     const params = new URLSearchParams();
     const buscar = document.getElementById('inputBuscar').value;
@@ -1055,6 +1494,7 @@ function aplicarFiltros() {
     window.location.href = ROUTES.index + (params.toString() ? '?' + params.toString() : '');
 }
 
+// RESETEA EL FORMULARIO DEL MODAL A SU ESTADO INICIAL (SIN DATOS)
 function resetForm() {
     const form = document.getElementById('formInforme');
     if (form) form.reset();
@@ -1087,12 +1527,15 @@ function resetForm() {
     limpiarErroresValidacion();
 }
 
+// QUITA LAS CLASES DE ERROR DE TODOS LOS CAMPOS DEL FORMULARIO
 function limpiarErroresValidacion() {
     document.querySelectorAll('#formInforme .form-control, #formInforme .form-select, #fProcesos, #dragArea, #rango_fechas_auditoria')
         .forEach(el => el.classList.remove('is-invalid'));
     document.querySelectorAll('#formInforme .invalid-feedback').forEach(el => el.style.display = 'none');
 }
 
+// VALIDA TODOS LOS CAMPOS REQUERIDOS DEL FORMULARIO Y MARCA LOS QUE ESTÁN VACÍOS
+// RETORNA UN OBJETO CON: valido (bool) Y primerCampoInvalido (elemento DOM)
 function validarCamposRequeridos() {
     limpiarErroresValidacion();
     let invalidos = [], primero = null;
@@ -1133,6 +1576,8 @@ function validarCamposRequeridos() {
     return { valido: invalidos.length === 0, primerCampoInvalido: primero };
 }
 
+// RECONSTRUYE LA TABLA DE NC/OM POR PROCESO BASÁNDOSE EN LOS PROCESOS SELECCIONADOS
+// CONSERVA LOS VALORES INGRESADOS AL CAMBIAR LA SELECCIÓN DE PROCESOS
 function reconstruirTablaNcOm() {
     const procesosSeleccionados = Array.from(document.querySelectorAll('.proceso-check:checked')).map(cb => cb.value);
     const tabla = document.getElementById('tablaNcOmPorProceso');
@@ -1174,6 +1619,7 @@ function reconstruirTablaNcOm() {
     actualizarTotalesNcOm();
 }
 
+// SUMA LOS VALORES DE NC Y OM DE TODOS LOS PROCESOS Y ACTUALIZA LOS TOTALES VISIBLES
 function actualizarTotalesNcOm() {
     let totalNc = 0, totalOm = 0;
     document.querySelectorAll('#cuerpoTablaNcOm .input-nc').forEach(i => { totalNc += Math.max(0, parseInt(i.value) || 0); });
@@ -1184,9 +1630,11 @@ function actualizarTotalesNcOm() {
     document.getElementById('fOport').value  = totalOm;
 }
 
+// FUNCIONES DE ESCAPE PARA PREVENIR INYECCIÓN DE HTML Y ATRIBUTOS EN EL DOM
 function _escHtml(str) { return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function _escAttr(str) { return String(str).replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 
+// AL HACER CLIC EN "REGISTRAR INFORME", RESETEA Y ABRE EL MODAL EN MODO CREACIÓN
 document.getElementById('btnNuevoInforme').addEventListener('click', () => {
     resetForm();
     document.getElementById('tituloModalInforme').textContent = 'Subir Informe';
@@ -1204,6 +1652,7 @@ document.getElementById('btnNuevoInforme').addEventListener('click', () => {
     });
 });
 
+// CIERRA EL MODAL Y RESETEA EL FORMULARIO AL TERMINAR LA ANIMACIÓN DE CIERRE
 function cerrarModalInforme() {
     const el = document.getElementById('modalInforme');
     const mi = bootstrap.Modal.getInstance(el);
@@ -1218,6 +1667,8 @@ function cerrarModalInforme() {
     }
 }
 
+// VALIDA EL FORMULARIO Y ENVÍA LOS DATOS AL SERVIDOR VÍA FETCH
+// MUESTRA ÉXITO O ERRORES SEGÚN LA RESPUESTA
 async function guardarInforme() {
     const v = validarCamposRequeridos();
     if (!v.valido) {
@@ -1258,6 +1709,7 @@ async function guardarInforme() {
     }
 }
 
+// MUESTRA LOS ERRORES DEL SERVIDOR EN EL CONTENEDOR DE ERRORES DEL FORMULARIO
 function mostrarErrores(errors) {
     const div = document.getElementById('erroresForm');
     if (!div) { let m = []; for (const k in errors) { const v = Array.isArray(errors[k]) ? errors[k] : [errors[k]]; m = m.concat(v); } alert('Errores:\n' + m.join('\n')); return; }
@@ -1269,6 +1721,8 @@ function mostrarErrores(errors) {
     div.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
+// MUESTRA UN MENSAJE DE ÉXITO VERDE EN LA PARTE SUPERIOR DE LA PÁGINA
+// SE ELIMINA AUTOMÁTICAMENTE DESPUÉS DE 5 SEGUNDOS
 function mostrarMensajeExito(mensaje) {
     document.querySelectorAll(".alert-exito").forEach(a => a.remove());
     const a = document.createElement("div");
@@ -1280,6 +1734,7 @@ function mostrarMensajeExito(mensaje) {
     setTimeout(() => { if (a && a.parentNode) a.remove(); }, 5000);
 }
 
+// CARGA LOS DATOS DEL INFORME DESDE EL SERVIDOR Y ABRE EL MODAL EN MODO EDICIÓN
 async function editarInforme(id) {
     try {
         resetForm();
@@ -1312,6 +1767,7 @@ async function editarInforme(id) {
         document.getElementById('fOport').value  = inf.oportunidades_mejora;
         const procSel = inf.procesos_auditados ?? [];
         document.querySelectorAll('.proceso-check').forEach(cb => { cb.checked = procSel.includes(cb.value); });
+        // SI HAY PROCESOS QUE NO ESTÁN EN LA LISTA BASE, LOS AGREGA DINÁMICAMENTE
         procSel.forEach(proc => {
             const existe = Array.from(document.querySelectorAll('.proceso-check')).some(cb => cb.value === proc);
             if (!existe) {
@@ -1324,7 +1780,7 @@ async function editarInforme(id) {
             }
         });
         reconstruirTablaNcOm();
-        // Cargar valores de NC, OM y criterio desde el objeto nc_om_por_proceso
+        // CARGA LOS VALORES DE NC, OM Y CRITERIO GUARDADOS EN EL INFORME
         const ncOmGuardado = inf.nc_om_por_proceso ?? [];
         ncOmGuardado.forEach(item => {
             const tr = document.querySelector(`#cuerpoTablaNcOm tr[data-proceso="${CSS.escape(item.proceso)}"]`);
@@ -1349,6 +1805,8 @@ async function editarInforme(id) {
     }
 }
 
+// MUESTRA UNA ALERTA DE CONFIRMACIÓN ANTES DE ELIMINAR EL INFORME
+// SI EL USUARIO CONFIRMA, ENVÍA LA PETICIÓN DELETE AL SERVIDOR
 function eliminarInforme(id, nombre) {
     Swal.fire({
         title: '¿Eliminar informe?',
@@ -1376,6 +1834,8 @@ function eliminarInforme(id, nombre) {
     });
 }
 
+// ABRE EL MODAL DE VISUALIZACIÓN CON EL DOCUMENTO DEL INFORME
+// LOS PDF SE CARGAN EN EL IFRAME, OTROS FORMATOS MUESTRAN UN MENSAJE DE DESCARGA
 async function verDocumento(id, nombre) {
     document.getElementById('tituloDocumento').textContent = nombre;
     document.getElementById('iframeDoc').src = 'about:blank';
@@ -1391,11 +1851,14 @@ async function verDocumento(id, nombre) {
     }
 }
 
+// AL CERRAR EL MODAL DE DOCUMENTO, LIMPIA EL IFRAME PARA LIBERAR RECURSOS
 document.getElementById('modalDocumento').addEventListener('hidden.bs.modal', () => {
     document.getElementById('iframeDoc').src = 'about:blank';
 });
 
-// ── Filtros de la tabla (basados en la tabla visible) ───────────────────────────────────────
+// ── FILTROS DE LA TABLA (BASADOS EN LA TABLA VISIBLE) ──────────────────────────────────────
+
+// OBTIENE LOS AÑOS ÚNICOS DE LAS FILAS VISIBLES EN LA TABLA PARA EL MENÚ DE FILTROS
 function obtenerAniosUnicos() {
     const s = new Set();
     document.querySelectorAll('#tablaInformes tbody tr').forEach(f => {
@@ -1405,6 +1868,7 @@ function obtenerAniosUnicos() {
     return Array.from(s).sort();
 }
 
+// LLENA EL MENÚ DESPLEGABLE DE AÑOS CON LOS AÑOS ENCONTRADOS EN LA TABLA
 function cargarAniosEnFiltro() {
     const anios = obtenerAniosUnicos();
     const menu  = document.getElementById('menuAnios');
@@ -1417,8 +1881,10 @@ function cargarAniosEnFiltro() {
     });
 }
 
+// OBTIENE EL VALOR DE UN PARÁMETRO DE LA URL ACTUAL
 function getUrlParameter(name) { return new URLSearchParams(window.location.search).get(name); }
 
+// RESTAURA EL ESTADO DE LOS FILTROS DESDE LOS PARÁMETROS DE LA URL AL CARGAR LA PÁGINA
 function inicializarFiltrosDesdeURL() {
     const ap = getUrlParameter('anio');
     const tp = getUrlParameter('tipo');
@@ -1443,7 +1909,9 @@ function inicializarFiltrosDesdeURL() {
     }
 }
 
-// ── Agregar nuevo proceso ─────────────────────────────────────────────────────
+// ── AGREGAR NUEVO PROCESO ─────────────────────────────────────────────────────
+
+// AGREGA UN NUEVO PROCESO A LA LISTA DEL FORMULARIO Y ACTUALIZA LA TABLA DE NC/OM
 function agregarNuevoProceso() {
     const input  = document.getElementById('nuevoProceso');
     const nombre = input.value.trim();
@@ -1466,10 +1934,13 @@ function agregarNuevoProceso() {
     reconstruirTablaNcOm();
 }
 
-// ── Autocomplete procesos ─────────────────────────────────────────────────────
-let _procCache = null;
-let _procIdx   = -1;
+// ── AUTOCOMPLETE DE PROCESOS ─────────────────────────────────────────────────
+// PERMITE BUSCAR Y SELECCIONAR PROCESOS EXISTENTES O AGREGAR NUEVOS
 
+let _procCache = null; // CACHÉ DE PROCESOS PARA EVITAR MÚLTIPLES LLAMADAS AL SERVIDOR
+let _procIdx   = -1;   // ÍNDICE DEL ELEMENTO SELECCIONADO CON LAS FLECHAS DEL TECLADO
+
+// OBTIENE LOS PROCESOS CUSTOM DEL SERVIDOR (CON CACHÉ PARA EVITAR PETICIONES REPETIDAS)
 async function _fetchProcesos() {
     if (_procCache !== null) return _procCache;
     try {
@@ -1479,6 +1950,7 @@ async function _fetchProcesos() {
     return _procCache;
 }
 
+// MUESTRA EL DROPDOWN DE AUTOCOMPLETADO CON LOS PROCESOS QUE COINCIDEN CON LA BÚSQUEDA
 async function _mostrarDropdown(query) {
     const dd = document.getElementById('autocomplete-procesos');
     if (!dd || !query) { if (dd) dd.style.display = 'none'; return; }
@@ -1492,6 +1964,7 @@ async function _mostrarDropdown(query) {
         d.addEventListener('mousedown', e => { e.preventDefault(); _seleccionarProceso(p); });
         dd.appendChild(d);
     });
+    // SI EL TEXTO INGRESADO NO EXISTE EN LA LISTA, MUESTRA OPCIÓN PARA AGREGARLO NUEVO
     const exactoEnLista    = yaEnLista.includes(query.toLowerCase());
     const exactoEnFiltrados = filtrados.some(p => p.toLowerCase() === query.toLowerCase());
     if (!exactoEnLista && !exactoEnFiltrados) {
@@ -1503,36 +1976,42 @@ async function _mostrarDropdown(query) {
     dd.style.display = dd.children.length ? 'block' : 'none';
 }
 
+// SELECCIONA UN PROCESO DEL DROPDOWN Y LO AGREGA A LA LISTA
 function _seleccionarProceso(nombre) {
     document.getElementById('nuevoProceso').value = nombre;
     document.getElementById('autocomplete-procesos').style.display = 'none';
     agregarNuevoProceso();
 }
 
-// ── Inicialización ────────────────────────────────────────────────────────────
+// ── INICIALIZACIÓN AL CARGAR LA PÁGINA ────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function() {
     inicializarDateRangePicker();
     cargarAniosEnFiltro();
     inicializarFiltrosDesdeURL();
 
+    // APLICA FILTROS EN TIEMPO REAL AL ESCRIBIR EN EL BUSCADOR
     const b = document.getElementById('inputBuscar');
     if (b) b.addEventListener('keyup', () => aplicarFiltros());
 
+    // AL CERRAR EL MODAL DE INFORME, RESETEA EL FORMULARIO
     const mi = document.getElementById('modalInforme');
     if (mi) {
         mi.addEventListener('hidden.bs.modal', () => resetForm());
         mi.addEventListener('hide.bs.modal', () => { const f = document.getElementById('fDocumento'); if (f) f.value = ''; });
     }
 
+    // AL CERRAR EL MODAL DE ESTADÍSTICAS, DESTRUYE LA GRÁFICA
     const mes = document.getElementById('modalEstadisticas');
     if (mes) mes.addEventListener('hidden.bs.modal', () => { if (chartPorProceso) { chartPorProceso.destroy(); chartPorProceso = null; } });
 
+    // LIMPIA LOS ERRORES DE VALIDACIÓN AL ESCRIBIR EN LOS CAMPOS DEL FORMULARIO
     document.querySelectorAll('#formInforme .form-control, #formInforme .form-select').forEach(c => {
         const clear = function() { this.classList.remove('is-invalid'); const el = document.getElementById(this.id + '-feedback'); if (el) el.style.display = 'none'; };
         c.addEventListener('input', clear);
         c.addEventListener('change', clear);
     });
 
+    // AL SELECCIONAR UN PROCESO, RECONSTRUYE LA TABLA DE NC/OM
     document.querySelectorAll('.proceso-check').forEach(cb => {
         cb.addEventListener('change', () => {
             if (document.querySelectorAll('.proceso-check:checked').length > 0) {
@@ -1543,6 +2022,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    // AL SELECCIONAR UN ARCHIVO, QUITA EL ERROR DE VALIDACIÓN DEL ÁREA DE DRAG & DROP
     document.getElementById('fDocumento').addEventListener('change', function() {
         if (this.files && this.files.length > 0) {
             document.getElementById('dragArea').classList.remove('is-invalid');
@@ -1550,6 +2030,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    // CONFIGURACIÓN DEL CAMPO DE NUEVO PROCESO CON AUTOCOMPLETADO Y NAVEGACIÓN POR TECLADO
     const _npInput = document.getElementById('nuevoProceso');
     if (_npInput) {
         _npInput.addEventListener('input', function() { _mostrarDropdown(this.value.trim()); });
@@ -1564,14 +2045,18 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // CONFIGURACIÓN DEL ÁREA DE DRAG & DROP PARA SUBIR ARCHIVOS
     const dragArea = document.getElementById('dragArea');
     if (dragArea) {
+        // AL ARRASTRAR UN ARCHIVO SOBRE EL ÁREA, CAMBIA EL ESTILO VISUAL
         ['dragenter', 'dragover'].forEach(evt => {
             dragArea.addEventListener(evt, function(e) { e.preventDefault(); e.stopPropagation(); dragArea.style.backgroundColor = '#fff0f0'; dragArea.style.borderColor = '#00000'; });
         });
+        // AL SALIR O SOLTAR, RESTAURA EL ESTILO ORIGINAL
         ['dragleave', 'drop'].forEach(evt => {
             dragArea.addEventListener(evt, function(e) { e.preventDefault(); e.stopPropagation(); dragArea.style.backgroundColor = ''; dragArea.style.borderColor = ''; });
         });
+        // AL SOLTAR EL ARCHIVO, LO ASIGNA AL INPUT DE ARCHIVO Y ACTUALIZA EL LABEL
         dragArea.addEventListener('drop', function(e) {
             const files = e.dataTransfer.files;
             if (!files || files.length === 0) return;
@@ -1586,6 +2071,73 @@ document.addEventListener('DOMContentLoaded', function() {
             if (fb) fb.style.display = 'none';
         });
     }
+    
+    // ============================================================
+    // 6.  MEJORAS DE RESPONSIVIDAD PARA GRÁFICAS
+    //     AJUSTA EL TAMAÑO DE FUENTE Y LA ROTACIÓN DE ETIQUETAS SEGÚN EL ANCHO DE PANTALLA
+    // ============================================================
+
+    // AJUSTA EL TAMAÑO DE FUENTE Y ROTACIÓN DE LAS GRÁFICAS SEGÚN EL ANCHO DE LA PANTALLA
+    function ajustarTamanioGraficas() {
+        const anchoPantalla = window.innerWidth;
+        
+        if (chartPorProceso) {
+            const options = chartPorProceso.options;
+            if (anchoPantalla < 768) {
+                options.plugins.legend.labels.font.size = 10;
+                options.scales.x.ticks.font.size = 8;
+                options.scales.x.ticks.maxRotation = 45;
+                options.scales.x.ticks.minRotation = 45;
+            } else {
+                options.plugins.legend.labels.font.size = 13;
+                options.scales.x.ticks.font.size = 11;
+                options.scales.x.ticks.maxRotation = 35;
+                options.scales.x.ticks.minRotation = 0;
+            }
+            chartPorProceso.update();
+        }
+        
+        if (chartHistorico) {
+            const options = chartHistorico.options;
+            if (anchoPantalla < 768) {
+                options.plugins.legend.labels.font.size = 10;
+                options.scales.x.ticks.font.size = 9;
+            } else {
+                options.plugins.legend.labels.font.size = 13;
+                options.scales.x.ticks.font.size = 12;
+            }
+            chartHistorico.update();
+        }
+    }
+
+    // AL ABRIR EL MODAL DE ESTADÍSTICAS, REDIMENSIONA LA GRÁFICA PARA QUE SE VEA BIEN
+    document.getElementById('modalEstadisticas').addEventListener('shown.bs.modal', function() {
+        setTimeout(() => {
+            if (chartPorProceso) {
+                chartPorProceso.resize();
+                ajustarTamanioGraficas();
+            }
+        }, 100);
+    });
+
+    // AL ABRIR EL MODAL DE HISTÓRICO, REDIMENSIONA LA GRÁFICA PARA QUE SE VEA BIEN
+    document.getElementById('modalHistorico').addEventListener('shown.bs.modal', function() {
+        setTimeout(() => {
+            if (chartHistorico) {
+                chartHistorico.resize();
+                ajustarTamanioGraficas();
+            }
+        }, 100);
+    });
+
+    // AL CAMBIAR EL TAMAÑO DE LA VENTANA, REDIMENSIONA AMBAS GRÁFICAS AUTOMÁTICAMENTE
+    window.addEventListener('resize', function() {
+        setTimeout(() => {
+            if (chartPorProceso) chartPorProceso.resize();
+            if (chartHistorico) chartHistorico.resize();
+            ajustarTamanioGraficas();
+        }, 200);
+    });
 });
 </script>
 @endpush

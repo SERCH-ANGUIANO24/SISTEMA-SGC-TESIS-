@@ -1,23 +1,31 @@
 @extends('layouts.guest')
 
 @section('content')
-<!-- Hero Section -->
+<!-- =====================================================
+     HERO SECTION - SECCIÓN PRINCIPAL DE BIENVENIDA
+     ===================================================== -->
 <section class="hero-section">
     <div class="container hero-content">
         <div class="row align-items-center">
             <div class="col-lg-8 mx-auto text-center">
-                <!-- Logo/Brand centrado -->
+                <!-- =====================================================
+                     LOGO/BRAND CENTRADO - LOGO DE LA UNIVERSIDAD
+                     ===================================================== -->
                 <div class="mb-4">
                     <img src="https://lh3.googleusercontent.com/proxy/iBImmZjJODGa39TgtflRih-vmGJwiTPpBotgG80_ckaAxtEWogKYQLf1ACpY-Nqr_-QnZM01aRtgtNef_Gk-m6An8VR-9ovpNw" alt="Logo UPTEX" 
                          class="img-fluid" style="max-height: 200px; border: 3px solid rgba(255,255,255,0.2);">
                 </div>
 
-                <!-- Título principal -->
+                <!-- =====================================================
+                     TÍTULO PRINCIPAL - TEXTO DE BIENVENIDA
+                     ===================================================== -->
                 <h1 class="hero-title">Bienvenido<br>
                     <span class="text-gradient">al Sistema de Gestión de la Calidad</span>
                 </h1>
 
-<!-- Call to Action Final -->
+<!-- =====================================================
+     CALL TO ACTION FINAL - SECCIÓN PARA USUARIOS NO AUTENTICADOS
+     ===================================================== -->
 @guest
 <section class="section section-dark">
     <div class="container">
@@ -43,7 +51,9 @@
 
 @push('styles')
 <style>
-    /* Cambio de colores - Texto negro y fondo gris claro */
+    /* =====================================================
+       CAMBIO DE COLORES - TEXTO NEGRO Y FONDO GRIS CLARO
+       ===================================================== */
     body {
         background: linear-gradient(135deg, #ffffffff 0%, #ffffffff 100%) !important;
         color: #000000 !important;
@@ -65,13 +75,15 @@
         background-clip: text !important;
     }
 
-    /* ESTILOS ESPECÍFICOS SOLO PARA EL CUADRO "¿LISTO PARA COMENZAR?" */
+    /* =====================================================
+       ESTILOS ESPECÍFICOS SOLO PARA EL CUADRO "¿LISTO PARA COMENZAR?"
+       ===================================================== */
     .section-dark {
-        background: #800000; !important;
+        background: #800000 !important;
         color: #000000 !important;
         border-radius: 10px;
         margin: 20px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0);/*BORDE DE COLOR DE LA CARD */
+        box-shadow: 0 4px 6px rgba(0, 0, 0); /* BORDE DE COLOR DE LA CARD */
     }
 
     .section-dark h2,
@@ -106,7 +118,9 @@
         color: #ffffff !important;
     }
 
-    /* Gradient text effect original (modificado para negro) */
+    /* =====================================================
+       GRADIENT TEXT EFFECT ORIGINAL (MODIFICADO PARA NEGRO)
+       ===================================================== */
     .text-gradient {
         background: linear-gradient(135deg, #000000 0%, #333333 100%);
         -webkit-background-clip: text;
@@ -114,7 +128,120 @@
         background-clip: text;
     }
 
-    /* Additional responsive improvements */
+    /* =====================================================
+       ESTILOS RESPONSIVOS - WELCOME/GUEST
+       ===================================================== */
+
+    /* TABLETS (769PX A 992PX) */
+    @media (min-width: 769px) and (max-width: 992px) {
+        .hero-title {
+            font-size: 2.2rem !important;
+            line-height: 1.3 !important;
+        }
+        
+        .hero-section .container img {
+            max-height: 150px !important;
+        }
+        
+        .section-dark {
+            margin: 15px !important;
+            padding: 0.5rem 1rem !important;
+        }
+        
+        .section-dark h2.display-6 {
+            font-size: 1.5rem !important;
+        }
+        
+        .section-dark .lead {
+            font-size: 1rem !important;
+            margin-bottom: 1.5rem !important;
+        }
+        
+        .btn-outline-custom.btn-lg {
+            padding: 0.5rem 1.5rem !important;
+            font-size: 0.9rem !important;
+        }
+    }
+
+    /* MÓVILES (768PX Y MENOS) */
+    @media (max-width: 768px) {
+        .hero-title {
+            font-size: 1.8rem !important;
+            line-height: 1.3 !important;
+        }
+        
+        .hero-section .container img {
+            max-height: 120px !important;
+        }
+        
+        .hero-section .container {
+            padding: 1rem !important;
+        }
+        
+        .section-dark {
+            margin: 10px !important;
+            padding: 0.5rem 0.8rem !important;
+            border-radius: 8px !important;
+        }
+        
+        .section-dark h2.display-6 {
+            font-size: 1.3rem !important;
+            margin-bottom: 0.5rem !important;
+        }
+        
+        .section-dark .lead {
+            font-size: 0.9rem !important;
+            margin-bottom: 1rem !important;
+        }
+        
+        .btn-outline-custom.btn-lg {
+            padding: 0.4rem 1.2rem !important;
+            font-size: 0.85rem !important;
+        }
+        
+        .d-flex.flex-column.flex-sm-row {
+            flex-direction: column !important;
+            gap: 0.75rem !important;
+        }
+        
+        .btn-outline-custom {
+            width: 100% !important;
+            text-align: center !important;
+            justify-content: center !important;
+        }
+    }
+
+    /* MÓVILES MUY PEQUEÑOS (480PX Y MENOS) */
+    @media (max-width: 480px) {
+        .hero-title {
+            font-size: 1.4rem !important;
+        }
+        
+        .hero-section .container img {
+            max-height: 100px !important;
+        }
+        
+        .section-dark h2.display-6 {
+            font-size: 1.1rem !important;
+        }
+        
+        .section-dark .lead {
+            font-size: 0.8rem !important;
+        }
+        
+        .btn-outline-custom.btn-lg {
+            padding: 0.35rem 1rem !important;
+            font-size: 0.8rem !important;
+        }
+        
+        .text-gradient {
+            font-size: 1.4rem !important;
+        }
+    }
+
+    /* =====================================================
+       ADDITIONAL RESPONSIVE IMPROVEMENTS
+       ===================================================== */
     @media (max-width: 576px) {
         .hero-title {
             font-size: 2.5rem;
@@ -134,7 +261,9 @@
         }
     }
 
-    /* Loading state for disabled cards */
+    /* =====================================================
+       LOADING STATE FOR DISABLED CARDS
+       ===================================================== */
     .card-disabled::after {
         content: 'Requiere inicio de sesión';
         position: absolute;
@@ -163,7 +292,10 @@
 
 @push('scripts')
 <script>
-    // Smooth scrolling for anchor links
+    // =====================================================
+    // SMOOTH SCROLLING FOR ANCHOR LINKS
+    // DESPLAZAMIENTO SUAVE PARA ENLACES DE ANCLA
+    // =====================================================
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function (e) {
             e.preventDefault();
@@ -177,7 +309,10 @@
         });
     });
 
-    // Add animation to stats numbers on scroll
+    // =====================================================
+    // ADD ANIMATION TO STATS NUMBERS ON SCROLL
+    // ANIMACIÓN DE NÚMEROS DE ESTADÍSTICAS AL HACER SCROLL
+    // =====================================================
     document.addEventListener('DOMContentLoaded', function() {
         const statsNumbers = document.querySelectorAll('.stats-number');
         
@@ -190,7 +325,8 @@
                     const isFraction = finalNumber.includes('/');
                     
                     if (!isPercentage && !isFraction) {
-                        // Animate number counting for numeric values
+                        // ANIMATE NUMBER COUNTING FOR NUMERIC VALUES
+                        // ANIMACIÓN DE CONTEO PARA VALORES NUMÉRICOS
                         const number = parseInt(finalNumber.replace('+', ''));
                         let current = 0;
                         const increment = number / 50;

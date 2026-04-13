@@ -7,46 +7,50 @@ use Illuminate\Database\Eloquent\Model;
 use App\Traits\RegistraHistorialVersiones;
 use Illuminate\Support\Facades\Route;
 
+/**
+ * REGISTRO DE TODAS LAS ACCIONES DE USUARIOS EN EL SISTEMA
+ * SIRVE PARA AUDITORÍA, SEGURIDAD Y RASTREO DE CAMBIOS
+ */
 class HistorialVersiones extends Model
 {
-    use HasFactory, RegistraHistorialVersiones;
+    use HasFactory, RegistraHistorialVersiones;  // SE REGISTRA A SÍ MISMO
 
+    // NOMBRE DE LA TABLA
     protected $table = 'historial_versiones';
 
+    // CAMPOS QUE SE PUEDEN LLENAR MASIVAMENTE
     protected $fillable = [
-        'usuario_nombre',
-        'usuario_id',
-        'usuario_email',
-        'usuario_rol',
-        'modulo',
-        'accion',
-        'descripcion',
-        'nivel_importancia',
-        'datos_anteriores',
-        'datos_nuevos',
-        'ip_address',
-        'user_agent',
-        'tabla_afectada',
-        'registro_id',
-        'elemento_nombre'
+        'usuario_nombre',     // QUIÉN HIZO LA ACCIÓN
+        'usuario_id',         // ID DEL USUARIO
+        'usuario_email',      // CORREO DEL USUARIO
+        'usuario_rol',        // ROL DEL USUARIO
+        'modulo',             // MÓDULO AFECTADO
+        'accion',             // CREAR, EDITAR, ELIMINAR, VER, ETC
+        'descripcion',        // DESCRIPCIÓN LEGIBLE
+        'nivel_importancia',  // BAJO, NORMAL, ALTO, CRÍTICO
+        'datos_anteriores',   // JSON CON DATOS VIEJOS
+        'datos_nuevos',       // JSON CON DATOS NUEVOS
+        'ip_address',         // IP DEL USUARIO
+        'user_agent',         // NAVEGADOR/SISTEMA OPERATIVO
+        'tabla_afectada',     // TABLA DE BD MODIFICADA
+        'registro_id',        // ID DEL REGISTRO AFECTADO
+        'elemento_nombre'     // NOMBRE DEL ELEMENTO (PARA BÚSQUEDA)
     ];
 
+    // CONVERSIONES AUTOMÁTICAS DE TIPOS
     protected $casts = [
-        'datos_anteriores' => 'array',
-        'datos_nuevos' => 'array',
+        'datos_anteriores' => 'array',  // JSON → ARREGLO
+        'datos_nuevos' => 'array',      // JSON → ARREGLO
         'created_at' => 'datetime'
     ];
 
     /**
-     * Mapa de módulos para nombres amigables
+     * MAPA: CÓDIGO DE MÓDULO → NOMBRE 
      */
     protected static $mapaModulos = [
-        // Usuarios y procesos
         'USUARIOS'              => 'Usuarios del Sistema',
         'PROCESOS'              => 'Procesos',
         'DEPARTAMENTOS'         => 'Departamentos',
-        
-        // Módulos existentes
         'SOLICITUDES_MEJORA'    => 'Solicitud de Mejora',
         'MATRICES_DOCUMENTS'    => 'Documento de Matriz',
         'INFORMES_AUDITORIA'    => 'Informes',
@@ -59,108 +63,78 @@ class HistorialVersiones extends Model
         'DOCUMENTAL_DOCUMENTS'  => 'Gestión Documental',
         'DOCUMENTALFOLDER'      => 'Gestión Documental',
         'AVISOS'                => 'Avisos',
-        
-        // Formatos originales (para compatibilidad)
-        'DocumentalFolder'      => 'Gestión Documental',
-        'MatrizFolder'          => 'Carpeta de Matriz',
+        'DocumentalFolder'      => 'Gestión Documental',  // COMPATIBILIDAD
+        'MatrizFolder'          => 'Carpeta de Matriz',   // COMPATIBILIDAD
     ];
 
+    // RELACIÓN: PERTENECE A UN USUARIO
     public function usuario()
     {
         return $this->belongsTo(User::class, 'usuario_id');
     }
 
     /**
-     * Obtiene el nombre formateado del módulo
+     * DEVUELVE EL NOMBRE DEL MÓDULO EN VERSIÓN LEGIBLE
      */
     public function getNombreModuloFormateadoAttribute()
     {
         $modulo = $this->modulo;
         
-        // Primero buscamos exactamente como está guardado
         if (isset(self::$mapaModulos[$modulo])) {
             return self::$mapaModulos[$modulo];
         }
         
-        // Si no, buscamos en mayúsculas
         $moduloUpper = strtoupper($modulo);
         if (isset(self::$mapaModulos[$moduloUpper])) {
             return self::$mapaModulos[$moduloUpper];
         }
         
-        // Si no, devolvemos el original formateado
         return ucfirst(strtolower($modulo));
     }
 
     /**
-     * Obtiene el color del módulo
+     * COLOR PARA CADA MÓDULO (ÚTIL PARA INTERFAZ)
      */
     public function getColorModuloAttribute()
     {
         $colores = [
-            // Usuarios y procesos
             'USUARIOS'             => '#7c3aed',
             'PROCESOS'             => '#7c3aed',
             'DEPARTAMENTOS'        => '#7c3aed',
-            
-            // Anexos (azul)
             'ANEXOS'               => '#4f46e5',
             'FOLDERS'              => '#4f46e5',
             'DOCUMENTS'            => '#4f46e5',
-            
-            // Auditorías (plan) (azul)
             'AUDITORIAS'           => '#4f46e5',
-            
-            // Informes (verde)
             'INFORMES_AUDITORIA'   => '#059669',
-            
-            // Solicitud de Mejora (rojo)
             'SOLICITUDES_MEJORA'   => '#dc2626',
-            
-            // Competencias (morado)
             'COMPETENCIAS'         => '#7c3aed',
-            
-            // Gestión Documental (rojo)
             'GESTION_DOCUMENTAL'   => '#dc2626',
             'DOCUMENTAL_DOCUMENTS' => '#dc2626',
             'DOCUMENTALFOLDER'     => '#dc2626',
             'DocumentalFolder'     => '#dc2626',
-            
-            // Matriz (morado)
             'MATRIZ'               => '#9333ea',
             'MATRICES_DOCUMENTS'   => '#9333ea',
             'MatrizFolder'         => '#9333ea',
-            
-            // Lista Maestra (verde)
             'FORMATOS'             => '#16a34a',
-            
-            // Historial (azul claro)
             'HISTORIAL'            => '#0891b2',
-            
-            // Notificaciones (naranja)
             'NOTIFICACIONES'       => '#ea580c',
-            
-            // Avisos (azul)
             'AVISOS'               => '#4fa6e5',
         ];
 
-        // Buscar primero exactamente como está guardado
         if (isset($colores[$this->modulo])) {
             return $colores[$this->modulo];
         }
         
-        // Si no, buscar en mayúsculas
         $moduloUpper = strtoupper($this->modulo);
         if (isset($colores[$moduloUpper])) {
             return $colores[$moduloUpper];
         }
         
-        // Color por defecto
-        return '#737373';
+        return '#737373';  
     }
 
     /**
-     * Obtiene el ícono del módulo
+     * ÍCONO PARA CADA MÓDULO (BOOTSTRAP ICONS)
      */
     public function getIconoModuloAttribute()
     {
@@ -182,12 +156,10 @@ class HistorialVersiones extends Model
             'AVISOS'               => 'bi-megaphone-fill',
         ];
 
-        // Buscar primero exactamente como está guardado
         if (isset($iconos[$this->modulo])) {
             return $iconos[$this->modulo];
         }
         
-        // Si no, buscar en mayúsculas
         $moduloUpper = strtoupper($this->modulo);
         if (isset($iconos[$moduloUpper])) {
             return $iconos[$moduloUpper];
@@ -197,59 +169,37 @@ class HistorialVersiones extends Model
     }
 
     /**
-     * Obtiene la URL al índice del módulo correspondiente
-     *
-     * @return string|null
+     * URL PARA VER EL MÓDULO DONDE SUCEDIÓ LA ACCIÓN
      */
     public function getDetalleUrlAttribute()
     {
         $modulo = $this->modulo;
         $moduloUpper = strtoupper($modulo);
         
-        // Mapa de módulos a rutas (en mayúsculas para facilitar búsqueda)
         $rutas = [
-            // Usuarios y procesos
             'USUARIOS' => 'admin.usuarios.index',
             'PROCESOS' => 'admin.usuarios.index',
             'DEPARTAMENTOS' => 'admin.usuarios.index',
-            
-            // Anexos
             'ANEXOS' => 'anexos.index',
             'FOLDERS' => 'anexos.index',
             'DOCUMENTS' => 'anexos.index',
-            
-            // Gestión Documental
             'DOCUMENTAL' => 'documental.index',
             'DOCUMENTAL_DOCUMENTS' => 'documental.index',
             'DOCUMENTALFOLDER' => 'documental.index',
-            
-            // Matriz
             'MATRIZ' => 'matriz.index',
             'MATRICES_DOCUMENTS' => 'matriz.index',
             'MATRIXFOLDER' => 'matriz.index',
-            
-            // Formatos / Lista Maestra
             'FORMATOS' => 'formatos.index',
-            
-            // Informes de Auditoría
             'INFORMES_AUDITORIA' => 'informes-auditoria.index',
-            
-            // Auditoría (Plan)
             'AUDITORIAS' => 'auditoria.plan.index',
-            
-            // Solicitudes de Mejora
             'SOLICITUDES_MEJORA' => 'auditoria.solicitudes.index',
-            
-            // Competencias
             'COMPETENCIAS' => 'auditoria.competencias.index',
-            // Avisos
             'AVISOS' => 'avisos.index',
-            // Dashboard (fallback)
             'DASHBOARD' => 'dashboard',
             'HISTORIAL' => 'historial-versiones.index',
         ];
         
-        // Buscar en mayúsculas primero
+        // BUSCAR PRIMERO EN MAYÚSCULAS
         if (isset($rutas[$moduloUpper])) {
             $routeName = $rutas[$moduloUpper];
             if (Route::has($routeName)) {
@@ -257,7 +207,7 @@ class HistorialVersiones extends Model
             }
         }
         
-        // Buscar exactamente como está guardado
+        // BUSCAR EXACTAMENTE
         if (isset($rutas[$modulo])) {
             $routeName = $rutas[$modulo];
             if (Route::has($routeName)) {
@@ -265,102 +215,79 @@ class HistorialVersiones extends Model
             }
         }
         
-        // Si el módulo es una carpeta o documento de anexos/gestión documental, intentar rutas genéricas
+        // SI ES CARPETA O DOCUMENTO
         if (strpos($moduloUpper, 'FOLDER') !== false || strpos($moduloUpper, 'FOLDERS') !== false) {
-            // Es una carpeta, ir a anexos o gestión documental según corresponda
-            if ($moduloUpper === 'DOCUMENTALFOLDER') {
-                if (Route::has('documental.index')) {
-                    return route('documental.index');
-                }
-            } else {
-                if (Route::has('anexos.index')) {
-                    return route('anexos.index');
-                }
+            if ($moduloUpper === 'DOCUMENTALFOLDER' && Route::has('documental.index')) {
+                return route('documental.index');
+            } elseif (Route::has('anexos.index')) {
+                return route('anexos.index');
             }
         }
         
         if (strpos($moduloUpper, 'DOCUMENT') !== false || strpos($moduloUpper, 'DOCUMENTS') !== false) {
-            // Es un documento
-            if ($moduloUpper === 'DOCUMENTAL_DOCUMENTS') {
-                if (Route::has('documental.index')) {
-                    return route('documental.index');
-                }
-            } else {
-                if (Route::has('anexos.index')) {
-                    return route('anexos.index');
-                }
+            if ($moduloUpper === 'DOCUMENTAL_DOCUMENTS' && Route::has('documental.index')) {
+                return route('documental.index');
+            } elseif (Route::has('anexos.index')) {
+                return route('anexos.index');
             }
         }
         
-        // Fallback: intentar redirigir al dashboard
+        // FALLBACK 'Alternativa por si falla lo principal': DASHBOARD
         if (Route::has('dashboard')) {
             return route('dashboard');
         }
         
-        // Último recurso: devolver null
         return null;
     }
 
-    /**
-     * Scope para filtrar por módulo
-     */
+    // ========== SCOPES (FILTROS REUTILIZABLES) ==========
+
+    // FILTRA POR MÓDULO
     public function scopeDelModulo($query, $modulo)
     {
         return $query->where('modulo', $modulo);
     }
 
-    /**
-     * Scope para filtrar por acción
-     */
+    // FILTRA POR ACCIÓN
     public function scopeConAccion($query, $accion)
     {
         return $query->where('accion', $accion);
     }
 
-    /**
-     * Scope para filtrar por usuario
-     */
+    // FILTRA POR USUARIO
     public function scopeDelUsuario($query, $usuarioId)
     {
         return $query->where('usuario_id', $usuarioId);
     }
 
-    /**
-     * Scope para filtrar entre fechas
-     */
+    // FILTRA ENTRE DOS FECHAS
     public function scopeEntreFechas($query, $inicio, $fin)
     {
         return $query->whereBetween('created_at', [$inicio, $fin]);
     }
 
-    /**
-     * Scope para filtrar actividades de hoy
-     */
+    // FILTRA ACTIVIDADES DE HOY
     public function scopeHoy($query)
     {
         return $query->whereDate('created_at', today());
     }
 
-    /**
-     * Scope para filtrar actividades de esta semana
-     */
+    // FILTRA ACTIVIDADES DE ESTA SEMANA
     public function scopeEstaSemana($query)
     {
         return $query->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()]);
     }
 
-    /**
-     * Scope para filtrar actividades de este mes
-     */
+    // FILTRA ACTIVIDADES DE ESTE MES
     public function scopeEsteMes($query)
     {
         return $query->whereMonth('created_at', now()->month)
                      ->whereYear('created_at', now()->year);
     }
 
-    /**
-     * Obtiene el color de la acción
-     */
+    // ========== ACCESORES ==========
+
+    // COLOR SEGÚN LA ACCIÓN
     public function getColorAccionAttribute()
     {
         return match($this->accion) {
@@ -375,9 +302,7 @@ class HistorialVersiones extends Model
         };
     }
 
-    /**
-     * Obtiene el ícono de la acción
-     */
+    // ÍCONO SEGÚN LA ACCIÓN
     public function getIconoAccionAttribute()
     {
         return match($this->accion) {
@@ -393,9 +318,7 @@ class HistorialVersiones extends Model
         };
     }
 
-    /**
-     * Obtiene el badge de importancia
-     */
+    // BADGE HTML DEL NIVEL DE IMPORTANCIA
     public function getBadgeImportanciaAttribute()
     {
         return match($this->nivel_importancia) {
@@ -407,25 +330,19 @@ class HistorialVersiones extends Model
         };
     }
 
-    /**
-     * Obtiene la fecha formateada
-     */
+    // FECHA FORMATEADA: DÍA/MES/AÑO HORA:MINUTO:SEGUNDO
     public function getFechaFormateadaAttribute()
     {
         return $this->created_at->format('d/m/Y H:i:s');
     }
 
-    /**
-     * Obtiene el tiempo relativo
-     */
+    // TIEMPO RELATIVO: "HACE 5 MINUTOS", "HACE 2 DÍAS"
     public function getTiempoRelativoAttribute()
     {
         return $this->created_at->diffForHumans();
     }
 
-    /**
-     * Verifica si hubo cambio en un campo específico
-     */
+    // VERIFICA SI UN CAMPO ESPECÍFICO CAMBIÓ
     public function huboCambioEn($campo)
     {
         if (!$this->datos_anteriores || !$this->datos_nuevos) return false;
@@ -434,9 +351,7 @@ class HistorialVersiones extends Model
         return isset($nuevos[$campo]) && (!isset($anteriores[$campo]) || $anteriores[$campo] != $nuevos[$campo]);
     }
 
-    /**
-     * Obtiene los cambios realizados
-     */
+    // DEVUELVE TODOS LOS CAMPOS QUE CAMBIARON
     public function getCambiosRealizados()
     {
         if (!$this->datos_anteriores || !$this->datos_nuevos) return [];
