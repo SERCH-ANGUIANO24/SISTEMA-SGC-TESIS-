@@ -1,4 +1,3 @@
-{{-- ============================================================ --}}                              --}}
 {{-- MODAL PARA VISUALIZAR EL ARCHIVO ADJUNTO DE UNA SOLICITUD   --}}
 {{-- DIRECTAMENTE EN EL NAVEGADOR SIN NECESIDAD DE DESCARGARLO.  --}}
 {{-- TAMBIÉN TIENE UN BOTÓN PARA DESCARGAR EL ARCHIVO.           --}}

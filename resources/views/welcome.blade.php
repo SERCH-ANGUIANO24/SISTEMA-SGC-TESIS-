@@ -2,14 +2,14 @@
 
 @section('content')
 <!-- =====================================================
-     HERO SECTION - SECCIÓN PRINCIPAL DE BIENVENIDA
+     SECCIÓN PRINCIPAL DE BIENVENIDA
      ===================================================== -->
 <section class="hero-section">
     <div class="container hero-content">
         <div class="row align-items-center">
             <div class="col-lg-8 mx-auto text-center">
                 <!-- =====================================================
-                     LOGO/BRAND CENTRADO - LOGO DE LA UNIVERSIDAD
+                     LOGO DE LA UNIVERSIDAD
                      ===================================================== -->
                 <div class="mb-4">
                     <img src="https://lh3.googleusercontent.com/proxy/iBImmZjJODGa39TgtflRih-vmGJwiTPpBotgG80_ckaAxtEWogKYQLf1ACpY-Nqr_-QnZM01aRtgtNef_Gk-m6An8VR-9ovpNw" alt="Logo UPTEX" 
@@ -24,7 +24,7 @@
                 </h1>
 
 <!-- =====================================================
-     CALL TO ACTION FINAL - SECCIÓN PARA USUARIOS NO AUTENTICADOS
+     SECCIÓN PARA USUARIOS NO AUTENTICADOS
      ===================================================== -->
 @guest
 <section class="section section-dark">
@@ -119,7 +119,7 @@
     }
 
     /* =====================================================
-       GRADIENT TEXT EFFECT ORIGINAL (MODIFICADO PARA NEGRO)
+        EFECTO DE TEXTO CON DEGRADADO ( EN NEGRO)
        ===================================================== */
     .text-gradient {
         background: linear-gradient(135deg, #000000 0%, #333333 100%);
@@ -129,7 +129,7 @@
     }
 
     /* =====================================================
-       ESTILOS RESPONSIVOS - WELCOME/GUEST
+       ESTILOS RESPONSIVOS 
        ===================================================== */
 
     /* TABLETS (769PX A 992PX) */
@@ -239,9 +239,6 @@
         }
     }
 
-    /* =====================================================
-       ADDITIONAL RESPONSIVE IMPROVEMENTS
-       ===================================================== */
     @media (max-width: 576px) {
         .hero-title {
             font-size: 2.5rem;
@@ -261,9 +258,6 @@
         }
     }
 
-    /* =====================================================
-       LOADING STATE FOR DISABLED CARDS
-       ===================================================== */
     .card-disabled::after {
         content: 'Requiere inicio de sesión';
         position: absolute;
@@ -293,7 +287,6 @@
 @push('scripts')
 <script>
     // =====================================================
-    // SMOOTH SCROLLING FOR ANCHOR LINKS
     // DESPLAZAMIENTO SUAVE PARA ENLACES DE ANCLA
     // =====================================================
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
@@ -310,7 +303,6 @@
     });
 
     // =====================================================
-    // ADD ANIMATION TO STATS NUMBERS ON SCROLL
     // ANIMACIÓN DE NÚMEROS DE ESTADÍSTICAS AL HACER SCROLL
     // =====================================================
     document.addEventListener('DOMContentLoaded', function() {
@@ -325,7 +317,6 @@
                     const isFraction = finalNumber.includes('/');
                     
                     if (!isPercentage && !isFraction) {
-                        // ANIMATE NUMBER COUNTING FOR NUMERIC VALUES
                         // ANIMACIÓN DE CONTEO PARA VALORES NUMÉRICOS
                         const number = parseInt(finalNumber.replace('+', ''));
                         let current = 0;

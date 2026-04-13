@@ -1,4 +1,4 @@
-{{-- ============================================================ --}}                            --}}
+
 {{-- BARRA DE FILTROS HORIZONTAL PARA BUSCAR Y ORDENAR           --}}
 {{-- LAS SOLICITUDES DE MEJORA EN LA TABLA PRINCIPAL.            --}}
 {{-- ============================================================ --}}

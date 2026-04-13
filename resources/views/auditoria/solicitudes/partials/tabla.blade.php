@@ -1,4 +1,3 @@
-{{-- ============================================================ --}}                              --}}
 {{-- TABLA PRINCIPAL QUE MUESTRA TODAS LAS SOLICITUDES DE MEJORA --}}
 {{-- CON SUS COLUMNAS DE INFORMACIÓN Y BOTONES DE ACCIÓN.        --}}
 {{-- EL CONTENIDO DEL TBODY SE CARGA DINÁMICAMENTE VÍA JAVASCRIPT.--}}
