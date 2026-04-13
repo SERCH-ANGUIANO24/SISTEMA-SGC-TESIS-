@@ -1012,6 +1012,14 @@
                 modalHistoricoFooterBtn.style.setProperty('border-color', '#6c757d', 'important');
                 modalHistoricoFooterBtn.style.setProperty('background', '#6c757d', 'important');
             }
+
+            // Excluir botones de filtro de lista maestra del tema
+            document.querySelectorAll('.filtro-lista-maestra').forEach(function(el) {
+                el.style.removeProperty('background-color');
+                el.style.removeProperty('background');
+                el.style.removeProperty('border-color');
+                el.style.setProperty('background-color', '#ffffff', 'important');
+            });
         }
 
         function updatePreview(color) {

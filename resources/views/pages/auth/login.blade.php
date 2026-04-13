@@ -495,6 +495,12 @@
                         placeholder="Password" 
                         required
                     >
+                    <button type="button" id="togglePassword" 
+                        style="position: absolute; right: 40px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; padding: 0; color: #999; font-size: 1.1rem; display: none;"
+                        title="Mostrar/ocultar contraseña">
+                        <i class="bi bi-eye" id="toggleIcon"></i>
+                    </button>
+
                     <i class="bi bi-lock auth-input-icon"></i>
                 </div>
                 
@@ -569,6 +575,31 @@ document.addEventListener('DOMContentLoaded', function() {
     // =====================================================
     const emailInput = document.getElementById('email');
     const passwordInput = document.getElementById('password');
+    // =====================================================
+// MOSTRAR / OCULTAR CONTRASEÑA
+// FUNCIONA EN TODOS LOS NAVEGADORES
+// =====================================================
+    const togglePassword = document.getElementById('togglePassword');
+    const toggleIcon = document.getElementById('toggleIcon');
+
+    togglePassword.addEventListener('click', function() {
+        const isPassword = passwordInput.type === 'password';
+        passwordInput.type = isPassword ? 'text' : 'password';
+        toggleIcon.classList.toggle('bi-eye', !isPassword);
+        toggleIcon.classList.toggle('bi-eye-slash', isPassword);
+    });
+
+        // MUESTRA EL BOTÓN DEL OJO SOLO CUANDO HAY TEXTO EN EL CAMPO
+    passwordInput.addEventListener('input', function() {
+        togglePassword.style.display = this.value.length > 0 ? 'block' : 'none';
+        // SI SE BORRA TODO EL TEXTO, VUELVE A TIPO PASSWORD
+        if (this.value.length === 0) {
+            passwordInput.type = 'password';
+            toggleIcon.classList.remove('bi-eye-slash');
+            toggleIcon.classList.add('bi-eye');
+        }
+    });
+
     
     // VALIDAR EMAIL CUANDO PIERDE EL FOCO (BLUR)
     emailInput.addEventListener('blur', function() {

@@ -8,15 +8,23 @@ return new class extends Migration
 {
     public function up()
     {
-        Schema::table('avisos', function (Blueprint $table) {
-            $table->softDeletes();
+        Schema::create('avisos', function (Blueprint $table) {
+            $table->id();
+            $table->string('titulo');
+            $table->dateTime('fecha_inicio');
+            $table->dateTime('fecha_fin');
+            $table->unsignedBigInteger('created_by');
+            $table->boolean('activo')->default(1);
+            $table->string('archivo_path')->nullable();
+            $table->string('archivo_nombre')->nullable();
+            $table->string('tipo_archivo')->nullable();
+            $table->unsignedBigInteger('tamano_archivo')->nullable();
+            $table->timestamps();
         });
     }
 
     public function down()
     {
-        Schema::table('avisos', function (Blueprint $table) {
-            $table->dropSoftDeletes();
-        });
+        Schema::dropIfExists('avisos');
     }
 };

@@ -31,8 +31,8 @@ class AdminSeeder extends Seeder
                 'password'   => Hash::make('Admin2026!'),
                 'role'       => 'admin',
                 'is_active'  => true,
-                'proceso'    => 'TI',
-                'departamento' => 'Sistemas Computacionales',
+                'proceso'    => 'Sistema de Gestión de la Calidad',
+                'departamento' => 'Coordinador del SGC',
             ]
         );
     }

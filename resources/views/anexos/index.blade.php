@@ -84,7 +84,7 @@ SE VISUALIZAN LAS CARPETAS Y ARCHIVOS PARA SU CONSULTA O ALMACENAMIENTO DE LOS M
     @endif
 
     {{-- BUSCADOR Y ORDENAR - VISIBLE PARA TODOS DENTRO DE UNA CARPETA --}}
-    @if(isset($currentFolder) && $currentFolder)
+    @if(isset($currentFolder) && $currentFolder && $documents->count() > 0)
     <div class="row mb-4 align-items-end">
         <div class="col-md-6">
             <div class="card shadow-sm border-0">
@@ -771,6 +771,31 @@ CON SU NOMBRE, Y COLOR DEL ICONO DEL FOLDER TAMBIEN FUNCIONA PARA CREAR SUBCARPE
             font-size: 0.85rem;
         }
     }
+  /* FIX ZOOM - CONTENEDOR OCUPA TODO EL ANCHO, CARPETAS MANTIENEN SU TAMAÑO */
+.container-fluid {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding-left: 15px !important;
+    padding-right: 15px !important;
+    margin: 0 auto !important;
+}
+
+body {
+    overflow-x: hidden !important;
+}
+
+/* Esto evita que el grid de carpetas tenga márgenes que crean espacios */
+#folderContainer .row {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
+/* Las carpetas mantienen su tamaño, solo se ajusta el contenedor */
+#folderContainer [class*="col-"] {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+}
+
 </style>
 @endpush
 {{--FUNCIONLIDADES INTERACTIVAS CON JAVASCRIPT--}}

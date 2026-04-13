@@ -10,7 +10,7 @@
     {{-- ENCABEZADO: TÍTULO Y BOTONES DE ACCIÓN --}}
     <div class="row mb-3">
         <div class="col-12">
-            <div class="d-flex justify-content-between align-items-start">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
                 <div class="d-flex flex-column">
                     {{-- TÍTULO CON ENLACE AL DASHBOARD --}}
                     <a href="{{ route('auditoria.dashboard') }}" class="text-decoration-none" title="Ir al Dashboard">
@@ -21,11 +21,11 @@
                     </a>
                 </div>
 
-                <div class="mt-2">
+                <div class="d-flex flex-wrap gap-2 mt-2 mt-md-0">
                     {{-- BOTÓN NUEVA CARPETA - Solo superadmin, admin Y AUDITOR LIDER--}}
                     {{-- SOLO SE MUESTRA SI EL USUARIO TIENE PERMISO auditoria-access --}}
                     @can('auditoria-access')
-                        <button type="button" class="btn text-white me-2" style="background-color: #737373;" data-bs-toggle="modal" data-bs-target="#createFolderModal">
+                        <button type="button" class="btn text-white" style="background-color: #737373;" data-bs-toggle="modal" data-bs-target="#createFolderModal">
                             <i class="bi bi-folder-plus me-1"></i> Nueva Carpeta
                         </button>
                     @endcan
@@ -760,6 +760,83 @@
     
     .tooltip.bs-tooltip-end .tooltip-arrow::before {
         border-right-color: #737373;
+    }
+    /* FIX TOTAL ZOOM OUT - IGNORAR COMPLETAMENTE EL ZOOM */
+    html {
+        zoom: reset;
+    }
+
+    .container-fluid {
+        min-width: 320px;
+    }
+
+    /* Congelar el header para que no se mueva */
+    .row.mb-3:first-child {
+        position: relative;
+        width: 100%;
+        display: block;
+    }
+
+    .row.mb-3:first-child .col-12 {
+        width: 100%;
+    }
+
+    .row.mb-3:first-child .col-12 > div {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        width: 100% !important;
+    }
+
+    .row.mb-3:first-child .col-12 > div > div:first-child {
+        flex: 0 0 auto !important;
+        width: auto !important;
+    }
+
+    .row.mb-3:first-child .col-12 > div > div:last-child {
+        flex: 0 0 auto !important;
+        width: auto !important;
+        margin-left: auto !important;
+    }
+
+    .row.mb-3:first-child h1.h3 {
+        font-size: 1.75rem !important;
+        white-space: nowrap !important;
+    }
+
+    /* Evitar que cualquier cosa haga wrap */
+    body, .container-fluid, .row, .col-12, .d-flex {
+        max-width: 100%;
+        overflow-x: visible;
+    }
+
+        /* FIX RESPONSIVO BOTONES EN MÓVIL */
+    @media (max-width: 768px) {
+        .row.mb-3:first-child .col-12 > div {
+            flex-direction: column !important;
+            flex-wrap: wrap !important;
+            align-items: stretch !important;
+        }
+
+        .row.mb-3:first-child .col-12 > div > div:last-child {
+            margin-left: 0 !important;
+            width: 100% !important;
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 0.5rem !important;
+        }
+
+        .row.mb-3:first-child .col-12 > div > div:last-child .btn {
+            width: 100% !important;
+            background-color: #4a6fa5 !important;
+            border-color: #4a6fa5 !important;
+        }
+
+        .row.mb-3:first-child h1.h3 {
+            white-space: normal !important;
+        }
     }
 </style>
 @endpush

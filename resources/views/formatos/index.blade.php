@@ -220,7 +220,7 @@
                     <div class="d-flex gap-2 flex-wrap align-items-center">
                         {{-- BOTÓN "TODOS" — QUITA EL FILTRO DE TIPO --}}
                         <a href="{{ route('formatos.index', array_filter(['nombre'=>request('nombre'), 'version'=>request('version'), 'codigo'=>request('codigo'), 'clave'=>request('clave'), 'departamento'=>request('departamento')])) }}"
-                           class="btn btn-sm {{ !request('tipo_documento') ? 'text-black' : '' }}"
+                           class="btn btn-sm filtro-lista-maestra {{ !request('tipo_documento') ? 'text-black' : '' }}"
                            style="{{ !request('tipo_documento') ? 'background:#ffffff; border-color:#000000;' : 'border:1px solid #000000'; }}">
                             Todos
                         </a>
@@ -264,7 +264,7 @@
                             {{-- BOTÓN "MÁS RECIENTE PRIMERO" — ACTIVO POR DEFECTO --}}
                             <button type="button"
                                     id="btn-orden-desc"
-                                    class="btn btn-sm orden-fecha-btn activo-orden"
+                                    class="btn btn-sm orden-fecha-btn filtro-lista-maestra activo-orden"
                                     onclick="ordenarPorFecha('desc')"
                                     style="border:1px solid #000000; background:#ffffff; font-size:0.8rem; padding:4px 14px; border-radius:6px;">
                                 <i class="bi bi-sort-down me-1"></i> Más reciente primero
@@ -272,7 +272,7 @@
                             {{-- BOTÓN "MÁS ANTIGUA PRIMERO" --}}
                             <button type="button"
                                     id="btn-orden-asc"
-                                    class="btn btn-sm orden-fecha-btn"
+                                    class="btn btn-sm orden-fecha-btn filtro-lista-maestra"
                                     onclick="ordenarPorFecha('asc')"
                                     style="border:1px solid #000000; background:#ffffff; color:#495057; font-size:0.8rem; padding:4px 14px; border-radius:6px;">
                                 <i class="bi bi-sort-up-alt me-1"></i> Más antigua primero
@@ -280,7 +280,7 @@
                             {{-- BOTÓN "SIN ORDENAR" — RESTAURA EL ORDEN ORIGINAL --}}
                             <button type="button"
                                     id="btn-orden-ninguno"
-                                    class="btn btn-sm orden-fecha-btn"
+                                    class="btn btn-sm orden-fecha-btn filtro-lista-maestra"
                                     onclick="ordenarPorFecha('ninguno')"
                                     style="border:1px solid #000000; background:#ffffff; color:#495057; font-size:0.8rem; padding:4px 14px; border-radius:6px;">
                                 <i class="bi bi-x-circle me-1"></i> Sin ordenar

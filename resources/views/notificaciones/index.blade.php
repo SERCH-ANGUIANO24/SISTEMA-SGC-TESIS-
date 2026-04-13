@@ -79,7 +79,7 @@
 
             {{-- TIEMPO RELATIVO DESDE QUE SE CREÓ LA NOTIFICACIÓN (EJ: "hace 2 horas") --}}
             <small class='text-muted ms-2 text-nowrap'>
-              {{ $notif->created_at->diffForHumans() }}
+              {{ $notif->created_at->locale('es')->diffForHumans() }}
             </small>
           </div>
 
